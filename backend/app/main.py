@@ -1,9 +1,14 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
-from app.routers import linkedin, offer
+from app.routers import linkedin, offer, chat, generate, auth
 
 app = FastAPI(title="Bored CV API", version="0.1.0")
+
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "dev-secret-change-me"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,6 +23,9 @@ app.add_middleware(
 
 app.include_router(linkedin.router)
 app.include_router(offer.router)
+app.include_router(chat.router)
+app.include_router(generate.router)
+app.include_router(auth.router)
 
 
 @app.get("/api/health")
