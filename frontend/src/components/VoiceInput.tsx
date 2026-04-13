@@ -22,7 +22,7 @@ export default function VoiceInput({ onResult, onError, lang }: Props) {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === "fr" ? "fr-FR" : "en-US";
+    recognition.lang = lang.startsWith("fr") ? "fr-FR" : "en-US";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -34,10 +34,15 @@ export default function VoiceInput({ onResult, onError, lang }: Props) {
 
     recognition.onerror = (event: any) => {
       setListening(false);
-      if (event.error === "not-allowed") {
+      const err = event.error;
+      if (err === "not-allowed") {
         onError?.("Microphone access denied. Check your browser permissions.");
-      } else if (event.error === "no-speech") {
+      } else if (err === "no-speech") {
         onError?.("No speech detected. Try again.");
+      } else if (err === "network") {
+        onError?.("Network error. Voice requires an internet connection.");
+      } else {
+        onError?.(`Voice error: ${err || "unknown"}`);
       }
     };
     recognition.onend = () => setListening(false);
