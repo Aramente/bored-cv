@@ -28,7 +28,7 @@ export default function Editor() {
   return (
     <div className="page">
       <nav className="nav">
-        <div className="logo">Bored CV</div>
+        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="btn-secondary" onClick={() => setStep("templates")}>{t("common.back")}</button>
           <LanguageToggle />

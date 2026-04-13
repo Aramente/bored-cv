@@ -7,9 +7,11 @@
   --text: #fafafa;
   --text-muted: #a1a1aa;
   --text-dim: #71717a;
-  --accent: #f97316;
-  --accent-hover: #fb923c;
-  --accent-subtle: rgba(249, 115, 22, 0.1);
+  --accent: #F5C542;
+  --accent-hover: #FADB5F;
+  --accent-subtle: rgba(245, 197, 66, 0.1);
+  --blue: #3B82F6;
+  --blue-hover: #60A5FA;
   --green: #22c55e;
   --red: #ef4444;
   --radius: 8px;
@@ -68,7 +70,7 @@ body {
 .hero-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--accent);
+  color: var(--blue);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 20px;
@@ -91,7 +93,7 @@ body {
 /* Buttons */
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: #1A365D;
   border: none;
   padding: 14px 28px;
   border-radius: var(--radius);
@@ -154,7 +156,14 @@ body {
 .step-num {
   font-size: 32px;
   font-weight: 800;
-  color: var(--text-dim);
+  color: #fff;
+  background: var(--blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
   margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
@@ -208,8 +217,8 @@ body {
   background: var(--surface-hover);
 }
 .card.selected {
-  border-color: var(--accent);
-  background: var(--accent-subtle);
+  border-color: var(--blue);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 /* Forms */
@@ -292,7 +301,7 @@ textarea.input { resize: vertical; min-height: 120px; }
   color: var(--text);
 }
 .chat-msg.user .chat-bubble {
-  background: var(--accent);
+  background: var(--blue);
   color: #fff;
 }
 .chat-input-bar {
@@ -331,6 +340,12 @@ textarea.input { resize: vertical; min-height: 120px; }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Logo image */
+.logo-img {
+  height: 36px;
+  width: auto;
 }
 
 /* Responsive */

@@ -16,7 +16,7 @@ export default function Landing() {
   return (
     <div className="page landing">
       <nav className="nav">
-        <div className="logo">bored cv</div>
+        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
         <LanguageToggle />
       </nav>
 

@@ -75,7 +75,7 @@ export default function Chat() {
   return (
     <div className="page chat-page">
       <nav className="nav">
-        <div className="logo">Bored CV</div>
+        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
         <LanguageToggle />
       </nav>
 
