@@ -25,7 +25,8 @@ async def verify_turnstile(token: str) -> bool:
 
 
 def check_rate_limit(request: Request, is_authenticated: bool = False) -> None:
-    ip = request.client.host if request.client else "unknown"
+    forwarded = request.headers.get("x-forwarded-for", "")
+    ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
     limit = 5 if is_authenticated else 1
     now = time.time()
     day_ago = now - 86400

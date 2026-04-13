@@ -20,7 +20,7 @@ class LLMService:
     def model(self):
         if self._model is None:
             genai.configure(api_key=self._api_key)
-            self._model = genai.GenerativeModel("gemini-2.0-flash")
+            self._model = genai.GenerativeModel("gemini-2.5-flash")
         return self._model
 
     def analyze(self, profile: Profile, offer: Offer) -> GapAnalysis:
