@@ -33,7 +33,7 @@ jobs:
         env:
           VITE_API_URL: https://Aramente-bored-cv-api.hf.space
         run: |
-          npm ci
+          npm install
           npm run build
 
       - uses: actions/configure-pages@v4
