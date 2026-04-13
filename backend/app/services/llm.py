@@ -23,7 +23,7 @@ class LLMService:
             self._model = genai.GenerativeModel("gemini-2.5-flash")
         return self._model
 
-    def analyze(self, profile: Profile, offer: Offer) -> GapAnalysis:
+    def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
         prompt = f"""You are a career advisor. Analyze this candidate's profile against the job offer.
 
 CANDIDATE PROFILE:
@@ -43,7 +43,7 @@ Requirements: {self._format_requirements(offer)}
 Respond in valid JSON only:
 {{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["specific questions to ask the candidate to uncover hidden relevant experience, max 7 questions, written as direct questions to the candidate"]}}
 
-Make questions specific and tied to actual gaps. Reference both the candidate's existing experience and the offer requirement. Write questions in the same language as the job offer."""
+Make questions specific and tied to actual gaps. Reference both the candidate's existing experience and the offer requirement. IMPORTANT: Write ALL questions in {"French" if ui_language == "fr" else "English"}, regardless of the job offer language."""
 
         response = self.model.generate_content(
             prompt,
@@ -52,10 +52,10 @@ Make questions specific and tied to actual gaps. Reference both the candidate's 
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
 
-    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage]) -> ChatResponse:
+    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> ChatResponse:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
 
-        prompt = f"""You are a friendly career advisor helping personalize a CV. You've already asked some questions.
+        prompt = f"""You are an expert career coach who helps people write outstanding CVs. You know that great CVs are built on specific, quantified achievements — not vague descriptions.
 
 GAPS TO EXPLORE: {", ".join(gap_analysis.gaps)}
 QUESTIONS PLANNED: {json.dumps(gap_analysis.questions)}
@@ -63,14 +63,23 @@ QUESTIONS PLANNED: {json.dumps(gap_analysis.questions)}
 CONVERSATION SO FAR:
 {conversation}
 
+YOUR COACHING APPROACH:
+- Always push for SPECIFICS: numbers, percentages, revenue impact, team sizes, timelines
+- When someone says "I managed a team", ask "How many people? Over what period? What did you deliver together?"
+- When someone says "I improved performance", ask "By how much? How did you measure it?"
+- Ask them to always mention the COMPANY NAME when describing an achievement
+- Give brief advice: "Recruiters love seeing 'Increased X by Y% at Company Z' — can you frame it that way?"
+- If their answer is vague, gently redirect: "That's great context. Can you put a number on it? Even an estimate helps."
+- Reference specific requirements from the job offer when asking questions
+
 Based on the conversation, either:
 1. Ask the NEXT most relevant question (if there are still important gaps to explore)
-2. Signal that you have enough information
+2. Signal that you have enough information (only when you have concrete, quantified answers for the key gaps)
 
 Respond in valid JSON only:
-{{"message": "your next question OR a summary like 'I have all I need to generate your CV!'", "is_complete": false or true}}
+{{"message": "your next question or coaching tip OR 'I have all I need to generate your CV!'", "is_complete": false or true}}
 
-Be conversational and warm. Reference what the user just said. Write in the same language as the conversation. Keep questions focused — one topic per question."""
+Be conversational, warm, and encouraging. IMPORTANT: Write your response in {"French" if ui_language == "fr" else "English"}. Keep questions focused — one topic per question."""
 
         response = self.model.generate_content(
             prompt,
@@ -79,7 +88,7 @@ Be conversational and warm. Reference what the user just said. Write in the same
         data = self._parse_json(response.text)
         return ChatResponse(**data)
 
-    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage]) -> CVData:
+    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> CVData:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
 
         prompt = f"""You are an expert CV writer. Rewrite this candidate's CV to perfectly match the job offer, using insights from the conversation.

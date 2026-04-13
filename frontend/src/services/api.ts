@@ -44,16 +44,16 @@ export async function scrapeOffer(url: string, rawText: string, captchaToken: st
   return post("/api/scrape-offer", { url, raw_text: rawText }, captchaToken);
 }
 
-export async function analyzeProfile(profile: Profile, offer: Offer, captchaToken: string): Promise<GapAnalysis> {
-  return post("/api/analyze", { profile, offer }, captchaToken);
+export async function analyzeProfile(profile: Profile, offer: Offer, captchaToken: string, lang?: string): Promise<GapAnalysis> {
+  return post("/api/analyze", { profile, offer, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string): Promise<ChatResponse> {
-  return post("/api/chat", { profile, offer, gap_analysis: gapAnalysis, messages }, captchaToken);
+export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<ChatResponse> {
+  return post("/api/chat", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string): Promise<CVData> {
-  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages }, captchaToken);
+export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<CVData> {
+  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
 }
 
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {

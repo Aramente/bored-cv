@@ -56,6 +56,7 @@ class ChatRequest(BaseModel):
     offer: Offer
     gap_analysis: GapAnalysis
     messages: list[ChatMessage] = []
+    ui_language: str = "en"
 
 
 class ChatResponse(BaseModel):
@@ -87,6 +88,7 @@ class GenerateRequest(BaseModel):
     offer: Offer
     gap_analysis: GapAnalysis
     messages: list[ChatMessage]
+    ui_language: str = "en"
 
 
 class OfferScrapeRequest(BaseModel):
@@ -97,3 +99,4 @@ class OfferScrapeRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     profile: Profile
     offer: Offer
+    ui_language: str = "en"

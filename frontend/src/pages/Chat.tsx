@@ -17,6 +17,7 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,13 +40,14 @@ export default function Chat() {
     try {
       const allMessages = [...messages, { role: "user" as const, content: text }];
       const captcha = "";
-      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha);
+      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
+      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang);
 
       addMessage({ role: "assistant", content: response.message });
 
       if (response.is_complete) {
         setGenerating(true);
-        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha);
+        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang);
         setCvData(cv);
         setStep("templates");
       }
@@ -97,6 +99,7 @@ export default function Chat() {
           <div ref={bottomRef} />
         </div>
 
+        {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
         <form className="chat-input-bar" onSubmit={handleSubmit}>
           <input
             className="input"
@@ -106,7 +109,8 @@ export default function Chat() {
             disabled={loading}
           />
           <VoiceInput
-            onResult={(text) => sendMessage(text)}
+            onResult={(text) => { setVoiceError(""); sendMessage(text); }}
+            onError={(msg) => setVoiceError(msg)}
             lang={i18n.language}
           />
           <button className="btn-primary" type="submit" disabled={!input.trim() || loading}

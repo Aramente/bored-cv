@@ -2,10 +2,11 @@ import { useCallback, useRef, useState } from "react";
 
 interface Props {
   onResult: (text: string) => void;
+  onError?: (msg: string) => void;
   lang: string;
 }
 
-export default function VoiceInput({ onResult, lang }: Props) {
+export default function VoiceInput({ onResult, onError, lang }: Props) {
   const [listening, setListening] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -31,7 +32,14 @@ export default function VoiceInput({ onResult, lang }: Props) {
       setListening(false);
     };
 
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = (event: any) => {
+      setListening(false);
+      if (event.error === "not-allowed") {
+        onError?.("Microphone access denied. Check your browser permissions.");
+      } else if (event.error === "no-speech") {
+        onError?.("No speech detected. Try again.");
+      }
+    };
     recognition.onend = () => setListening(false);
 
     recognitionRef.current = recognition;

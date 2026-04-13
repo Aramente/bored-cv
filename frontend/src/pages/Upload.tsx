@@ -5,7 +5,7 @@ import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 
 export default function Upload() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { setStep, setProfile, setOffer, setGapAnalysis } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +49,8 @@ export default function Upload() {
       setOffer(offer);
 
       setLoadingStep(t("upload.step_analyzing"));
-      const gap = await analyzeProfile(profile, offer, captcha);
+      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
+      const gap = await analyzeProfile(profile, offer, captcha, lang);
       setGapAnalysis(gap);
 
       setLoadingStep(t("upload.step_ready"));
