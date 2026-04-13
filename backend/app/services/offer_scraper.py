@@ -7,6 +7,12 @@ from app.models import Offer, OfferRequirement
 
 
 async def scrape_offer_url(url: str) -> Offer | None:
+    # Try SPA-specific APIs first (Ashby, Lever, Greenhouse)
+    spa_result = await _try_spa_apis(url)
+    if spa_result:
+        return spa_result
+
+    # Fallback to standard HTML scraping
     try:
         async with httpx.AsyncClient(
             timeout=10.0,
@@ -30,6 +36,106 @@ async def scrape_offer_url(url: str) -> Offer | None:
         return None
 
     return parse_offer_text(text)
+
+
+async def _try_spa_apis(url: str) -> Offer | None:
+    """Try known job board APIs for SPA-rendered sites."""
+
+    # Ashby: jobs.ashbyhq.com/<org>/<job-id>
+    ashby = re.match(r"https?://jobs\.ashbyhq\.com/([^/]+)/([a-f0-9-]+)", url)
+    if ashby:
+        return await _scrape_ashby(ashby.group(1), ashby.group(2))
+
+    # Lever: jobs.lever.co/<org>/<job-id>
+    lever = re.match(r"https?://jobs\.lever\.co/([^/]+)/([a-f0-9-]+)", url)
+    if lever:
+        return await _scrape_lever(lever.group(1), lever.group(2))
+
+    # Greenhouse: boards.greenhouse.io/<org>/jobs/<job-id>
+    greenhouse = re.match(r"https?://boards\.greenhouse\.io/([^/]+)/jobs/(\d+)", url)
+    if greenhouse:
+        return await _scrape_greenhouse(greenhouse.group(1), greenhouse.group(2))
+
+    return None
+
+
+async def _scrape_ashby(org: str, job_id: str) -> Offer | None:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting",
+                json={
+                    "operationName": "ApiJobPosting",
+                    "variables": {
+                        "organizationHostedJobsPageName": org,
+                        "jobPostingId": job_id,
+                    },
+                    "query": (
+                        "query ApiJobPosting($organizationHostedJobsPageName: String!, $jobPostingId: String!) {"
+                        " jobPosting(organizationHostedJobsPageName: $organizationHostedJobsPageName,"
+                        " jobPostingId: $jobPostingId) {"
+                        " title descriptionHtml locationName departmentName } }"
+                    ),
+                },
+            )
+            data = resp.json().get("data", {}).get("jobPosting")
+            if not data:
+                return None
+
+            soup = BeautifulSoup(data.get("descriptionHtml", ""), "html.parser")
+            text = soup.get_text(separator="\n", strip=True)
+
+            offer = parse_offer_text(text)
+            offer.title = data.get("title", offer.title)
+            offer.company = org.replace("-", " ").title()
+            offer.location = data.get("locationName", "")
+            return offer
+    except Exception:
+        return None
+
+
+async def _scrape_lever(org: str, job_id: str) -> Offer | None:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"https://api.lever.co/v0/postings/{org}/{job_id}")
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+
+            description = data.get("descriptionPlain", "")
+            lists = data.get("lists", [])
+            for lst in lists:
+                description += f"\n\n{lst.get('text', '')}:\n"
+                description += "\n".join(f"- {item}" for item in lst.get("content", "").split("\n") if item.strip())
+
+            offer = parse_offer_text(description)
+            offer.title = data.get("text", offer.title)
+            offer.company = org.replace("-", " ").title()
+            offer.location = data.get("categories", {}).get("location", "")
+            return offer
+    except Exception:
+        return None
+
+
+async def _scrape_greenhouse(org: str, job_id: str) -> Offer | None:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"https://boards-api.greenhouse.io/v1/boards/{org}/jobs/{job_id}")
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+
+            soup = BeautifulSoup(data.get("content", ""), "html.parser")
+            text = soup.get_text(separator="\n", strip=True)
+
+            offer = parse_offer_text(text)
+            offer.title = data.get("title", offer.title)
+            offer.company = org.replace("-", " ").title()
+            loc = data.get("location", {}).get("name", "")
+            offer.location = loc
+            return offer
+    except Exception:
+        return None
 
 
 def parse_offer_text(raw: str) -> Offer:
