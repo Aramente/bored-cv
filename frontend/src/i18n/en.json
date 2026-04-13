@@ -1,0 +1,62 @@
+{
+  "landing": {
+    "hero": "Your CV, rewritten for the job you want",
+    "subtitle": "Upload your LinkedIn profile, paste a job offer, and let AI tailor your experience to match.",
+    "cta": "Start for free",
+    "how_it_works": "How it works",
+    "step1": "Export your LinkedIn profile as PDF",
+    "step2": "Paste the job offer link",
+    "step3": "Answer a few questions",
+    "step4": "Download your personalized CV"
+  },
+  "upload": {
+    "title": "Let's build your CV",
+    "linkedin_label": "Your LinkedIn profile (PDF)",
+    "linkedin_drop": "Drop your LinkedIn PDF here or click to browse",
+    "linkedin_help_title": "How to export your LinkedIn PDF",
+    "linkedin_help_1": "Go to your LinkedIn profile",
+    "linkedin_help_2": "Click the \"More\" button",
+    "linkedin_help_3": "Select \"Save to PDF\"",
+    "linkedin_help_4": "Upload the downloaded file here",
+    "offer_label": "Job offer",
+    "offer_url_placeholder": "Paste the job offer URL...",
+    "offer_text_placeholder": "Or paste the job description text here...",
+    "offer_tab_url": "URL",
+    "offer_tab_text": "Text",
+    "next": "Analyze"
+  },
+  "chat": {
+    "title": "Let's personalize your CV",
+    "subtitle": "I'll ask you a few questions to highlight your best experience for this role.",
+    "placeholder": "Type your answer...",
+    "voice_start": "Hold to speak",
+    "voice_stop": "Release to send",
+    "generating": "Generating your CV..."
+  },
+  "templates": {
+    "title": "Choose your design",
+    "subtitle": "Pick a template that matches the role you're applying for.",
+    "clean": "Clean",
+    "clean_desc": "Elegant sidebar, perfect for tech and data roles",
+    "contrast": "Contrast",
+    "contrast_desc": "Bold header, great for leadership and consulting",
+    "minimal": "Minimal",
+    "minimal_desc": "Refined spacing, works across all industries",
+    "select": "Use this template"
+  },
+  "editor": {
+    "title": "Fine-tune your CV",
+    "subtitle": "Click any text to edit. Your changes update the preview in real time.",
+    "regenerate": "Regenerate",
+    "download": "Download PDF",
+    "section_summary": "Professional Summary",
+    "section_experience": "Experience",
+    "section_education": "Education",
+    "section_skills": "Skills"
+  },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading..."
+  }
+}
