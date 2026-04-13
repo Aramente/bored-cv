@@ -24,7 +24,8 @@ class LLMService:
         return self._model
 
     def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
-        prompt = f"""You are a career advisor. Analyze this candidate's profile against the job offer.
+        lang_instruction = "French" if ui_language == "fr" else "English"
+        prompt = f"""You are a senior career coach at a top tech recruitment firm. You help candidates tailor their CV to specific job offers.
 
 CANDIDATE PROFILE:
 Name: {profile.name}
@@ -40,10 +41,24 @@ Company: {offer.company}
 Description: {offer.description}
 Requirements: {self._format_requirements(offer)}
 
-Respond in valid JSON only:
-{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["specific questions to ask the candidate to uncover hidden relevant experience, max 7 questions, written as direct questions to the candidate"]}}
+YOUR TASK:
+1. Identify which of the candidate's experiences are RELEVANT to this offer (ignore the rest)
+2. For each relevant experience, identify what's missing: metrics, specifics, framing
+3. Generate a coaching plan: a sequence of SHORT, FOCUSED questions — one topic per question
 
-Make questions specific and tied to actual gaps. Reference both the candidate's existing experience and the offer requirement. IMPORTANT: Write ALL questions in {"French" if ui_language == "fr" else "English"}, regardless of the job offer language."""
+RULES FOR QUESTIONS:
+- Start with a triage message that tells the candidate which 2-3 experiences you want to focus on and WHY
+- Then plan follow-up questions for each relevant experience, ONE AT A TIME
+- Each question should target ONE specific thing: a metric, a team size, a result, a tool used
+- BAD question: "Tell me about your leadership experience, team management, and how you drove results"
+- GOOD question: "At [Company], you managed a team — how many people were on it?"
+- Include questions that anticipate common startup/tech interview themes: ownership, impact, ambiguity, speed, cross-functional work
+- Max 7 questions total, ordered by importance
+
+Respond in valid JSON only:
+{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["question 1 should be the triage message identifying relevant experiences", "question 2: focused follow-up on experience A", "question 3: focused follow-up", "..."]}}
+
+IMPORTANT: Write ALL output in {lang_instruction}."""
 
         response = self.model.generate_content(
             prompt,
@@ -54,32 +69,55 @@ Make questions specific and tied to actual gaps. Reference both the candidate's 
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> ChatResponse:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        lang_instruction = "French" if ui_language == "fr" else "English"
 
-        prompt = f"""You are an expert career coach who helps people write outstanding CVs. You know that great CVs are built on specific, quantified achievements — not vague descriptions.
+        prompt = f"""You are a senior career coach helping someone build a killer CV for a specific job. You act like a great interview prep partner.
 
-GAPS TO EXPLORE: {", ".join(gap_analysis.gaps)}
-QUESTIONS PLANNED: {json.dumps(gap_analysis.questions)}
+CANDIDATE: {profile.name} — {profile.title}
+TARGET ROLE: {offer.title} at {offer.company}
+GAPS: {", ".join(gap_analysis.gaps)}
+PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}
 
 CONVERSATION SO FAR:
 {conversation}
 
-YOUR COACHING APPROACH:
-- Always push for SPECIFICS: numbers, percentages, revenue impact, team sizes, timelines
-- When someone says "I managed a team", ask "How many people? Over what period? What did you deliver together?"
-- When someone says "I improved performance", ask "By how much? How did you measure it?"
-- Ask them to always mention the COMPANY NAME when describing an achievement
-- Give brief advice: "Recruiters love seeing 'Increased X by Y% at Company Z' — can you frame it that way?"
-- If their answer is vague, gently redirect: "That's great context. Can you put a number on it? Even an estimate helps."
-- Reference specific requirements from the job offer when asking questions
+YOUR COACHING RULES:
 
-Based on the conversation, either:
-1. Ask the NEXT most relevant question (if there are still important gaps to explore)
-2. Signal that you have enough information (only when you have concrete, quantified answers for the key gaps)
+1. ONE QUESTION AT A TIME. Never ask a multi-part question. Never list multiple things to answer.
+   BAD: "Tell me about your leadership, teamwork, and technical contributions"
+   GOOD: "At TechCorp, you led the B2B platform — how many engineers were on your team?"
+
+2. ALWAYS REFERENCE THE COMPANY NAME. When asking about an experience, name the company.
+   BAD: "Tell me about a time you led a project"
+   GOOD: "At StartupABC, you shipped the mobile app — what was the biggest technical challenge?"
+
+3. PUSH FOR METRICS. If the user gives a vague answer, ask for numbers.
+   User: "I improved the onboarding flow"
+   You: "Nice! By how much did conversion improve? Even a rough estimate works — 10%? 30%?"
+
+4. REFRAME AND SUGGEST. When you have enough info, suggest how to phrase it for the CV.
+   "Perfect — on your CV we could write: 'Led a team of 8 engineers at TechCorp to ship v2.0, increasing retention by 34%'. Does that sound right?"
+
+5. SKIP IRRELEVANT EXPERIENCES. Don't ask about roles that don't relate to the target job.
+
+6. ANTICIPATE INTERVIEW QUESTIONS. Frame your questions around what startup/tech interviewers ask:
+   - "Tell me about a time you dealt with ambiguity"
+   - "How did you prioritize with limited resources?"
+   - "Give me an example of cross-functional leadership"
+   - "What's your biggest measurable impact?"
+   The CV bullets you help write should already answer these.
+
+7. KEEP IT SHORT. Your messages should be 1-3 sentences max. No lengthy preambles.
+
+DECISION:
+- If the user's last answer was vague → ask them to be more specific (with a concrete suggestion)
+- If you have enough for this experience → move to the next relevant experience
+- If all relevant experiences are covered with concrete metrics → set is_complete to true
 
 Respond in valid JSON only:
-{{"message": "your next question or coaching tip OR 'I have all I need to generate your CV!'", "is_complete": false or true}}
+{{"message": "your short, focused question or reframing suggestion", "is_complete": false or true}}
 
-Be conversational, warm, and encouraging. IMPORTANT: Write your response in {"French" if ui_language == "fr" else "English"}. Keep questions focused — one topic per question."""
+Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot."""
 
         response = self.model.generate_content(
             prompt,
