@@ -1,14 +1,174 @@
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
+import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
+import LanguageToggle from "../components/LanguageToggle";
 
 export default function Upload() {
   const { t } = useTranslation();
-  const setStep = useStore((s) => s.setStep);
+  const { setStep, setProfile, setOffer, setGapAnalysis } = useStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [offerTab, setOfferTab] = useState<"url" | "text">("url");
+  const [offerUrl, setOfferUrl] = useState("");
+  const [offerText, setOfferText] = useState("");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (f?.type === "application/pdf") setFile(f);
+    else setError("PDF only");
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) setFile(f);
+  };
+
+  const canSubmit = file && (offerUrl || offerText);
+
+  const handleSubmit = async () => {
+    if (!file || (!offerUrl && !offerText)) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const captcha = "";
+      const [profile, offer] = await Promise.all([
+        parseLinkedIn(file, captcha),
+        scrapeOffer(offerUrl, offerText, captcha),
+      ]);
+      setProfile(profile);
+      setOffer(offer);
+
+      const gap = await analyzeProfile(profile, offer, captcha);
+      setGapAnalysis(gap);
+      setStep("chat");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div>
-      <h1>{t("upload.title")}</h1>
-      <button onClick={() => setStep("chat")}>{t("upload.next")}</button>
+    <div className="page">
+      <nav className="nav">
+        <div className="logo">Bored CV</div>
+        <LanguageToggle />
+      </nav>
+      <div className="page-content">
+        <h1>{t("upload.title")}</h1>
+
+        {error && <div className="error">{error}</div>}
+
+        <section style={{ marginBottom: 32 }}>
+          <label className="label">{t("upload.linkedin_label")}</label>
+          <div
+            className="drop-zone"
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              border: "2px dashed var(--slate-200)",
+              borderRadius: "var(--radius-lg)",
+              padding: "40px",
+              textAlign: "center",
+              cursor: "pointer",
+              background: file ? "#f0fdf4" : "var(--white)",
+              marginTop: 8,
+            }}
+          >
+            {file ? (
+              <p style={{ fontWeight: 600, color: "#16a34a" }}>{file.name}</p>
+            ) : (
+              <p style={{ color: "var(--slate-400)" }}>{t("upload.linkedin_drop")}</p>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+          </div>
+
+          <button
+            className="btn-secondary"
+            style={{ marginTop: 8 }}
+            onClick={() => setShowTutorial(!showTutorial)}
+          >
+            {t("upload.linkedin_help_title")}
+          </button>
+
+          {showTutorial && (
+            <div style={{
+              background: "var(--white)",
+              border: "1px solid var(--slate-200)",
+              borderRadius: "var(--radius)",
+              padding: 16,
+              marginTop: 8,
+            }}>
+              <ol style={{ paddingLeft: 20 }}>
+                <li>{t("upload.linkedin_help_1")}</li>
+                <li>{t("upload.linkedin_help_2")}</li>
+                <li>{t("upload.linkedin_help_3")}</li>
+                <li>{t("upload.linkedin_help_4")}</li>
+              </ol>
+            </div>
+          )}
+        </section>
+
+        <section style={{ marginBottom: 32 }}>
+          <label className="label">{t("upload.offer_label")}</label>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, marginBottom: 12 }}>
+            <button
+              className={offerTab === "url" ? "btn-primary" : "btn-secondary"}
+              style={{ padding: "8px 16px", fontSize: 13 }}
+              onClick={() => setOfferTab("url")}
+            >
+              {t("upload.offer_tab_url")}
+            </button>
+            <button
+              className={offerTab === "text" ? "btn-primary" : "btn-secondary"}
+              style={{ padding: "8px 16px", fontSize: 13 }}
+              onClick={() => setOfferTab("text")}
+            >
+              {t("upload.offer_tab_text")}
+            </button>
+          </div>
+
+          {offerTab === "url" ? (
+            <input
+              className="input"
+              type="url"
+              placeholder={t("upload.offer_url_placeholder")}
+              value={offerUrl}
+              onChange={(e) => setOfferUrl(e.target.value)}
+            />
+          ) : (
+            <textarea
+              className="input"
+              placeholder={t("upload.offer_text_placeholder")}
+              value={offerText}
+              onChange={(e) => setOfferText(e.target.value)}
+            />
+          )}
+        </section>
+
+        <button
+          className="btn-primary"
+          onClick={handleSubmit}
+          disabled={!canSubmit || loading}
+          style={{ width: "100%" }}
+        >
+          {loading ? <span className="spinner" /> : t("upload.next")}
+        </button>
+      </div>
     </div>
   );
 }
