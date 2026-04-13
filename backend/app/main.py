@@ -14,7 +14,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://*.github.io",
+        "https://aramente.github.io",
     ],
     allow_credentials=True,
     allow_methods=["*"],

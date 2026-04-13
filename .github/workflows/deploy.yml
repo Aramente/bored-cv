@@ -31,7 +31,7 @@ jobs:
       - name: Install and build
         working-directory: frontend
         env:
-          VITE_API_URL: https://YOUR_USERNAME-bored-cv-api.hf.space
+          VITE_API_URL: https://Aramente-bored-cv-api.hf.space
         run: |
           npm ci
           npm run build
