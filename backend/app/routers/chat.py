@@ -17,7 +17,10 @@ async def analyze(req: AnalyzeRequest, request: Request, x_captcha_token: str = 
         raise HTTPException(status_code=403, detail="Captcha verification failed")
     check_rate_limit(request)
     llm = get_llm()
-    return llm.analyze(req.profile, req.offer)
+    try:
+        return llm.analyze(req.profile, req.offer)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -25,4 +28,7 @@ async def chat(req: ChatRequest, request: Request, x_captcha_token: str = Header
     if not await verify_turnstile(x_captcha_token):
         raise HTTPException(status_code=403, detail="Captcha verification failed")
     llm = get_llm()
-    return llm.generate_next_question(req.profile, req.offer, req.gap_analysis, req.messages)
+    try:
+        return llm.generate_next_question(req.profile, req.offer, req.gap_analysis, req.messages)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
