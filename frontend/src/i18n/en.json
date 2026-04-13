@@ -23,7 +23,10 @@
     "offer_text_placeholder": "Or paste the job description text here...",
     "offer_tab_url": "URL",
     "offer_tab_text": "Text",
-    "next": "Analyze"
+    "next": "Analyze",
+    "step_parsing": "Reading your profile & offer...",
+    "step_analyzing": "Matching your skills to the offer...",
+    "step_ready": "Done! Preparing your chat..."
   },
   "chat": {
     "title": "Let's personalize your CV",

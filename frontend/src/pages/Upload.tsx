@@ -15,6 +15,7 @@ export default function Upload() {
   const [offerText, setOfferText] = useState("");
   const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const [error, setError] = useState("");
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -38,6 +39,8 @@ export default function Upload() {
 
     try {
       const captcha = "";
+
+      setLoadingStep(t("upload.step_parsing"));
       const [profile, offer] = await Promise.all([
         parseLinkedIn(file, captcha),
         scrapeOffer(offerUrl, offerText, captcha),
@@ -45,13 +48,17 @@ export default function Upload() {
       setProfile(profile);
       setOffer(offer);
 
+      setLoadingStep(t("upload.step_analyzing"));
       const gap = await analyzeProfile(profile, offer, captcha);
       setGapAnalysis(gap);
+
+      setLoadingStep(t("upload.step_ready"));
       setStep("chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+      setLoadingStep("");
     }
   };
 
@@ -166,7 +173,12 @@ export default function Upload() {
           disabled={!canSubmit || loading}
           style={{ width: "100%" }}
         >
-          {loading ? <span className="spinner" /> : t("upload.next")}
+          {loading ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <span className="spinner" />
+              {loadingStep}
+            </span>
+          ) : t("upload.next")}
         </button>
       </div>
     </div>
