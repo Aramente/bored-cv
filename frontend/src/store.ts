@@ -50,6 +50,11 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ChatResponse {
+  message: string;
+  is_complete: boolean;
+}
+
 export interface RewrittenExperience {
   title: string;
   company: string;
