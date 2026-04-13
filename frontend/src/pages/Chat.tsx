@@ -63,10 +63,10 @@ export default function Chat() {
 
   if (generating) {
     return (
-      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
         <div style={{ textAlign: "center" }}>
           <div className="spinner" style={{ width: 40, height: 40, marginBottom: 16 }} />
-          <p>{t("chat.generating")}</p>
+          <p style={{ color: "var(--text-muted)" }}>{t("chat.generating")}</p>
         </div>
       </div>
     );
@@ -81,8 +81,8 @@ export default function Chat() {
 
       <div className="chat-container">
         <div className="chat-header">
-          <h1 style={{ fontSize: 20 }}>{t("chat.title")}</h1>
-          <p className="subtitle" style={{ fontSize: 14, marginBottom: 0 }}>{t("chat.subtitle")}</p>
+          <h1 style={{ fontSize: 20, color: "var(--text)" }}>{t("chat.title")}</h1>
+          <p className="subtitle" style={{ fontSize: 14, marginBottom: 0, color: "var(--text-muted)" }}>{t("chat.subtitle")}</p>
         </div>
 
         <div className="chat-messages">

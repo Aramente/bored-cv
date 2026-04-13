@@ -74,19 +74,19 @@ export default function Upload() {
             onDragOver={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
             style={{
-              border: "2px dashed var(--slate-200)",
+              border: "2px dashed var(--border-light)",
               borderRadius: "var(--radius-lg)",
               padding: "40px",
               textAlign: "center",
               cursor: "pointer",
-              background: file ? "#f0fdf4" : "var(--white)",
+              background: file ? "var(--accent-subtle)" : "var(--surface)",
               marginTop: 8,
             }}
           >
             {file ? (
-              <p style={{ fontWeight: 600, color: "#16a34a" }}>{file.name}</p>
+              <p style={{ fontWeight: 600, color: "var(--accent)" }}>{file.name}</p>
             ) : (
-              <p style={{ color: "var(--slate-400)" }}>{t("upload.linkedin_drop")}</p>
+              <p style={{ color: "var(--text-muted)" }}>{t("upload.linkedin_drop")}</p>
             )}
             <input
               ref={fileInputRef}
@@ -107,8 +107,8 @@ export default function Upload() {
 
           {showTutorial && (
             <div style={{
-              background: "var(--white)",
-              border: "1px solid var(--slate-200)",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius)",
               padding: 16,
               marginTop: 8,

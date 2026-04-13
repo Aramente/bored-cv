@@ -7,24 +7,28 @@ export default function Landing() {
   const setStep = useStore((s) => s.setStep);
 
   const steps = [
-    { num: "1", text: t("landing.step1") },
-    { num: "2", text: t("landing.step2") },
-    { num: "3", text: t("landing.step3") },
-    { num: "4", text: t("landing.step4") },
+    { num: "01", text: t("landing.step1") },
+    { num: "02", text: t("landing.step2") },
+    { num: "03", text: t("landing.step3") },
+    { num: "04", text: t("landing.step4") },
   ];
 
   return (
     <div className="page landing">
       <nav className="nav">
-        <div className="logo">Bored CV</div>
+        <div className="logo">bored cv</div>
         <LanguageToggle />
       </nav>
 
       <section className="hero">
+        <p className="hero-label">AI-Powered CV Generation</p>
         <h1>{t("landing.hero")}</h1>
         <p className="subtitle">{t("landing.subtitle")}</p>
         <button className="btn-primary" onClick={() => setStep("upload")}>
           {t("landing.cta")}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft: 8}}>
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         </button>
       </section>
 
@@ -39,6 +43,10 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      <footer className="landing-footer">
+        <p>Built with Gemini Flash. Open source on GitHub.</p>
+      </footer>
     </div>
   );
 }

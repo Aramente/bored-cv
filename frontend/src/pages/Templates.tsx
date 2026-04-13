@@ -35,12 +35,12 @@ export default function Templates() {
               onClick={() => setSelectedTemplate(key)}
             >
               <h3 style={{ fontSize: 16, marginBottom: 4 }}>{t(`templates.${key}`)}</h3>
-              <p style={{ fontSize: 12, color: "var(--slate-600)" }}>{t(`templates.${key}_desc`)}</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{t(`templates.${key}_desc`)}</p>
             </div>
           ))}
         </div>
 
-        <div style={{ border: "1px solid var(--slate-200)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: 500, marginBottom: 16 }}>
+        <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: 500, marginBottom: 16 }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
             <PreviewComponent data={cvData} />
           </PDFViewer>
