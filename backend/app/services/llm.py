@@ -152,7 +152,7 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=1000, temperature=0.7, response_mime_type="application/json"),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=8000, temperature=0.7, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return ChatResponse(**data)
@@ -296,7 +296,7 @@ Respond in valid JSON only:
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=3000,
+                max_output_tokens=16000,  # Gemini 2.5 Flash thinking eats output budget
                 temperature=0.3,
                 response_mime_type="application/json",
             ),
@@ -349,8 +349,16 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
 
     def _parse_json(self, text: str) -> dict:
         cleaned = text.strip()
-        # Fallback: strip markdown code blocks if model ignores response_mime_type
+        # Strip markdown code blocks
         if cleaned.startswith("```"):
             cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
             cleaned = cleaned.rsplit("```", 1)[0]
+        # Find JSON object in response (handles thinking preamble)
+        start = cleaned.find("{")
+        end = cleaned.rfind("}") + 1
+        if start >= 0 and end > start:
+            cleaned = cleaned[start:end]
+        # Fix trailing commas
+        import re
+        cleaned = re.sub(r",\s*([}\]])", r"\1", cleaned)
         return json.loads(cleaned)

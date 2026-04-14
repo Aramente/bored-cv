@@ -101,7 +101,7 @@ export default function Upload() {
       // Analyze in background
       analyzeProfile(profile, offer, captchaForBg, lang)
         .then((gap) => useStore.getState().setGapAnalysis(gap))
-        .catch(() => {});
+        .catch((e) => console.warn("Analysis failed:", e));
 
       // AI-improved first draft in background — replaces raw LinkedIn with a better version
       draftCV(profile, offer, { matched_skills: [], gaps: [], questions: [] }, [], captchaForBg, lang)
@@ -121,7 +121,7 @@ export default function Upload() {
             improvements: draft.improvements || [],
           });
         })
-        .catch(() => {});
+        .catch((e) => console.warn("Draft CV failed:", e));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
