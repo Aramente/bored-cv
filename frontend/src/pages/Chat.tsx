@@ -67,6 +67,7 @@ export default function Chat() {
     return (
       <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
         <div style={{ textAlign: "center" }}>
+          <img src="/bored-cv/logo-hero.webp" alt="" style={{ width: 200, marginBottom: 24 }} />
           <div className="spinner" style={{ width: 40, height: 40, marginBottom: 16 }} />
           <p style={{ color: "var(--text-muted)" }}>{t("chat.generating")}</p>
         </div>
@@ -77,7 +78,7 @@ export default function Chat() {
   return (
     <div className="page chat-page">
       <nav className="nav">
-        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
+        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
         <LanguageToggle />
       </nav>
 

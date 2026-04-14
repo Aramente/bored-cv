@@ -66,7 +66,7 @@ export default function Upload() {
   return (
     <div className="page">
       <nav className="nav">
-        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
+        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
         <LanguageToggle />
       </nav>
       <div className="page-content">

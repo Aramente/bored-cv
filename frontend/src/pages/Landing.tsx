@@ -16,11 +16,12 @@ export default function Landing() {
   return (
     <div className="page landing">
       <nav className="nav">
-        <img src="/bored-cv/logo.png" alt="Bored CV" className="logo-img" />
+        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
         <LanguageToggle />
       </nav>
 
       <section className="hero">
+        <img src="/bored-cv/logo-hero.webp" alt="Bored CV character" className="logo-hero" />
         <h1>{t("landing.hero")}</h1>
         <p className="subtitle">{t("landing.subtitle")}</p>
         <button className="btn-primary btn-lg" onClick={() => setStep("upload")}>
