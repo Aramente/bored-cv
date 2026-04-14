@@ -40,6 +40,29 @@ export default function Templates() {
         <h1>{t("templates.title")}</h1>
         <p className="subtitle">{t("templates.subtitle")}</p>
 
+        {cvData.match_score > 0 && (
+          <div className="match-score-card">
+            <div className="match-score-header">
+              <div className="match-score-number">{cvData.match_score}%</div>
+              <div className="match-score-label">match score</div>
+            </div>
+            <div className="match-score-details">
+              {cvData.strengths.length > 0 && (
+                <div className="match-strengths">
+                  <span className="match-icon">💪</span>
+                  {cvData.strengths.map((s, i) => <p key={i}>{s}</p>)}
+                </div>
+              )}
+              {cvData.improvements.length > 0 && (
+                <div className="match-improvements">
+                  <span className="match-icon">🎯</span>
+                  {cvData.improvements.map((s, i) => <p key={i}>{s}</p>)}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Tone of voice</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

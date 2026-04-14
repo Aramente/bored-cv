@@ -614,3 +614,61 @@ textarea.input { resize: vertical; min-height: 120px; }
   cursor: pointer;
   text-decoration: underline;
 }
+
+/* Match Score */
+.match-score-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.match-score-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.match-score-number {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.match-score-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.match-score-details {
+  display: flex;
+  gap: 20px;
+}
+.match-strengths, .match-improvements {
+  flex: 1;
+}
+.match-icon {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.match-strengths p, .match-improvements p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.match-score-mini {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  background: var(--accent-subtle);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  display: inline-block;
+}
+.match-score-number-sm {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}

@@ -81,6 +81,9 @@ class CVData(BaseModel):
     education: list[Education]
     skills: list[str]
     language: str = "en"
+    match_score: int = 0
+    strengths: list[str] = []
+    improvements: list[str] = []
 
 
 class GenerateRequest(BaseModel):

@@ -227,8 +227,10 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
 11. Write in the language of the job offer.
 
+12. MATCH SCORE: Rate how well this CV matches the offer from 0-100. Be honest — 100 means perfect match. Include 2-3 strengths (what makes this candidate strong) and 1-2 improvements (what's still missing or weak). This helps the user know where to iterate.
+
 Respond in valid JSON only:
-{{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr"}}"""
+{{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr", "match_score": 78, "strengths": ["Strong HR ops experience across multiple startups", "Multi-country payroll expertise matches requirement"], "improvements": ["No explicit people analytics experience mentioned", "Could highlight more HRIS tool proficiency"]}}"""
 
         response = self.model.generate_content(
             prompt,
@@ -256,10 +258,10 @@ CONVERSATION SO FAR:
 
 MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
 
-Write a quick draft CV. Keep it concise. Use real info from the conversation where available.
+Write a quick draft CV. Keep it concise. Use real info from the conversation where available. Include a match_score (0-100), 2-3 strengths, and 1-2 improvements based on how well the profile fits the target role.
 
 Respond in valid JSON only:
-{{"name": "{profile.name}", "title": "best title for the target role", "email": "{profile.email}", "location": "{profile.location}", "summary": "draft summary based on what we know", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["bullet based on conversation or profile"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["relevant skills"], "language": "{'fr' if ui_language == 'fr' else 'en'}"}}"""
+{{"name": "{profile.name}", "title": "best title for the target role", "email": "{profile.email}", "location": "{profile.location}", "summary": "draft summary based on what we know", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["bullet based on conversation or profile"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["relevant skills"], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["Relevant experience area"], "improvements": ["Missing detail or skill"]}}"""
 
         response = self.model.generate_content(
             prompt,

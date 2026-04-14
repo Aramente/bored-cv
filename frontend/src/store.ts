@@ -73,6 +73,9 @@ export interface CVData {
   education: Education[];
   skills: string[];
   language: string;
+  match_score: number;
+  strengths: string[];
+  improvements: string[];
 }
 
 export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";

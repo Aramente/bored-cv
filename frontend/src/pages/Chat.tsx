@@ -24,6 +24,12 @@ function CVPreviewPanel() {
         <h3>live preview</h3>
         <span className="cv-preview-badge">editable</span>
       </div>
+      {cvData.match_score > 0 && (
+        <div className="match-score-mini">
+          <span className="match-score-number-sm">{cvData.match_score}%</span>
+          <span> match</span>
+        </div>
+      )}
       <div className="cv-preview-content">
         <input
           className="cv-edit-name"
