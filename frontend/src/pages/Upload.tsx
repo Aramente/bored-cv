@@ -10,7 +10,7 @@ import AuthButton from "../components/AuthButton";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setGapAnalysis, setCvData } = useStore();
+  const { setProfile, setOffer, setCvData } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
