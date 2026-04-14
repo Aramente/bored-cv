@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
@@ -22,7 +23,8 @@ function EditableField({ label, value, onChange }: { label: string; value: strin
 
 export default function Editor() {
   const { t } = useTranslation();
-  const { cvData, selectedTemplate, updateCvField, setStep } = useStore();
+  const navigate = useNavigate();
+  const { cvData, selectedTemplate, updateCvField } = useStore();
 
   if (!cvData) return null;
 
@@ -31,9 +33,9 @@ export default function Editor() {
   return (
     <div className="page">
       <nav className="nav">
-        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
+        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn-secondary" onClick={() => setStep("templates")}>{t("common.back")}</button>
+          <button className="btn-secondary" onClick={() => navigate("/templates")}>{t("common.back")}</button>
           <AuthButton />
           <LanguageToggle />
         </div>

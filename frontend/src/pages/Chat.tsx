@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { chatNext, generateCV, draftCV, translateCV, saveProject } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
@@ -109,10 +110,11 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
 
 export default function Chat() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const {
     profile, offer, gapAnalysis,
     messages, addMessage,
-    setCvData, setCvDataAlt, setStep,
+    setCvData, setCvDataAlt,
     tone,
   } = useStore();
 
@@ -192,7 +194,7 @@ export default function Chat() {
             if (res.id) useStore.getState().setProjectId(res.id);
           }).catch(() => {});
         }
-        setStep("templates");
+        navigate("/templates");
       }
     } catch {
       addMessage({ role: "assistant", content: "Something went wrong. Please try again." });
@@ -221,7 +223,7 @@ export default function Chat() {
   return (
     <div className="page chat-split">
       <nav className="nav">
-        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
+        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />

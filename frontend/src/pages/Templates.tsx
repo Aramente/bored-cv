@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { PDFViewer } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
@@ -14,7 +15,8 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "co
 
 export default function Templates() {
   const { t } = useTranslation();
-  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, setStep, tone, setTone } = useStore();
+  const navigate = useNavigate();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone } = useStore();
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
@@ -33,7 +35,7 @@ export default function Templates() {
   return (
     <div className="page">
       <nav className="nav">
-        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
+        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />
@@ -123,7 +125,7 @@ export default function Templates() {
           </PDFViewer>
         </div>
 
-        <button className="btn-primary" style={{ width: "100%" }} onClick={() => setStep("editor")}>
+        <button className="btn-primary" style={{ width: "100%" }} onClick={() => navigate("/editor")}>
           {t("templates.select")}
         </button>
       </div>

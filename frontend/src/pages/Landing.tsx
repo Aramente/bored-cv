@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
 export default function Landing() {
   const { t } = useTranslation();
-  const setStep = useStore((s) => s.setStep);
+  const navigate = useNavigate();
   const user = useStore((s) => s.user);
 
   const steps = [
@@ -29,14 +30,14 @@ export default function Landing() {
         <img src="/bored-cv/logo-hero.webp" alt="Bored CV character" className="logo-hero" />
         <h1>{t("landing.hero")}</h1>
         <p className="subtitle">{t("landing.subtitle")}</p>
-        <button className="btn-primary btn-lg" onClick={() => setStep("upload")}>
+        <button className="btn-primary btn-lg" onClick={() => navigate("/upload")}>
           {t("landing.cta")}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginLeft: 8}}>
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
         {user && (
-          <button className="btn-secondary" onClick={() => setStep("projects")} style={{ marginLeft: 12 }}>
+          <button className="btn-secondary" onClick={() => navigate("/projects")} style={{ marginLeft: 12 }}>
             my projects →
           </button>
         )}

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
 import type { CVData } from "../store";
@@ -8,7 +9,8 @@ import AuthButton from "../components/AuthButton";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
-  const { setStep, setProfile, setOffer, setGapAnalysis, setCvData } = useStore();
+  const navigate = useNavigate();
+  const { setProfile, setOffer, setGapAnalysis, setCvData } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -78,7 +80,7 @@ export default function Upload() {
       setGapAnalysis(gap);
 
       setLoadingStep(t("upload.step_ready"));
-      setStep("chat");
+      navigate("/chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -90,7 +92,7 @@ export default function Upload() {
   return (
     <div className="page">
       <nav className="nav">
-        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
+        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />

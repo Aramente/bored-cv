@@ -79,10 +79,8 @@ export interface CVData {
 }
 
 export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";
-export type Step = "landing" | "upload" | "chat" | "templates" | "editor" | "projects";
 
 interface AppState {
-  step: Step;
   profile: Profile | null;
   offer: Offer | null;
   gapAnalysis: GapAnalysis | null;
@@ -94,7 +92,6 @@ interface AppState {
   tone: string;
   projectId: number | null;
   user: { email: string; provider: string } | null;
-  setStep: (step: Step) => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
@@ -112,7 +109,6 @@ interface AppState {
 }
 
 const initialState = {
-  step: "landing" as Step,
   profile: null,
   offer: null,
   gapAnalysis: null,
@@ -128,7 +124,6 @@ const initialState = {
 
 export const useStore = create<AppState>()(persist((set) => ({
   ...initialState,
-  setStep: (step) => set({ step }),
   setProfile: (profile) => set({ profile }),
   setOffer: (offer) => set({ offer }),
   setGapAnalysis: (gapAnalysis) => set({ gapAnalysis }),
@@ -168,7 +163,6 @@ export const useStore = create<AppState>()(persist((set) => ({
 }), {
   name: "bored-cv-session",
   partialize: (state) => ({
-    step: state.step,
     profile: state.profile,
     offer: state.offer,
     gapAnalysis: state.gapAnalysis,

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
+import { API_URL } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
 interface Project {
   id: number;
@@ -14,7 +14,7 @@ interface Project {
 }
 
 export default function Projects() {
-  const setStep = useStore((s) => s.setStep);
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +41,7 @@ export default function Projects() {
   return (
     <div className="page">
       <nav className="nav">
-        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
+        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />
@@ -50,7 +50,7 @@ export default function Projects() {
       <div className="page-content">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h1>your projects</h1>
-          <button className="btn-primary" onClick={() => setStep("upload")}>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>
             + new CV
           </button>
         </div>
@@ -78,9 +78,9 @@ export default function Projects() {
                   store.setMessages(project.messages || []);
                   if (project.template) store.setSelectedTemplate(project.template);
                   if (project.tone) store.setTone(project.tone);
-                  store.setStep("chat");
+                  navigate("/chat");
                 } catch {
-                  setStep("upload");
+                  navigate("/upload");
                 }
               }}>
                 <div className="project-card-header">

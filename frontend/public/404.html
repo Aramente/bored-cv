@@ -3,8 +3,13 @@
   <head>
     <meta charset="utf-8">
     <script>
-      sessionStorage.redirect = location.href;
+      // GitHub Pages SPA redirect — preserves the path
+      var path = window.location.pathname;
+      var base = '/bored-cv';
+      if (path.startsWith(base)) {
+        sessionStorage.setItem('redirect', path.slice(base.length) + window.location.search);
+      }
     </script>
-    <meta http-equiv="refresh" content="0;URL='/'">
+    <meta http-equiv="refresh" content="0;URL='/bored-cv/'">
   </head>
 </html>

@@ -1,6 +1,6 @@
 import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData } from "../store";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("bored-cv-token");

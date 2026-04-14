@@ -1,10 +1,12 @@
 import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useStore } from "../store";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
+import { API_URL } from "../services/api";
 
 export default function AuthButton() {
-  const { user, setUser, reset, step, setStep } = useStore();
+  const { user, setUser, reset } = useStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Check URL for token from OAuth callback
@@ -39,17 +41,17 @@ export default function AuthButton() {
     }
   }, [setUser]);
 
-  const showReset = step !== "landing";
+  const showReset = location.pathname !== "/";
 
   if (user) {
     return (
       <div className="auth-user">
         {showReset && (
           <>
-            <button className="auth-reset" onClick={() => setStep("projects")}>
+            <button className="auth-reset" onClick={() => navigate("/projects")}>
               my projects
             </button>
-            <button className="auth-reset" onClick={() => reset()}>
+            <button className="auth-reset" onClick={() => { reset(); navigate("/"); }}>
               new CV
             </button>
           </>
@@ -61,6 +63,7 @@ export default function AuthButton() {
             localStorage.removeItem("bored-cv-token");
             setUser(null);
             reset();
+            navigate("/");
           }}
         >
           logout
@@ -72,7 +75,7 @@ export default function AuthButton() {
   return (
     <div className="auth-buttons">
       {showReset && (
-        <button className="auth-reset" onClick={() => reset()}>
+        <button className="auth-reset" onClick={() => { reset(); navigate("/"); }}>
           new CV
         </button>
       )}
