@@ -31,7 +31,7 @@ def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
         return _fallback_parse(raw_text)
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash-lite")  # No thinking — reliable JSON, faster
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export. The text is messy because LinkedIn PDFs use a two-column layout — sections are interleaved. Use your judgment to reconstruct the correct structure.
 

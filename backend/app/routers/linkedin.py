@@ -48,7 +48,7 @@ async def debug_parse_pdf(file: UploadFile = File(...)):
 
     import google.generativeai as genai
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash-lite")
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export.
 
