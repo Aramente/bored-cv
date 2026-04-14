@@ -188,9 +188,20 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
 6. ONLY INCLUDE RELEVANT EXPERIENCES. If a role doesn't relate to the target job, skip it entirely. Better a 3-experience CV that tells a story than a 7-experience CV that dilutes the message.
 
-7. SKILLS: only list skills that the offer actually cares about AND that the candidate actually demonstrated. No padding.
+7. SKILLS: This is NOT a keyword dump. Group skills into 2-3 meaningful categories that match the offer's structure. Each skill must be something the candidate PROVED in their experience bullets.
+   ✅ "HR Ops: multi-country payroll (FR/US/UK/DE), HRIS (Deel, BambooHR), onboarding design"
+   ✅ "Leadership: team scaling (2→8), process design from scratch, C-level stakeholder mgmt"
+   ❌ "Teamwork, Communication, Problem-solving, Leadership, Strategic thinking" — this is a horoscope, not a skills section
 
-8. Write in the language of the job offer.
+8. INCLUDE ALL EXPERIENCES — but calibrate depth. Relevant roles get 3-4 rich bullets. Less relevant roles get 1 line that finds an angle connecting to the target job.
+   For example, if someone was a Growth founder and is applying for HR Ops: "Founded Wagmi Family — recruited 30+ growth/sales profiles for startups, developed a deep understanding of what makes teams work from the hiring side."
+   NEVER skip an experience entirely — unexplained gaps look worse than a brief mention.
+
+9. DETECT GAPS in the timeline. If there's a gap > 6 months between roles, address it naturally (sabbatical, entrepreneurship, travel, etc.) — the chat should have uncovered this.
+
+10. HIGHLIGHT YEARS OF EXPERIENCE. Include total years in the summary. "8+ years in HR/People ops across 4 startups" is more powerful than listing dates.
+
+11. Write in the language of the job offer.
 
 Respond in valid JSON only:
 {{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr"}}"""
