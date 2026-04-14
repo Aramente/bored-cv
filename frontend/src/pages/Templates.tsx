@@ -27,7 +27,16 @@ export default function Templates() {
     { id: "minimal", label: "Minimal", desc: "ultra-concise, pure signal" },
   ];
 
-  if (!cvData) return null;
+  if (!cvData) {
+    return (
+      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV generated yet</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+        </div>
+      </div>
+    );
+  }
 
   const displayCv = activeCv || cvData;
   const PreviewComponent = templateComponents[selectedTemplate];
@@ -70,7 +79,7 @@ export default function Templates() {
 
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Tone of voice</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="tone-selector">
             {tones.map((t) => (
               <div
                 key={t.id}

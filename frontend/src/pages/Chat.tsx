@@ -152,7 +152,8 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const allMessages = [...messages, { role: "user" as const, content: text }];
+      const currentMessages = useStore.getState().messages;
+      const allMessages = [...currentMessages, { role: "user" as const, content: text }];
       const captcha = "";
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
       const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang);
@@ -196,8 +197,9 @@ export default function Chat() {
         }
         navigate("/templates");
       }
-    } catch {
-      addMessage({ role: "assistant", content: "Something went wrong. Please try again." });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      addMessage({ role: "assistant", content: `⚠️ ${msg}. Try again or start a new CV.` });
     } finally {
       setLoading(false);
     }
@@ -207,6 +209,18 @@ export default function Chat() {
     e.preventDefault();
     sendMessage(input);
   };
+
+  // Route guard: redirect if no data
+  if (!profile || !offer || !gapAnalysis) {
+    return (
+      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV in progress</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+        </div>
+      </div>
+    );
+  }
 
   if (generating) {
     return (
@@ -240,7 +254,7 @@ export default function Chat() {
 
           <div className="chat-messages">
             {messages.map((msg, i) => (
-              <ChatMessage key={i} role={msg.role} content={msg.content} />
+              <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
             ))}
             {loading && (
               <div className="chat-msg assistant">

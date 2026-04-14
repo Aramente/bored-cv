@@ -26,7 +26,16 @@ export default function Editor() {
   const navigate = useNavigate();
   const { cvData, selectedTemplate, updateCvField } = useStore();
 
-  if (!cvData) return null;
+  if (!cvData) {
+    return (
+      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV generated yet</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+        </div>
+      </div>
+    );
+  }
 
   const TemplateComponent = templateComponents[selectedTemplate];
 
