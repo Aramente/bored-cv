@@ -7,6 +7,8 @@ import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
+import { PDFViewer } from "@react-pdf/renderer";
+import Minimal from "../templates/Minimal";
 
 function CVPreviewPanel({ onEdit, onQuickAction }: {
   onEdit?: (field: string, oldVal: string, newVal: string) => void;
@@ -17,6 +19,7 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
   const profile = useStore((s) => s.profile);
   const [flashIndex, setFlashIndex] = useState<number | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
   const toggle = (section: string) => setCollapsed((c) => ({ ...c, [section]: !c[section] }));
 
   const handleEdit = (path: string, newVal: string) => {
@@ -49,6 +52,10 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
       <div className="cv-preview-header">
         <h3>{t("chat.preview_title")}</h3>
         <div className="cv-preview-actions">
+          <div className="cv-view-toggle">
+            <button className={viewMode === "edit" ? "active" : ""} onClick={() => setViewMode("edit")}>edit</button>
+            <button className={viewMode === "preview" ? "active" : ""} onClick={() => setViewMode("preview")}>preview</button>
+          </div>
           <button className="cv-undo-btn" onClick={undo} disabled={cvHistory.length === 0} title="Undo">↩</button>
           <span className="cv-preview-badge">{t("chat.preview_editable")}</span>
         </div>
@@ -60,6 +67,13 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
           <span> match</span>
         </div>
       )}
+      {viewMode === "preview" ? (
+        <div style={{ height: "calc(100% - 80px)" }}>
+          <PDFViewer width="100%" height="100%" showToolbar={false}>
+            <Minimal data={cvData} />
+          </PDFViewer>
+        </div>
+      ) : (
       <div className="cv-preview-content">
         {/* Personal Info */}
         <div className="cv-section">
@@ -210,6 +224,7 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
           />
         </div>
       </div>
+      )}
     </div>
   );
 }
