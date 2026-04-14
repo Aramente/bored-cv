@@ -169,6 +169,14 @@ MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
 
 TONE OF VOICE: {self._get_tone_instruction(tone)}
 
+BANNED WORDS AND PHRASES — if ANY of these appear in your output, you have FAILED:
+"highly accomplished", "seasoned", "proven track record", "passionate about",
+"results-driven", "detail-oriented", "team player", "leveraged", "synergies",
+"spearheaded", "orchestrated", "dynamic", "innovative", "cutting-edge",
+"best-in-class", "world-class", "thought leader", "strategic vision",
+"dedicated professional", "extensive experience", "strong background in"
+These are LinkedIn clichés. They make the CV sound like AI wrote it. USE PLAIN LANGUAGE.
+
 WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
 1. ANTI-BULLSHIT. Most CVs are bad because they are:
@@ -212,10 +220,14 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
    ❌ "Experienced HR professional with a passion for building great teams and driving organizational success."
    The summary is about THEM (the company), not about YOU (the candidate). What do you bring to THEIR problem?
 
-7. SKILLS: This is NOT a keyword dump. Group skills into 2-3 meaningful categories that match the offer's structure. Each skill must be something the candidate PROVED in their experience bullets.
-   ✅ "HR Ops: multi-country payroll (FR/US/UK/DE), HRIS (Deel, BambooHR), onboarding design"
-   ✅ "Leadership: team scaling (2→8), process design from scratch, C-level stakeholder mgmt"
-   ❌ "Teamwork, Communication, Problem-solving, Leadership, Strategic thinking" — this is a horoscope, not a skills section
+7. SKILLS: This is the MOST ABUSED section on CVs. Follow these rules strictly:
+   a) NO generic soft skills: "Communication", "Leadership", "Problem-solving", "Teamwork" are BANNED. They say nothing.
+   b) ONLY concrete, verifiable skills that appeared in the experience bullets above.
+   c) Format each skill as "Skill (proof)" — e.g., "Multi-country payroll (FR/US/UK/DE)" not just "Payroll"
+   d) Include tools/platforms BY NAME: "Deel", "BambooHR", "Salesforce" — not "HRIS tools"
+   e) Max 8-10 skills. If you can't prove it from the bullets above, don't list it.
+   ✅ ["Multi-country payroll (4 countries)", "HRIS: Deel, BambooHR", "Onboarding design (5-day ramp)", "Team scaling (2→8)", "Hypergrowth ops (seed to Series B)"]
+   ❌ ["Leadership", "Communication", "Strategic thinking", "Problem-solving", "HR Management"]
 
 8. INCLUDE ALL EXPERIENCES — but calibrate depth. Relevant roles get 3-4 rich bullets. Less relevant roles get 1 line that finds an angle connecting to the target job.
    For example, if someone was a Growth founder and is applying for HR Ops: "Founded Wagmi Family — recruited 30+ growth/sales profiles for startups, developed a deep understanding of what makes teams work from the hiring side."
