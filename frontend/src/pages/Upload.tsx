@@ -43,7 +43,7 @@ export default function Upload() {
       setLoadingStep(t("upload.step_parsing"));
       const [profile, offer] = await Promise.all([
         parseLinkedIn(file, captcha),
-        scrapeOffer(offerUrl, offerText, captcha),
+        scrapeOffer(offerTab === "url" ? offerUrl : "", offerTab === "text" ? offerText : "", captcha),
       ]);
       setProfile(profile);
       setOffer(offer);
