@@ -237,6 +237,37 @@ Respond in valid JSON only:
         data = self._parse_json(response.text)
         return CVData(**data)
 
+    def draft_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> CVData:
+        """Generate a quick draft CV from whatever info is available so far."""
+        conversation = "\n".join(f"{m.role}: {m.content}" for m in messages[-6:])  # only recent messages for speed
+
+        prompt = f"""Generate a DRAFT CV based on what you know so far. This is a work-in-progress — the user is still answering questions. Use whatever info is available and make reasonable guesses for the rest. Mark uncertain sections with [TBD] if needed.
+
+CANDIDATE: {profile.name} — {profile.title}
+Location: {profile.location}
+Skills: {", ".join(profile.skills[:10])}
+Experience:
+{self._format_experiences(profile)}
+
+TARGET: {offer.title} at {offer.company}
+
+CONVERSATION SO FAR:
+{conversation}
+
+MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
+
+Write a quick draft CV. Keep it concise. Use real info from the conversation where available.
+
+Respond in valid JSON only:
+{{"name": "{profile.name}", "title": "best title for the target role", "email": "{profile.email}", "location": "{profile.location}", "summary": "draft summary based on what we know", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["bullet based on conversation or profile"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["relevant skills"], "language": "{'fr' if ui_language == 'fr' else 'en'}"}}"""
+
+        response = self.model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=3000, temperature=0.3),
+        )
+        data = self._parse_json(response.text)
+        return CVData(**data)
+
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {
             "startup": "Direct, confident, action-oriented. Short punchy sentences. Use first-person implied (no 'I'). Show scrappiness and ownership. Think: YC founder describing what they built.",
