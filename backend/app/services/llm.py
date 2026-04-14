@@ -47,19 +47,21 @@ YOUR TASK:
 3. Write SHORT, FOCUSED questions — one specific thing per question
 
 RULES FOR QUESTIONS:
-- The FIRST question should say something like: "I see your roles at [Company A] and [Company B] are the most relevant here. Let's start with [Company A] — [specific question]."
-  This tells the candidate what to focus on AND asks a specific question in the same breath. No broad "tell me about your experiences".
-- Every question after that: ONE company, ONE topic.
+- Use the ACTUAL company names from the candidate's profile. NEVER use placeholders like [Company A] or [Nom de l'entreprise]. Use the real names: Mindflow, Germinal, Sloow, etc.
+- The FIRST question should name 2-3 relevant companies from the profile and immediately ask a specific question about one of them.
+  Example: "Tes rôles chez Mindflow et Germinal collent bien ici. Commençons par Mindflow — combien de personnes as-tu recrutées ?"
+- Every question after that: ONE company, ONE topic, ONE specific thing to answer.
 - BAD: "Tell me about your leadership experience, how you managed teams, and what results you achieved"
-- GOOD: "At Mindflow, you were Head of People — how many people did you hire during your time there?"
-- GOOD: "At Germinal, what was your biggest win in terms of process or culture you built?"
+- BAD: "[Nom de l'entreprise A]" or "[Company X]" — NEVER use brackets or placeholders
+- GOOD: "Chez Germinal, c'était quoi ta plus grosse win en termes de process RH ?"
+- GOOD: "At Mindflow, how many people were on the team when you joined vs when you left?"
 - Think about what a startup/tech interviewer would ask: ownership, scrappiness, measurable impact, cross-functional work, dealing with ambiguity
 - Max 6 questions total, ordered from most to least important
 
 Respond in valid JSON only:
-{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["first question that names relevant companies AND asks something specific", "follow-up question about company A", "question about company B", "..."]}}
+{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["first question using REAL company names + specific ask", "follow-up about specific company", "question about another company", "..."]}}
 
-IMPORTANT: Write ALL output in {lang_instruction}. Be direct, warm, slightly casual — like a smart friend helping with a CV, not a corporate HR bot."""
+IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names from the profile, NEVER placeholders. Be direct, warm, slightly casual — like a smart friend helping with a CV, not a corporate HR bot."""
 
         response = self.model.generate_content(
             prompt,
