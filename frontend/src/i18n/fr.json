@@ -25,7 +25,7 @@
     "offer_tab_text": "Texte",
     "next": "analyse ça",
     "step_parsing": "je lis tes trucs...",
-    "step_analyzing": "je regarde ce qui compte...",
+    "step_analyzing": "je regarde ce qui compte... (~1 min, va te chercher un café ☕)",
     "step_ready": "ok c'est bon. on parle."
   },
   "chat": {

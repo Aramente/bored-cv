@@ -25,7 +25,7 @@
     "offer_tab_text": "Text",
     "next": "analyze this",
     "step_parsing": "reading your stuff...",
-    "step_analyzing": "figuring out what matters...",
+    "step_analyzing": "figuring out what matters... (~1 min, grab a coffee ☕)",
     "step_ready": "ok got it. let's talk."
   },
   "chat": {
