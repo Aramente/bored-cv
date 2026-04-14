@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.models import Offer, OfferScrapeRequest
 from app.services.offer_scraper import parse_offer_text, scrape_offer_url
+from app.services.color_extractor import extract_company_colors
 
 router = APIRouter(prefix="/api", tags=["offer"])
 
@@ -23,3 +24,11 @@ async def scrape_offer(req: OfferScrapeRequest):
             detail="Could not scrape this URL. Please paste the job description text instead.",
         )
     return offer
+
+
+@router.post("/extract-colors")
+async def extract_colors(req: dict):
+    url = req.get("url", "")
+    if not url:
+        return {"primary": "#3B82F6", "secondary": "#1A365D", "colors": []}
+    return await extract_company_colors(url)

@@ -4,6 +4,7 @@ import Upload from "./pages/Upload";
 import Chat from "./pages/Chat";
 import Templates from "./pages/Templates";
 import Editor from "./pages/Editor";
+import Projects from "./pages/Projects";
 
 export default function App() {
   const step = useStore((s) => s.step);
@@ -19,5 +20,7 @@ export default function App() {
       return <Templates />;
     case "editor":
       return <Editor />;
+    case "projects":
+      return <Projects />;
   }
 }

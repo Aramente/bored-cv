@@ -6,6 +6,7 @@ import AuthButton from "../components/AuthButton";
 export default function Landing() {
   const { t } = useTranslation();
   const setStep = useStore((s) => s.setStep);
+  const user = useStore((s) => s.user);
 
   const steps = [
     { num: "01", text: t("landing.step1") },
@@ -34,6 +35,11 @@ export default function Landing() {
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
+        {user && (
+          <button className="btn-secondary" onClick={() => setStep("projects")} style={{ marginLeft: 12 }}>
+            my projects →
+          </button>
+        )}
       </section>
 
       <section className="how-it-works">

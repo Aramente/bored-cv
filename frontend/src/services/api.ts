@@ -64,3 +64,7 @@ export async function getQuota(): Promise<{ authenticated: boolean; daily_limit:
   const res = await fetch(`${API_URL}/api/auth/quota`, { credentials: "include" });
   return res.json();
 }
+
+export async function extractColors(url: string): Promise<{ primary: string; secondary: string; colors: string[] }> {
+  return post("/api/extract-colors", { url });
+}

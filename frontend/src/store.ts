@@ -79,7 +79,7 @@ export interface CVData {
 }
 
 export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";
-export type Step = "landing" | "upload" | "chat" | "templates" | "editor";
+export type Step = "landing" | "upload" | "chat" | "templates" | "editor" | "projects";
 
 interface AppState {
   step: Step;
