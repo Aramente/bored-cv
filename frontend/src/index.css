@@ -328,7 +328,7 @@ textarea.input { resize: vertical; min-height: 120px; }
   padding: 32px;
   text-align: center;
 }
-.cv-preview-panel { padding: 20px; }
+.cv-preview-panel { padding: 20px; color: #1a1a1a; }
 .cv-preview-header {
   display: flex;
   align-items: center;
@@ -365,11 +365,17 @@ textarea.input { resize: vertical; min-height: 120px; }
   border-bottom-color: var(--border);
   outline: none;
 }
+.cv-preview-hint {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 16px;
+  font-style: italic;
+}
 .cv-edit-title {
   width: 100%;
   font-size: 14px;
   font-weight: 500;
-  color: var(--accent);
+  color: #444;
   border: none;
   border-bottom: 1px dashed transparent;
   background: transparent;
@@ -401,7 +407,7 @@ textarea.input { resize: vertical; min-height: 120px; }
 .cv-edit-exp {
   margin-bottom: 14px;
   padding-left: 10px;
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid #ccc;
 }
 .cv-edit-exp-header { margin-bottom: 4px; }
 .cv-edit-exp-title {
@@ -418,7 +424,7 @@ textarea.input { resize: vertical; min-height: 120px; }
 .cv-edit-exp-company {
   width: 100%;
   font-size: 12px;
-  color: var(--accent);
+  color: #666;
   border: none;
   background: transparent;
   padding: 1px 0;

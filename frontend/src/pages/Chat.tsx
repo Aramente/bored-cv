@@ -7,8 +7,25 @@ import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
-function CVPreviewPanel() {
+function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, newVal: string) => void }) {
   const { cvData, updateCvField } = useStore();
+
+  const handleEdit = (path: string, newVal: string) => {
+    if (!cvData) return;
+    // Get old value for the chat log
+    const keys = path.split(".");
+    let old: unknown = cvData;
+    for (const k of keys) {
+      if (old && typeof old === "object") {
+        old = (old as Record<string, unknown>)[k] ?? (old as unknown[])[parseInt(k)];
+      }
+    }
+    const oldStr = typeof old === "string" ? old : String(old || "");
+    if (oldStr !== newVal) {
+      updateCvField(path, newVal);
+      onEdit?.(path, oldStr, newVal);
+    }
+  };
 
   if (!cvData) {
     return (
@@ -21,9 +38,10 @@ function CVPreviewPanel() {
   return (
     <div className="cv-preview-panel">
       <div className="cv-preview-header">
-        <h3>live preview</h3>
+        <h3>content draft</h3>
         <span className="cv-preview-badge">editable</span>
       </div>
+      <p className="cv-preview-hint">focus: content. design & colors come later.</p>
       {cvData.match_score > 0 && (
         <div className="match-score-mini">
           <span className="match-score-number-sm">{cvData.match_score}%</span>
@@ -34,12 +52,12 @@ function CVPreviewPanel() {
         <input
           className="cv-edit-name"
           value={cvData.name}
-          onChange={(e) => updateCvField("name", e.target.value)}
+          onBlur={(e) => handleEdit("name", e.target.value)} onChange={(e) => updateCvField("name", e.target.value)}
         />
         <input
           className="cv-edit-title"
           value={cvData.title}
-          onChange={(e) => updateCvField("title", e.target.value)}
+          onBlur={(e) => handleEdit("title", e.target.value)} onChange={(e) => updateCvField("title", e.target.value)}
         />
         <textarea
           className="cv-edit-summary"
