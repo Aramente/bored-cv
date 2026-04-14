@@ -168,11 +168,20 @@ TONE OF VOICE: {self._get_tone_instruction(tone)}
 
 WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
-1. ANTI-BULLSHIT. Never write generic corporate filler like:
-   ❌ "Led cross-functional initiatives to drive strategic outcomes"
-   ❌ "Proven track record of delivering results in fast-paced environments"
-   ❌ "Passionate about leveraging synergies to optimize workflows"
-   These say nothing. A recruiter's eyes glaze over.
+1. ANTI-BULLSHIT. Most CVs are bad because they are:
+   a) TOO SCHOLARLY — they describe responsibilities like a job description, not what the person actually DID
+      ❌ "Responsible for managing HR operations across multiple geographies"
+      ✅ "Ran payroll in 4 countries, from scratch, while the company tripled in size"
+   b) TOO POMPOUS — fancy words that sound impressive but say nothing
+      ❌ "Leveraged strategic synergies to optimize cross-functional workflows"
+      ❌ "Proven track record of delivering results in fast-paced environments"
+      ❌ "Passionate about driving organizational excellence"
+      These are empty calories. A recruiter reads 200 CVs — they remember ZERO of these.
+   c) TOO DESCRIPTIVE — listing what the job was, not what the person achieved
+      ❌ "In charge of the onboarding process for new employees"
+      ✅ "Built onboarding from zero — new hires hit full speed in 5 days instead of 3 weeks"
+   d) NOT RELEVANT — mentioning things that don't connect to the target role
+      Every bullet should pass the test: "Would the person reading THIS job offer care about this?"
 
 2. TELL MICRO-STORIES. Each bullet should be a tiny story: what was the situation, what did you DO, what CHANGED.
    ✅ "Inherited a 2-person HR team at Germinal, grew it to 8, built the entire onboarding flow — new hires were productive in 5 days instead of 3 weeks"
