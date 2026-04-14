@@ -2,12 +2,13 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
 import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
+import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
-  const { setStep, setProfile, setOffer, setGapAnalysis } = useStore();
+  const { setStep, setProfile, setOffer, setGapAnalysis, setCvData } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -48,6 +49,28 @@ export default function Upload() {
       ]);
       setProfile(profile);
       setOffer(offer);
+
+      // Immediately create a CV draft from the LinkedIn profile — don't start blank
+      const initialCv: CVData = {
+        name: profile.name,
+        title: profile.title,
+        email: profile.email,
+        location: profile.location,
+        summary: profile.summary,
+        experiences: profile.experiences.map((exp) => ({
+          title: exp.title,
+          company: exp.company,
+          dates: exp.dates,
+          bullets: exp.bullets.length > 0 ? exp.bullets : [exp.description],
+        })),
+        education: profile.education,
+        skills: profile.skills,
+        language: i18n.language.startsWith("fr") ? "fr" : "en",
+        match_score: 0,
+        strengths: [],
+        improvements: [],
+      };
+      setCvData(initialCv);
 
       setLoadingStep(t("upload.step_analyzing"));
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
