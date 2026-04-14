@@ -60,6 +60,10 @@ export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAn
   return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
 }
 
+export async function translateCV(cvData: CVData, targetLanguage: string): Promise<CVData> {
+  return post("/api/translate-cv", { cv_data: cvData, target_language: targetLanguage });
+}
+
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
   const res = await fetch(`${API_URL}/api/auth/quota`, { credentials: "include" });
   return res.json();

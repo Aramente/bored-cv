@@ -88,6 +88,8 @@ interface AppState {
   gapAnalysis: GapAnalysis | null;
   messages: ChatMessage[];
   cvData: CVData | null;
+  cvDataAlt: CVData | null;
+  cvLang: "fr" | "en";
   selectedTemplate: TemplateId;
   tone: string;
   user: { email: string; provider: string } | null;
@@ -97,6 +99,8 @@ interface AppState {
   setGapAnalysis: (gap: GapAnalysis) => void;
   addMessage: (msg: ChatMessage) => void;
   setCvData: (cv: CVData) => void;
+  setCvDataAlt: (cv: CVData) => void;
+  setCvLang: (lang: "fr" | "en") => void;
   setSelectedTemplate: (t: TemplateId) => void;
   setTone: (tone: string) => void;
   updateCvField: (path: string, value: string) => void;
@@ -111,6 +115,8 @@ const initialState = {
   gapAnalysis: null,
   messages: [],
   cvData: null,
+  cvDataAlt: null,
+  cvLang: "fr" as "fr" | "en",
   selectedTemplate: "clean" as TemplateId,
   tone: "startup",
   user: null,
@@ -124,6 +130,8 @@ export const useStore = create<AppState>()(persist((set) => ({
   setGapAnalysis: (gapAnalysis) => set({ gapAnalysis }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setCvData: (cvData) => set({ cvData }),
+  setCvDataAlt: (cvDataAlt) => set({ cvDataAlt }),
+  setCvLang: (cvLang) => set({ cvLang }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
   setUser: (user) => set({ user }),

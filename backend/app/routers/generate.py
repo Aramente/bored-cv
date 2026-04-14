@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException, Request
 
+from pydantic import BaseModel
+
 from app.middleware.security import verify_turnstile, check_rate_limit
 from app.models import CVData, GenerateRequest
 from app.services.llm import LLMService
@@ -19,5 +21,21 @@ async def generate_cv(req: GenerateRequest, request: Request, x_captcha_token: s
     llm = get_llm()
     try:
         return llm.generate_cv(req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language, req.tone)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+
+
+class TranslateRequest(BaseModel):
+    cv_data: CVData
+    target_language: str  # "fr" or "en"
+
+
+@router.post("/translate-cv", response_model=CVData)
+async def translate_cv(req: TranslateRequest, request: Request, x_captcha_token: str = Header("")):
+    if not await verify_turnstile(x_captcha_token):
+        raise HTTPException(status_code=403, detail="Captcha verification failed")
+    llm = get_llm()
+    try:
+        return llm.translate_cv(req.cv_data, req.target_language)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")

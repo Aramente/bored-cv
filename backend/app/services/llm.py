@@ -282,6 +282,25 @@ Respond in valid JSON only:
         data = self._parse_json(response.text)
         return CVData(**data)
 
+    def translate_cv(self, cv_data: CVData, target_language: str) -> CVData:
+        """Translate a CV to another language while preserving structure and quality."""
+        cv_json = cv_data.model_dump_json()
+        lang_name = "French" if target_language == "fr" else "English"
+
+        prompt = f"""Translate this CV to {lang_name}. Keep the EXACT same structure, numbers, company names, and formatting. Only translate the text content. Do NOT add or remove any information. Do NOT make it more "corporate" — keep the same tone and style.
+
+CURRENT CV (JSON):
+{cv_json}
+
+Respond in valid JSON only, same structure, translated to {lang_name}. Set "language" to "{target_language}"."""
+
+        response = self.model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.2),
+        )
+        data = self._parse_json(response.text)
+        return CVData(**data)
+
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {
             "startup": "Direct, confident, action-oriented. Short punchy sentences. Use first-person implied (no 'I'). Show scrappiness and ownership. Think: YC founder describing what they built.",

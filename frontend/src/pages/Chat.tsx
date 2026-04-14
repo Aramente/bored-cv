@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
-import { chatNext, generateCV, draftCV } from "../services/api";
+import { chatNext, generateCV, draftCV, translateCV } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
@@ -94,7 +94,7 @@ export default function Chat() {
   const {
     profile, offer, gapAnalysis,
     messages, addMessage,
-    setCvData, setStep,
+    setCvData, setCvDataAlt, setStep,
     tone,
   } = useStore();
 
@@ -141,6 +141,11 @@ export default function Chat() {
         setGenerating(true);
         const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang, tone);
         setCvData(cv);
+        // Auto-translate to the other language
+        const altLang = cv.language === "fr" ? "en" : "fr";
+        translateCV(cv, altLang)
+          .then((alt) => setCvDataAlt(alt))
+          .catch(() => {}); // non-blocking
         setStep("templates");
       }
     } catch {

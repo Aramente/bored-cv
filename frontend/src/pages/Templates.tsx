@@ -14,7 +14,9 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "co
 
 export default function Templates() {
   const { t } = useTranslation();
-  const { cvData, selectedTemplate, setSelectedTemplate, setStep, tone, setTone } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, setStep, tone, setTone } = useStore();
+
+  const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
   const tones = [
     { id: "startup", label: "Startup", desc: "direct, punchy, ownership vibes" },
@@ -25,6 +27,7 @@ export default function Templates() {
 
   if (!cvData) return null;
 
+  const displayCv = activeCv || cvData;
   const PreviewComponent = templateComponents[selectedTemplate];
 
   return (
@@ -80,6 +83,27 @@ export default function Templates() {
           </div>
         </div>
 
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>CV Language</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className={`card ${cvLang === "fr" ? "selected" : ""}`}
+              onClick={() => setCvLang("fr")}
+              style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "fr" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
+            >
+              🇫🇷 Français
+            </button>
+            <button
+              className={`card ${cvLang === "en" ? "selected" : ""}`}
+              onClick={() => setCvLang("en")}
+              style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "en" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
+            >
+              🇬🇧 English
+            </button>
+            {!cvDataAlt && <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "center" }}>translating...</span>}
+          </div>
+        </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 24 }}>
           {templateKeys.map((key) => (
             <div
@@ -95,7 +119,7 @@ export default function Templates() {
 
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: 500, marginBottom: 16 }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
-            <PreviewComponent data={cvData} />
+            <PreviewComponent data={displayCv} />
           </PDFViewer>
         </div>
 
