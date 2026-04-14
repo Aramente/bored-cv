@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface Experience {
   title: string;
@@ -109,7 +110,7 @@ const initialState = {
   tone: "startup",
 };
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>()(persist((set) => ({
   ...initialState,
   setStep: (step) => set({ step }),
   setProfile: (profile) => set({ profile }),
@@ -143,4 +144,16 @@ export const useStore = create<AppState>((set) => ({
       return { cvData: cv };
     }),
   reset: () => set(initialState),
+}), {
+  name: "bored-cv-session",
+  partialize: (state) => ({
+    step: state.step,
+    profile: state.profile,
+    offer: state.offer,
+    gapAnalysis: state.gapAnalysis,
+    messages: state.messages,
+    cvData: state.cvData,
+    selectedTemplate: state.selectedTemplate,
+    tone: state.tone,
+  }),
 }));
