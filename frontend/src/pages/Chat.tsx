@@ -140,6 +140,28 @@ export default function Chat() {
   }, [messages]);
 
   useEffect(() => {
+    // Create initial CV from profile if not already set
+    if (profile && !useStore.getState().cvData) {
+      setCvData({
+        name: profile.name,
+        title: profile.title,
+        email: profile.email,
+        location: profile.location,
+        summary: profile.summary,
+        experiences: profile.experiences.map((exp) => ({
+          title: exp.title,
+          company: exp.company,
+          dates: exp.dates,
+          bullets: exp.bullets.length > 0 ? exp.bullets : [exp.description],
+        })),
+        education: profile.education,
+        skills: profile.skills,
+        language: i18n.language.startsWith("fr") ? "fr" : "en",
+        match_score: 0,
+        strengths: [],
+        improvements: [],
+      });
+    }
     if (messages.length === 0 && gapAnalysis && gapAnalysis.questions.length > 0) {
       addMessage({ role: "assistant", content: gapAnalysis.questions[0] });
     }
