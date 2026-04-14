@@ -1,65 +1,65 @@
 {
   "landing": {
-    "hero": "Your CV, rewritten for the job you want",
-    "subtitle": "Upload your LinkedIn profile, paste a job offer, and let AI tailor your experience to match.",
-    "cta": "Start for free",
-    "how_it_works": "How it works",
-    "step1": "Export your LinkedIn profile as PDF",
-    "step2": "Paste the job offer link",
-    "step3": "Answer a few questions",
-    "step4": "Download your personalized CV"
+    "hero": "your CV is boring. let's fix that.",
+    "subtitle": "Drop your LinkedIn, paste a job offer, and I'll rewrite your entire CV to actually match what they're looking for. You're welcome.",
+    "cta": "let's go",
+    "how_it_works": "how this works (it's easy)",
+    "step1": "Export your LinkedIn as PDF (yes, that's a thing)",
+    "step2": "Paste the job link you want",
+    "step3": "I ask you smart questions",
+    "step4": "Download a CV that actually slaps"
   },
   "upload": {
-    "title": "Let's build your CV",
-    "linkedin_label": "Your LinkedIn profile (PDF)",
-    "linkedin_drop": "Drop your LinkedIn PDF here or click to browse",
-    "linkedin_help_title": "How to export your LinkedIn PDF",
+    "title": "ok, show me what you got",
+    "linkedin_label": "Your LinkedIn (PDF)",
+    "linkedin_drop": "drop your LinkedIn PDF here — don't be shy",
+    "linkedin_help_title": "wait, how do I export my LinkedIn?",
     "linkedin_help_1": "Go to your LinkedIn profile",
     "linkedin_help_2": "Click \"Resources\"",
-    "linkedin_help_3": "Select \"Save to PDF\"",
-    "linkedin_help_4": "Upload the downloaded file here",
-    "offer_label": "Job offer",
-    "offer_url_placeholder": "Paste the job offer URL...",
-    "offer_text_placeholder": "Or paste the job description text here...",
+    "linkedin_help_3": "Hit \"Save to PDF\"",
+    "linkedin_help_4": "Drop it right here",
+    "offer_label": "The job you actually want",
+    "offer_url_placeholder": "paste the job URL here...",
+    "offer_text_placeholder": "or just paste the job description...",
     "offer_tab_url": "URL",
     "offer_tab_text": "Text",
-    "next": "Analyze",
-    "step_parsing": "Reading your profile & offer...",
-    "step_analyzing": "Matching your skills to the offer...",
-    "step_ready": "Done! Preparing your chat..."
+    "next": "analyze this",
+    "step_parsing": "reading your stuff...",
+    "step_analyzing": "figuring out what matters...",
+    "step_ready": "ok got it. let's talk."
   },
   "chat": {
-    "title": "Let's personalize your CV",
-    "subtitle": "I'll ask you a few questions to highlight your best experience for this role.",
-    "placeholder": "Type your answer...",
-    "voice_start": "Hold to speak",
-    "voice_stop": "Release to send",
-    "generating": "Generating your CV..."
+    "title": "let's make you look amazing",
+    "subtitle": "I'm gonna ask you some questions. Be specific — numbers, names, results. I'll do the rest.",
+    "placeholder": "type here...",
+    "voice_start": "hold to talk",
+    "voice_stop": "release to send",
+    "generating": "cooking your CV... 🍳"
   },
   "templates": {
-    "title": "Choose your design",
-    "subtitle": "Pick a template that matches the role you're applying for.",
+    "title": "pick your vibe",
+    "subtitle": "same content, different energy. choose wisely.",
     "clean": "Clean",
-    "clean_desc": "Elegant sidebar, perfect for tech and data roles",
-    "contrast": "Contrast",
-    "contrast_desc": "Bold header, great for leadership and consulting",
-    "minimal": "Minimal",
-    "minimal_desc": "Refined spacing, works across all industries",
-    "select": "Use this template"
+    "clean_desc": "sidebar game strong. tech & data vibes.",
+    "contrast": "Bold",
+    "contrast_desc": "dark header, big presence. leadership energy.",
+    "minimal": "Chill",
+    "minimal_desc": "elegant spacing. works everywhere. effortless.",
+    "select": "this one →"
   },
   "editor": {
-    "title": "Fine-tune your CV",
-    "subtitle": "Click any text to edit. Your changes update the preview in real time.",
-    "regenerate": "Regenerate",
-    "download": "Download PDF",
-    "section_summary": "Professional Summary",
+    "title": "fine-tune it",
+    "subtitle": "click anything to edit. changes show up in real time on the right.",
+    "regenerate": "redo this",
+    "download": "download PDF",
+    "section_summary": "About you",
     "section_experience": "Experience",
     "section_education": "Education",
     "section_skills": "Skills"
   },
   "common": {
-    "back": "Back",
-    "next": "Next",
-    "loading": "Loading..."
+    "back": "← back",
+    "next": "next →",
+    "loading": "hold on..."
   }
 }

@@ -21,12 +21,11 @@ export default function Landing() {
       </nav>
 
       <section className="hero">
-        <p className="hero-label">AI-Powered CV Generation</p>
         <h1>{t("landing.hero")}</h1>
         <p className="subtitle">{t("landing.subtitle")}</p>
-        <button className="btn-primary" onClick={() => setStep("upload")}>
+        <button className="btn-primary btn-lg" onClick={() => setStep("upload")}>
           {t("landing.cta")}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft: 8}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginLeft: 8}}>
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
@@ -45,7 +44,7 @@ export default function Landing() {
       </section>
 
       <footer className="landing-footer">
-        <p>Built with Gemini Flash. Open source on GitHub.</p>
+        <p>made with caffeine & Gemini Flash ⚡</p>
       </footer>
     </div>
   );
