@@ -104,3 +104,56 @@ class AnalyzeRequest(BaseModel):
     profile: Profile
     offer: Offer
     ui_language: str = "en"
+
+
+class ProjectSummary(BaseModel):
+    id: int
+    name: str
+    offer_title: str
+    match_score: int
+    template: str
+    tone: str
+    created_at: str
+    updated_at: str
+
+
+class ProjectDetail(BaseModel):
+    id: int
+    name: str
+    offer_title: str
+    offer_url: str
+    offer_data: Offer | None = None
+    profile_data: Profile | None = None
+    gap_analysis: GapAnalysis | None = None
+    cv_data: CVData | None = None
+    messages: list[ChatMessage] = []
+    match_score: int = 0
+    template: str = "clean"
+    tone: str = "startup"
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KnowledgeEntry(BaseModel):
+    id: int = 0
+    company: str
+    company_context: str = ""
+    title: str
+    dates: str = ""
+    description: str = ""
+    facts: dict = {}
+    best_bullets: list[str] = []
+
+
+class FactEntry(BaseModel):
+    id: int = 0
+    knowledge_id: int = 0
+    key: str
+    value: str
+    source_project_id: int = 0
+
+
+class KnowledgeBase(BaseModel):
+    experiences: list[KnowledgeEntry] = []
+    facts: list[FactEntry] = []
+    contradictions: list[str] = []
