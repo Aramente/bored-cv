@@ -273,7 +273,7 @@ Respond in valid JSON only:
         """Generate a quick draft CV from whatever info is available so far."""
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages[-6:])  # only recent messages for speed
 
-        prompt = f"""Generate a DRAFT CV based on what you know so far. This is a work-in-progress — the user is still answering questions. Use whatever info is available and make reasonable guesses for the rest. Mark uncertain sections with [TBD] if needed.
+        prompt = f"""Rewrite this CV to match the target job offer. Be OPERATIONAL and STRAIGHT TO THE POINT.
 
 CANDIDATE: {profile.name} — {profile.title}
 Location: {profile.location}
@@ -282,16 +282,21 @@ Experience:
 {self._format_experiences(profile)}
 
 TARGET: {offer.title} at {offer.company}
+Offer description: {offer.description[:2000]}
 
-CONVERSATION SO FAR:
-{conversation}
+{f"CONVERSATION: {conversation}" if conversation.strip() else ""}
 
-MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
+STRICT RULES — VIOLATING THESE IS A FAILURE:
+- NEVER write "Dynamic and entrepreneurial", "proven ability", "strong background", "eager to leverage", "passionate about", "proven track record", "results-driven"
+- Summary: 2 short operational sentences. First = who they are with numbers. Second = what they bring to THIS role. Example: "6 ans en People Ops, 3 startups (Germinal, Mindflow, Figures), scaling 5→80 personnes. Payroll multi-pays, onboarding from scratch, HRIS Deel."
+- NOT: "Dynamic People Operations leader with a strong background in talent acquisition and fostering exceptional employee experiences"
+- Every bullet = a concrete action with a number, not a job description
+- Contextualize companies: "(SaaS, seed→Series A, 12→45 employees)"
+- Include ALL experiences from the profile — calibrate depth by relevance
+- Skills: only concrete, verifiable skills with proof. No soft skills.
 
-Write a quick draft CV. Keep it concise. Use real info from the conversation where available. Include a match_score (0-100), 2-3 strengths, and 1-2 improvements based on how well the profile fits the target role.
-
-Respond in valid JSON only:
-{{"name": "{profile.name}", "title": "best title for the target role", "email": "{profile.email}", "location": "{profile.location}", "summary": "draft summary based on what we know", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["bullet based on conversation or profile"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["relevant skills"], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["Relevant experience area"], "improvements": ["Missing detail or skill"]}}"""
+Respond in valid JSON:
+{{"name": "{profile.name}", "title": "operational title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 short operational sentences", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["concrete action + number"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["concrete skill (proof)"], "languages": [], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["specific strength"], "improvements": ["specific gap"]}}"""
 
         response = self.model.generate_content(
             prompt,
