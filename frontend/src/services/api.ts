@@ -75,3 +75,20 @@ export async function getQuota(): Promise<{ authenticated: boolean; daily_limit:
 export async function extractColors(url: string): Promise<{ primary: string; secondary: string; colors: string[] }> {
   return post("/api/extract-colors", { url });
 }
+
+export async function listProjects(): Promise<any[]> {
+  const res = await fetch(`${API_URL}/api/projects`, { headers: getAuthHeaders() });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+export async function saveProject(data: Record<string, unknown>): Promise<{ id: number; status: string }> {
+  return post("/api/projects/save", data);
+}
+
+export async function loadProject(id: number): Promise<any> {
+  const res = await fetch(`${API_URL}/api/projects/${id}`, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error("Failed to load project");
+  return res.json();
+}

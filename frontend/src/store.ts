@@ -92,12 +92,15 @@ interface AppState {
   cvLang: "fr" | "en";
   selectedTemplate: TemplateId;
   tone: string;
+  projectId: number | null;
   user: { email: string; provider: string } | null;
   setStep: (step: Step) => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
   addMessage: (msg: ChatMessage) => void;
+  setMessages: (msgs: ChatMessage[]) => void;
+  setProjectId: (id: number | null) => void;
   setCvData: (cv: CVData) => void;
   setCvDataAlt: (cv: CVData) => void;
   setCvLang: (lang: "fr" | "en") => void;
@@ -119,6 +122,7 @@ const initialState = {
   cvLang: "fr" as "fr" | "en",
   selectedTemplate: "clean" as TemplateId,
   tone: "startup",
+  projectId: null,
   user: null,
 };
 
@@ -129,6 +133,8 @@ export const useStore = create<AppState>()(persist((set) => ({
   setOffer: (offer) => set({ offer }),
   setGapAnalysis: (gapAnalysis) => set({ gapAnalysis }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
+  setMessages: (messages) => set({ messages }),
+  setProjectId: (projectId) => set({ projectId }),
   setCvData: (cvData) => set({ cvData }),
   setCvDataAlt: (cvDataAlt) => set({ cvDataAlt }),
   setCvLang: (cvLang) => set({ cvLang }),

@@ -65,9 +65,23 @@ export default function Projects() {
         ) : (
           <div className="projects-grid">
             {projects.map((p) => (
-              <div key={p.id} className="project-card" onClick={() => {
-                // TODO: load project and navigate to editor
-                setStep("upload");
+              <div key={p.id} className="project-card" onClick={async () => {
+                try {
+                  const { loadProject } = await import("../services/api");
+                  const project = await loadProject(p.id);
+                  const store = useStore.getState();
+                  store.setProjectId(p.id);
+                  if (project.profile_data) store.setProfile(project.profile_data);
+                  if (project.offer_data) store.setOffer(project.offer_data);
+                  if (project.gap_analysis) store.setGapAnalysis(project.gap_analysis);
+                  if (project.cv_data) store.setCvData(project.cv_data);
+                  store.setMessages(project.messages || []);
+                  if (project.template) store.setSelectedTemplate(project.template);
+                  if (project.tone) store.setTone(project.tone);
+                  store.setStep("chat");
+                } catch {
+                  setStep("upload");
+                }
               }}>
                 <div className="project-card-header">
                   <h3>{p.name}</h3>

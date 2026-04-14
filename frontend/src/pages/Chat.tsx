@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
-import { chatNext, generateCV, draftCV, translateCV } from "../services/api";
+import { chatNext, generateCV, draftCV, translateCV, saveProject } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
@@ -123,6 +123,15 @@ export default function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const handleCvEdit = (field: string, oldVal: string, newVal: string) => {
+    if (oldVal === newVal || !newVal.trim()) return;
+    const fieldName = field.replace(/experiences\.(\d+)\./, (_, i) => `experience ${parseInt(i) + 1} → `).replace(/bullets\.(\d+)/, (_, i) => `bullet ${parseInt(i) + 1}`);
+    addMessage({
+      role: "user",
+      content: `✏️ I edited ${fieldName}: "${newVal}"`,
+    });
+  };
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -164,6 +173,25 @@ export default function Chat() {
         translateCV(cv, altLang)
           .then((alt) => setCvDataAlt(alt))
           .catch(() => {}); // non-blocking
+        // Auto-save project
+        const token = localStorage.getItem("bored-cv-token");
+        if (token && offer) {
+          saveProject({
+            id: useStore.getState().projectId || undefined,
+            name: offer.company || offer.title || "Untitled",
+            offer_title: offer.title,
+            profile_data: profile,
+            offer_data: offer,
+            gap_analysis: gapAnalysis,
+            cv_data: cv,
+            messages: allMessages,
+            match_score: cv.match_score || 0,
+            template: tone,
+            tone: tone,
+          }).then((res) => {
+            if (res.id) useStore.getState().setProjectId(res.id);
+          }).catch(() => {});
+        }
         setStep("templates");
       }
     } catch {
@@ -251,7 +279,7 @@ export default function Chat() {
 
         {/* Right: live CV preview */}
         <div className="cv-side">
-          <CVPreviewPanel />
+          <CVPreviewPanel onEdit={handleCvEdit} />
         </div>
       </div>
     </div>
