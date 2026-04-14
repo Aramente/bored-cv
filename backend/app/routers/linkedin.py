@@ -48,7 +48,7 @@ async def debug_parse_pdf(file: UploadFile = File(...)):
 
     import google.generativeai as genai
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash-lite")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export.
 
@@ -66,7 +66,12 @@ Return valid JSON with: name, title, email, phone, linkedin, location, summary, 
                 response_mime_type="application/json",
             ),
         )
-        data = json.loads(r.text)
+        import re as re_mod
+        raw_resp = r.text.strip()
+        start = raw_resp.find("{")
+        end = raw_resp.rfind("}") + 1
+        json_str = re_mod.sub(r",\s*([}\]])", r"\1", raw_resp[start:end])
+        data = json.loads(json_str)
         return {
             "ok": True,
             "name": data.get("name"),

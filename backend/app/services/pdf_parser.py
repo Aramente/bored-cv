@@ -31,7 +31,7 @@ def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
         return _fallback_parse(raw_text)
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash-lite")  # No thinking — reliable JSON, faster
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export. The text is messy because LinkedIn PDFs use a two-column layout — sections are interleaved. Use your judgment to reconstruct the correct structure.
 
@@ -82,10 +82,20 @@ IMPORTANT:
             generation_config=genai.types.GenerationConfig(
                 max_output_tokens=4000,
                 temperature=0.1,
-                response_mime_type="application/json",  # Forces valid JSON output
             ),
         )
-        data = json.loads(response.text)
+        # Extract JSON from response — may have markdown blocks or thinking preamble
+        raw_resp = response.text.strip()
+        # Find the JSON object in the response
+        start = raw_resp.find("{")
+        end = raw_resp.rfind("}") + 1
+        if start == -1 or end == 0:
+            raise ValueError("No JSON found in response")
+        json_str = raw_resp[start:end]
+        # Fix common issues
+        import re
+        json_str = re.sub(r",\s*([}\]])", r"\1", json_str)  # trailing commas
+        data = json.loads(json_str)
 
         def s(val: str | None) -> str:
             """Safe string — convert None/null to empty string."""
