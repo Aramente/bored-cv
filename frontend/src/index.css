@@ -636,6 +636,21 @@ textarea.input { resize: vertical; min-height: 120px; }
   cursor: pointer;
   text-decoration: underline;
 }
+.auth-reset {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: none;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.auth-reset:hover {
+  background: var(--accent);
+  color: white;
+}
 
 /* Match Score */
 .match-score-card {
