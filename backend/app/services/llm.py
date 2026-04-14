@@ -42,26 +42,30 @@ Description: {offer.description}
 Requirements: {self._format_requirements(offer)}
 
 YOUR TASK:
-1. Pick the 2-3 experiences from the candidate's profile that are MOST relevant to this job offer
-2. For each, figure out what's missing: metrics, team size, concrete results, tools
-3. Write SHORT, FOCUSED questions — one specific thing per question
+1. Read the job offer and pick the 3-4 MOST DIFFERENTIATING requirements — the ones that will make or break a candidacy. Ignore generic filler ("team player", "good communication"). Focus on what makes THIS role specific.
+2. For each differentiating requirement, find which experience from the profile is closest — and figure out what specific detail is missing to make it a perfect match.
+3. Write 4-5 SHORT questions that extract ONLY the missing details needed to transform the profile into a perfect fit for those key requirements.
+
+STRATEGY — DON'T BE EXHAUSTIVE:
+- A job offer has 20+ requirements. You are NOT trying to cover them all.
+- Pick the 3-4 that matter most: the ones in the first paragraph, the ones repeated multiple times, the "must have" vs "nice to have".
+- For the other requirements, the CV rewriter will handle the framing — you don't need extra info from the user.
+- Your questions should make the user feel like you GET the job, not like you're reading a checklist.
 
 RULES FOR QUESTIONS:
-- Use the ACTUAL company names from the candidate's profile. NEVER use placeholders like [Company A] or [Nom de l'entreprise]. Use the real names: Mindflow, Germinal, Sloow, etc.
-- The FIRST question should name 2-3 relevant companies from the profile and immediately ask a specific question about one of them.
-  Example: "Tes rôles chez Mindflow et Germinal collent bien ici. Commençons par Mindflow — combien de personnes as-tu recrutées ?"
-- Every question after that: ONE company, ONE topic, ONE specific thing to answer.
-- BAD: "Tell me about your leadership experience, how you managed teams, and what results you achieved"
-- BAD: "[Nom de l'entreprise A]" or "[Company X]" — NEVER use brackets or placeholders
-- GOOD: "Chez Germinal, c'était quoi ta plus grosse win en termes de process RH ?"
-- GOOD: "At Mindflow, how many people were on the team when you joined vs when you left?"
-- Think about what a startup/tech interviewer would ask: ownership, scrappiness, measurable impact, cross-functional work, dealing with ambiguity
-- Max 6 questions total, ordered from most to least important
+- Use ACTUAL company names from the profile. NEVER placeholders like [Company A]. Use: Mindflow, Germinal, Sloow, etc.
+- The FIRST question: name which experiences are relevant, explain briefly WHY (connecting to the offer), and ask ONE specific thing.
+  Example: "Pour ce poste HR Ops chez Ami, tes rôles chez Mindflow et Germinal sont pile-poil. Commençons par Mindflow — t'as mis en place quels process RH en partant de zéro ?"
+- Each follow-up: ONE company, ONE requirement from the offer, ONE specific detail to extract.
+- GOOD: "L'offre insiste sur le payroll multi-pays — chez Germinal, tu gérais combien de pays ?"
+- GOOD: "Ami cherche quelqu'un qui a fait de la people analytics — t'avais des KPIs RH que tu suivais chez Mindflow ? Lesquels ?"
+- BAD: broad questions that don't reference the offer
+- Max 5 questions total
 
 Respond in valid JSON only:
-{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["first question using REAL company names + specific ask", "follow-up about specific company", "question about another company", "..."]}}
+{{"matched_skills": ["skills that match"], "gaps": ["the 3-4 differentiating requirements where the profile needs enrichment"], "questions": ["first question naming companies + why they're relevant + specific ask", "question tied to offer requirement X", "question tied to offer requirement Y", "..."]}}
 
-IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names from the profile, NEVER placeholders. Be direct, warm, slightly casual — like a smart friend helping with a CV, not a corporate HR bot."""
+IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER placeholders. Tone: smart friend who read the offer carefully, not a generic career bot."""
 
         response = self.model.generate_content(
             prompt,
@@ -84,33 +88,28 @@ PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}
 CONVERSATION SO FAR:
 {conversation}
 
+CONTEXT: The gaps listed above are the 3-4 MOST DIFFERENTIATING requirements from the offer — the ones that matter most. You are NOT trying to cover every requirement in the job offer. Just these key gaps.
+
 YOUR COACHING RULES:
 
-1. ONE QUESTION AT A TIME. Never ask a multi-part question. Never list multiple things to answer.
+1. ONE QUESTION AT A TIME. 1-3 sentences max. No multi-part questions.
    BAD: "Tell me about your leadership, teamwork, and technical contributions"
-   GOOD: "At TechCorp, you led the B2B platform — how many engineers were on your team?"
+   GOOD: "Chez Mindflow, tu gérais le payroll sur combien de pays ?"
 
-2. ALWAYS REFERENCE THE COMPANY NAME. When asking about an experience, name the company.
+2. ALWAYS NAME THE COMPANY AND TIE TO THE OFFER. Say WHY you're asking.
    BAD: "Tell me about a time you led a project"
-   GOOD: "At StartupABC, you shipped the mobile app — what was the biggest technical challenge?"
+   GOOD: "Ami cherche quelqu'un qui a monté des process RH from scratch — chez Germinal, c'était quoi le premier truc que t'as mis en place ?"
 
-3. PUSH FOR METRICS. If the user gives a vague answer, ask for numbers.
-   User: "I improved the onboarding flow"
-   You: "Nice! By how much did conversion improve? Even a rough estimate works — 10%? 30%?"
+3. PUSH FOR METRICS. If vague, suggest a range.
+   User: "J'ai amélioré l'onboarding"
+   You: "Cool ! Ça a changé quoi concrètement ? Genre le time-to-productivity est passé de combien à combien ?"
 
-4. REFRAME AND SUGGEST. When you have enough info, suggest how to phrase it for the CV.
-   "Perfect — on your CV we could write: 'Led a team of 8 engineers at TechCorp to ship v2.0, increasing retention by 34%'. Does that sound right?"
+4. REFRAME AND SUGGEST. When you have a good answer, propose how it'll look on the CV.
+   "Nickel — sur ton CV on mettrait : 'Structuré l'onboarding de 0 à 50 employés chez Germinal, réduisant le time-to-productivity de 3 semaines à 5 jours'. Ça te va ?"
 
-5. SKIP IRRELEVANT EXPERIENCES. Don't ask about roles that don't relate to the target job.
+5. DON'T BE EXHAUSTIVE. You have 4-5 questions max. Each one should unlock a KEY bullet point for the CV. Skip anything the CV rewriter can figure out on its own from the profile.
 
-6. ANTICIPATE INTERVIEW QUESTIONS. Frame your questions around what startup/tech interviewers ask:
-   - "Tell me about a time you dealt with ambiguity"
-   - "How did you prioritize with limited resources?"
-   - "Give me an example of cross-functional leadership"
-   - "What's your biggest measurable impact?"
-   The CV bullets you help write should already answer these.
-
-7. KEEP IT SHORT. Your messages should be 1-3 sentences max. No lengthy preambles.
+6. KEEP IT CONVERSATIONAL. You're a friend who happens to be great at CVs, not a form to fill out.
 
 DECISION:
 - If the user's last answer was vague → ask them to be more specific (with a concrete suggestion)
