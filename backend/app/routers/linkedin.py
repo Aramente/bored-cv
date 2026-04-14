@@ -1,7 +1,11 @@
+import json
+import os
+import traceback
+
 from fastapi import APIRouter, File, UploadFile, HTTPException
 
 from app.models import Profile
-from app.services.pdf_parser import parse_linkedin_pdf
+from app.services.pdf_parser import parse_linkedin_pdf, extract_pdf_text
 
 router = APIRouter(prefix="/api", tags=["linkedin"])
 
@@ -30,3 +34,46 @@ async def parse_linkedin(file: UploadFile = File(...)):
         logging.warning(f"PDF parser returned 0 experiences for {len(contents)} byte file — likely fell back to basic parser")
 
     return profile
+
+
+@router.post("/debug-parse-pdf")
+async def debug_parse_pdf(file: UploadFile = File(...)):
+    """Debug: show exactly what happens when parsing a PDF."""
+    contents = await file.read()
+    raw_text = extract_pdf_text(contents)
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        return {"error": "no GEMINI_API_KEY", "text_length": len(raw_text)}
+
+    import google.generativeai as genai
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash")
+
+    prompt = f"""Extract structured profile data from this LinkedIn PDF export.
+
+RAW TEXT:
+{raw_text[:8000]}
+
+Return valid JSON with: name, title, email, phone, linkedin, location, summary, experiences (array), education (array), skills (array), languages (array). Use empty string for missing fields."""
+
+    try:
+        r = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=4000,
+                temperature=0.1,
+                response_mime_type="application/json",
+            ),
+        )
+        data = json.loads(r.text)
+        return {
+            "ok": True,
+            "name": data.get("name"),
+            "title": data.get("title"),
+            "experiences_count": len(data.get("experiences", [])),
+            "education_count": len(data.get("education", [])),
+            "languages": data.get("languages", []),
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e), "traceback": traceback.format_exc()[:1000], "text_length": len(raw_text)}
