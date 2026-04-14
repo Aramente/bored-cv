@@ -63,22 +63,21 @@ Return valid JSON with: name, title, email, phone, linkedin, location, summary, 
             generation_config=genai.types.GenerationConfig(
                 max_output_tokens=4000,
                 temperature=0.1,
-                response_mime_type="application/json",
             ),
         )
-        import re as re_mod
-        raw_resp = r.text.strip()
-        start = raw_resp.find("{")
-        end = raw_resp.rfind("}") + 1
-        json_str = re_mod.sub(r",\s*([}\]])", r"\1", raw_resp[start:end])
-        data = json.loads(json_str)
+        # Dump response structure for debugging
+        parts_info = []
+        if r.candidates and r.candidates[0].content.parts:
+            for p in r.candidates[0].content.parts:
+                parts_info.append({"text_len": len(p.text) if hasattr(p, 'text') and p.text else 0, "has_thought": hasattr(p, 'thought') and p.thought is not None})
+
+        raw_resp = r.text.strip() if r.text else ""
         return {
             "ok": True,
-            "name": data.get("name"),
-            "title": data.get("title"),
-            "experiences_count": len(data.get("experiences", [])),
-            "education_count": len(data.get("education", [])),
-            "languages": data.get("languages", []),
+            "text_len": len(raw_resp),
+            "text_preview": raw_resp[:300],
+            "parts_count": len(parts_info),
+            "parts": parts_info,
         }
     except Exception as e:
         return {"ok": False, "error": str(e), "traceback": traceback.format_exc()[:1000], "text_length": len(raw_text)}
