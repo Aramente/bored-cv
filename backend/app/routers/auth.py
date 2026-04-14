@@ -1,13 +1,18 @@
 import os
+from urllib.parse import urlencode
 
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Header, Request
 from fastapi.responses import RedirectResponse
+from itsdangerous import URLSafeTimedSerializer
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 BASE_URL = os.environ.get("BASE_URL", "https://aramente-bored-cv-api.hf.space")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://aramente.github.io/bored-cv/")
+SECRET = os.environ.get("SESSION_SECRET", "dev-secret-change-me")
+
+signer = URLSafeTimedSerializer(SECRET)
 
 oauth = OAuth()
 
@@ -30,6 +35,26 @@ oauth.register(
 )
 
 
+def _make_token(email: str, provider: str) -> str:
+    return signer.dumps({"email": email, "provider": provider})
+
+
+def verify_token(token: str) -> dict | None:
+    try:
+        data = signer.loads(token, max_age=86400 * 30)  # 30 days
+        return data
+    except Exception:
+        return None
+
+
+def get_user_from_request(request: Request = None, authorization: str = "") -> dict | None:
+    """Extract user from Bearer token header."""
+    token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+    if not token:
+        return None
+    return verify_token(token)
+
+
 @router.get("/google/login")
 async def google_login(request: Request):
     redirect_uri = f"{BASE_URL}/api/auth/google/callback"
@@ -40,8 +65,10 @@ async def google_login(request: Request):
 async def google_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user_info = token.get("userinfo", {})
-    request.session["user"] = {"email": user_info.get("email", ""), "provider": "google"}
-    return RedirectResponse(url=FRONTEND_URL)
+    email = user_info.get("email", "")
+    auth_token = _make_token(email, "google")
+    redirect = f"{FRONTEND_URL}?token={auth_token}&email={email}&provider=google"
+    return RedirectResponse(url=redirect)
 
 
 @router.get("/github/login")
@@ -55,30 +82,31 @@ async def github_callback(request: Request):
     token = await oauth.github.authorize_access_token(request)
     resp = await oauth.github.get("user", token=token)
     user_data = resp.json()
-    request.session["user"] = {"email": user_data.get("login", ""), "provider": "github"}
-    return RedirectResponse(url=FRONTEND_URL)
+    email = user_data.get("login", "")
+    auth_token = _make_token(email, "github")
+    redirect = f"{FRONTEND_URL}?token={auth_token}&email={email}&provider=github"
+    return RedirectResponse(url=redirect)
 
 
 @router.get("/me")
-async def get_user(request: Request):
-    user = request.session.get("user")
+async def get_user(authorization: str = Header("")):
+    user = get_user_from_request(authorization=authorization)
     if not user:
         return {"authenticated": False}
     return {"authenticated": True, **user}
 
 
 @router.post("/logout")
-async def logout(request: Request):
-    request.session.clear()
+async def logout():
     return {"status": "ok"}
 
 
 @router.get("/quota")
-async def get_quota(request: Request):
-    user = request.session.get("user")
+async def get_quota(authorization: str = Header("")):
+    user = get_user_from_request(authorization=authorization)
     is_auth = user is not None
     return {
         "authenticated": is_auth,
-        "daily_limit": 5 if is_auth else 1,
+        "daily_limit": 20 if is_auth else 10,
         "provider": user.get("provider") if user else None,
     }

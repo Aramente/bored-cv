@@ -2,14 +2,18 @@ import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData } f
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem("bored-cv-token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function post<T>(path: string, body: unknown, captchaToken?: string): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...getAuthHeaders() };
   if (captchaToken) headers["x-captcha-token"] = captchaToken;
 
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers,
-    credentials: "include",
     body: JSON.stringify(body),
   });
 
@@ -27,8 +31,7 @@ export async function parseLinkedIn(file: File, captchaToken: string): Promise<P
 
   const res = await fetch(`${API_URL}/api/parse-linkedin`, {
     method: "POST",
-    headers: { "x-captcha-token": captchaToken },
-    credentials: "include",
+    headers: { "x-captcha-token": captchaToken, ...getAuthHeaders() },
     body: form,
   });
 
@@ -65,7 +68,7 @@ export async function translateCV(cvData: CVData, targetLanguage: string): Promi
 }
 
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
-  const res = await fetch(`${API_URL}/api/auth/quota`, { credentials: "include" });
+  const res = await fetch(`${API_URL}/api/auth/quota`, { headers: getAuthHeaders() });
   return res.json();
 }
 

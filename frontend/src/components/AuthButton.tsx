@@ -4,17 +4,39 @@ import { useStore } from "../store";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
 export default function AuthButton() {
-  const { user, setUser, reset, step } = useStore();
+  const { user, setUser, reset, step, setStep } = useStore();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/auth/me`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.authenticated) {
-          setUser({ email: data.email, provider: data.provider });
-        }
+    // Check URL for token from OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const email = params.get("email");
+    const provider = params.get("provider");
+
+    if (token && email && provider) {
+      localStorage.setItem("bored-cv-token", token);
+      setUser({ email, provider });
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+
+    // Check localStorage for existing token
+    const saved = localStorage.getItem("bored-cv-token");
+    if (saved && !user) {
+      fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${saved}` },
       })
-      .catch(() => {});
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.authenticated) {
+            setUser({ email: data.email, provider: data.provider });
+          } else {
+            localStorage.removeItem("bored-cv-token");
+          }
+        })
+        .catch(() => {});
+    }
   }, [setUser]);
 
   const showReset = step !== "landing";
@@ -23,16 +45,22 @@ export default function AuthButton() {
     return (
       <div className="auth-user">
         {showReset && (
-          <button className="auth-reset" onClick={() => reset()}>
-            new CV
-          </button>
+          <>
+            <button className="auth-reset" onClick={() => setStep("projects")}>
+              my projects
+            </button>
+            <button className="auth-reset" onClick={() => reset()}>
+              new CV
+            </button>
+          </>
         )}
         <span className="auth-email">{user.email}</span>
         <button
           className="auth-logout"
           onClick={() => {
-            fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" })
-              .then(() => { setUser(null); reset(); });
+            localStorage.removeItem("bored-cv-token");
+            setUser(null);
+            reset();
           }}
         >
           logout
