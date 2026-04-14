@@ -80,7 +80,7 @@ IMPORTANT:
         response = model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=4000,
+                max_output_tokens=16000,  # Gemini 2.5 Flash shares budget between thinking + output
                 temperature=0.1,
             ),
         )

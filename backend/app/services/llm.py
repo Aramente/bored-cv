@@ -8,7 +8,7 @@ from app.models import (
     Offer, Profile, RewrittenExperience,
 )
 
-MAX_TOKENS_PER_CALL = 5000
+MAX_TOKENS_PER_CALL = 16000  # Gemini 2.5 Flash shares budget between thinking + output
 
 
 class LLMService:
