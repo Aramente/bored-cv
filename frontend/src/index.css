@@ -20,6 +20,13 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
+::selection {
+  background: rgba(245, 197, 66, 0.3);
+  color: var(--text);
+}
+
 body {
   font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
@@ -32,9 +39,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 32px;
+  padding: 16px 32px;
   max-width: 1200px;
   margin: 0 auto;
+  border-bottom: 1px solid var(--border);
 }
 .logo {
   font-size: 18px;
@@ -94,25 +102,25 @@ body {
   background: var(--gold);
   color: var(--text);
   border: none;
-  padding: 14px 28px;
+  padding: 12px 24px;
   border-radius: var(--radius);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 2px 0 #c9a033;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 1px 0 rgba(245,197,66,0.3) inset;
 }
 .btn-primary:hover {
   background: var(--gold-hover);
+  box-shadow: 0 2px 8px rgba(245,197,66,0.3), 0 1px 0 rgba(245,197,66,0.3) inset;
   transform: translateY(-1px);
-  box-shadow: 0 3px 0 #c9a033;
 }
 .btn-primary:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #c9a033;
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
@@ -162,14 +170,15 @@ body {
 }
 .step-card {
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px 20px;
   text-align: center;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .step-card:hover {
-  border-color: var(--gold);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transform: translateY(-2px);
 }
 .step-num {
@@ -201,6 +210,7 @@ body {
 .landing-footer p {
   font-size: 13px;
   color: var(--text-dim);
+  letter-spacing: 0.02em;
 }
 
 /* Page layout */
@@ -225,37 +235,41 @@ body {
 /* Cards */
 .card {
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .card:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
 .card.selected {
-  border-color: var(--gold);
-  background: #fef9c3;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15);
 }
 
 /* Forms */
 .input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 14px;
   color: var(--text);
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.2s ease;
   font-family: inherit;
 }
-.input:focus { border-color: var(--accent); }
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
 .input::placeholder { color: var(--text-dim); }
-textarea.input { resize: vertical; min-height: 120px; }
+textarea.input { resize: vertical; min-height: 100px; }
 
 .label {
   font-size: 13px;
@@ -268,12 +282,15 @@ textarea.input { resize: vertical; min-height: 120px; }
 /* Error */
 .error {
   background: #fef2f2;
-  color: var(--red);
+  color: #dc2626;
   padding: 12px 16px;
   border-radius: var(--radius);
   border: 1px solid #fecaca;
-  font-size: 14px;
+  font-size: 13px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Spinner */
@@ -309,11 +326,12 @@ textarea.input { resize: vertical; min-height: 120px; }
   flex: 1;
   border-left: 1px solid var(--border);
   overflow-y: auto;
-  background: var(--surface);
+  background: #fafbfc;
   max-width: 50%;
   position: sticky;
   top: 0;
   height: calc(100vh - 60px);
+  box-shadow: inset 2px 0 8px rgba(0,0,0,0.03);
 }
 .chat-header { padding: 16px 0; flex-shrink: 0; }
 
@@ -631,9 +649,9 @@ textarea.input { resize: vertical; min-height: 120px; }
 .chat-msg { display: flex; margin-bottom: 12px; }
 .chat-msg.user { justify-content: flex-end; }
 .chat-bubble {
-  max-width: 75%;
+  max-width: 80%;
   padding: 12px 16px;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -641,10 +659,12 @@ textarea.input { resize: vertical; min-height: 120px; }
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
+  border-bottom-left-radius: 4px;
 }
 .chat-msg.user .chat-bubble {
   background: var(--gold);
   color: var(--text);
+  border-bottom-right-radius: 4px;
 }
 .chat-input-bar {
   display: flex;
@@ -745,10 +765,11 @@ textarea.input { resize: vertical; min-height: 120px; }
   color: var(--text);
   border: 1px solid var(--border);
   background: var(--surface);
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 .auth-btn:hover {
-  background: var(--surface-hover);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
   border-color: var(--border-light);
 }
 .auth-user {
@@ -787,10 +808,11 @@ textarea.input { resize: vertical; min-height: 120px; }
 /* Match Score */
 .match-score-card {
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
   margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .match-score-header {
   display: flex;
@@ -877,15 +899,16 @@ textarea.input { resize: vertical; min-height: 120px; }
 }
 .project-card {
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .project-card:hover {
-  border-color: var(--gold);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
 .project-card-header {
   display: flex;
@@ -1132,13 +1155,14 @@ textarea.input { resize: vertical; min-height: 120px; }
 }
 .ba-before {
   background: var(--surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   opacity: 0.7;
 }
 .ba-after {
   background: var(--surface);
-  border: 2px solid var(--gold);
-  box-shadow: 0 2px 12px rgba(245, 197, 66, 0.15);
+  border: 1px solid var(--gold);
+  box-shadow: 0 4px 16px rgba(245, 197, 66, 0.2);
 }
 .ba-label {
   font-size: 10px;
