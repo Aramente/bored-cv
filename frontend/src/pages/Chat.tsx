@@ -87,7 +87,7 @@ export default function Chat() {
   const {
     profile, offer, gapAnalysis,
     messages, addMessage,
-    cvData, setCvData, setStep,
+    setCvData, setStep,
     tone,
   } = useStore();
 

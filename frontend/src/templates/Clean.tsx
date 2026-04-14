@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
+import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
   page: { flexDirection: "row", fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
@@ -13,10 +14,12 @@ const styles = StyleSheet.create({
   main: { width: "70%", padding: 24 },
   section: { marginBottom: 16 },
   sectionTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.5, color: "#0f172a", borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 4, marginBottom: 10 },
-  summary: { fontSize: 10, color: "#475569", lineHeight: 1.5 },
-  expBlock: { marginBottom: 10, borderLeftWidth: 2, borderLeftColor: "#6366f1", paddingLeft: 8 },
+  highlights: { borderLeftWidth: 3, borderLeftColor: "#6366f1", backgroundColor: "#f5f3ff", padding: "8 10", marginBottom: 16, borderRadius: 2 },
+  highlightsLabel: { fontSize: 8, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.8, color: "#6366f1", marginBottom: 4 },
+  highlightsText: { fontSize: 10, color: "#1e293b", lineHeight: 1.55 },
+  expBlock: { marginBottom: 12, borderLeftWidth: 2, borderLeftColor: "#6366f1", paddingLeft: 8 },
   expTitle: { fontSize: 11, fontFamily: "Helvetica-Bold" },
-  expCompany: { fontSize: 9, color: "#6366f1", marginBottom: 2 },
+  expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#6366f1", marginBottom: 2 },
   expDates: { fontSize: 8, color: "#94a3b8", marginBottom: 4 },
   bullet: { fontSize: 9, color: "#475569", marginBottom: 2, paddingLeft: 8 },
   contactItem: { fontSize: 8, color: "#cbd5e1", marginBottom: 3 },
@@ -53,10 +56,12 @@ export default function Clean({ data }: TemplateProps) {
           </View>
         </View>
         <View style={styles.main}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.language === "fr" ? "Résumé" : "Summary"}</Text>
-            <Text style={styles.summary}>{data.summary}</Text>
-          </View>
+          {data.summary && (
+            <View style={styles.highlights}>
+              <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+              <Text style={styles.highlightsText}>{data.summary}</Text>
+            </View>
+          )}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
@@ -64,7 +69,9 @@ export default function Clean({ data }: TemplateProps) {
                 <Text style={styles.expTitle}>{exp.title}</Text>
                 <Text style={styles.expCompany}>{exp.company}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>
-                {exp.bullets.map((b, j) => <Text key={j} style={styles.bullet}>• {b}</Text>)}
+                {exp.bullets.map((b, j) => (
+                  <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
+                ))}
               </View>
             ))}
           </View>

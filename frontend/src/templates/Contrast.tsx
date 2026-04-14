@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
+import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
@@ -9,13 +10,17 @@ const styles = StyleSheet.create({
   headerContact: { fontSize: 9, color: "#94a3b8" },
   skillsBar: { flexDirection: "row", flexWrap: "wrap", gap: 4, padding: "10 24", backgroundColor: "#f8fafc", borderBottomWidth: 1, borderBottomColor: "#e2e8f0" },
   skillPill: { backgroundColor: "#eef2ff", color: "#6366f1", padding: "3 8", borderRadius: 10, fontSize: 8, fontFamily: "Helvetica-Bold" },
-  body: { padding: 24 },
+  highlights: { borderLeftWidth: 4, borderLeftColor: "#6366f1", backgroundColor: "#f5f3ff", padding: "8 12", margin: "12 24 0 24" },
+  highlightsLabel: { fontSize: 8, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.8, color: "#6366f1", marginBottom: 4 },
+  highlightsText: { fontSize: 10, color: "#1e293b", lineHeight: 1.55 },
+  body: { padding: "12 24 24 24" },
   section: { marginBottom: 16 },
   sectionTitle: { fontSize: 12, fontFamily: "Helvetica-Bold", color: "#0f172a", paddingBottom: 6, marginBottom: 8, borderBottomWidth: 2, borderBottomColor: "#6366f1" },
-  summary: { fontSize: 10, color: "#475569", lineHeight: 1.5 },
-  expBlock: { marginBottom: 10 },
+  expBlock: { marginBottom: 12 },
   expTitle: { fontSize: 11, fontFamily: "Helvetica-Bold" },
-  expMeta: { fontSize: 9, color: "#6366f1", marginBottom: 3 },
+  expMeta: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
+  expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#6366f1" },
+  expDates: { fontSize: 9, color: "#94a3b8" },
   bullet: { fontSize: 9, color: "#475569", marginBottom: 2, paddingLeft: 8 },
   eduItem: { fontSize: 9, marginBottom: 4 },
   eduSchool: { fontSize: 8, color: "#94a3b8" },
@@ -33,18 +38,25 @@ export default function Contrast({ data }: TemplateProps) {
         <View style={styles.skillsBar}>
           {data.skills.map((s, i) => <Text key={i} style={styles.skillPill}>{s}</Text>)}
         </View>
-        <View style={styles.body}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.language === "fr" ? "Résumé professionnel" : "Professional Summary"}</Text>
-            <Text style={styles.summary}>{data.summary}</Text>
+        {data.summary && (
+          <View style={styles.highlights}>
+            <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+            <Text style={styles.highlightsText}>{data.summary}</Text>
           </View>
+        )}
+        <View style={styles.body}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
               <View key={i} style={styles.expBlock}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
-                <Text style={styles.expMeta}>{exp.company}  ·  {exp.dates}</Text>
-                {exp.bullets.map((b, j) => <Text key={j} style={styles.bullet}>• {b}</Text>)}
+                <View style={styles.expMeta}>
+                  <Text style={styles.expCompany}>{exp.company}</Text>
+                  <Text style={styles.expDates}>{exp.dates}</Text>
+                </View>
+                {exp.bullets.map((b, j) => (
+                  <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
+                ))}
               </View>
             ))}
           </View>

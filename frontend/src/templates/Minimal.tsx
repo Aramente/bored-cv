@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
+import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b", padding: 32 },
@@ -9,12 +10,14 @@ const styles = StyleSheet.create({
   divider: { borderBottomWidth: 0.5, borderBottomColor: "#e2e8f0", marginBottom: 12 },
   section: { marginBottom: 14 },
   sectionTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#94a3b8", marginBottom: 8 },
-  summary: { fontSize: 10, color: "#475569", lineHeight: 1.6 },
-  expBlock: { marginBottom: 10 },
+  highlights: { marginBottom: 14 },
+  highlightsLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#94a3b8", marginBottom: 6 },
+  highlightBullet: { fontSize: 10, color: "#1e293b", lineHeight: 1.55, marginBottom: 3, paddingLeft: 10 },
+  expBlock: { marginBottom: 12 },
   expRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
   expTitle: { fontSize: 10, fontFamily: "Helvetica-Bold" },
   expDates: { fontSize: 9, color: "#94a3b8" },
-  expCompany: { fontSize: 9, color: "#6366f1", marginBottom: 3 },
+  expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#6366f1", marginBottom: 3 },
   bullet: { fontSize: 9, color: "#475569", marginBottom: 2, paddingLeft: 8 },
   skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   skill: { fontSize: 9, color: "#475569" },
@@ -22,6 +25,11 @@ const styles = StyleSheet.create({
 });
 
 export default function Minimal({ data }: TemplateProps) {
+  // Split summary into bullet points if it contains line breaks or sentence separators
+  const highlightLines = data.summary
+    ? data.summary.split(/\n|(?<=\.)\s+(?=[A-ZÁÀÂÄÉÈÊËÎÏÔÙÛÜÇ])/).filter(Boolean)
+    : [];
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -29,11 +37,20 @@ export default function Minimal({ data }: TemplateProps) {
         <Text style={styles.title}>{data.title}</Text>
         <Text style={styles.contact}>{[data.location, data.email].filter(Boolean).join("  ·  ")}</Text>
         <View style={styles.divider} />
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{data.language === "fr" ? "Résumé" : "Summary"}</Text>
-          <Text style={styles.summary}>{data.summary}</Text>
-        </View>
-        <View style={styles.divider} />
+        {data.summary && (
+          <>
+            <View style={styles.highlights}>
+              <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+              {highlightLines.length > 1
+                ? highlightLines.map((line, i) => (
+                    <Text key={i} style={styles.highlightBullet}>· {line.trim()}</Text>
+                  ))
+                : <Text style={styles.highlightBullet}>{data.summary}</Text>
+              }
+            </View>
+            <View style={styles.divider} />
+          </>
+        )}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
           {data.experiences.map((exp, i) => (
@@ -43,7 +60,9 @@ export default function Minimal({ data }: TemplateProps) {
                 <Text style={styles.expDates}>{exp.dates}</Text>
               </View>
               <Text style={styles.expCompany}>{exp.company}</Text>
-              {exp.bullets.map((b, j) => <Text key={j} style={styles.bullet}>• {b}</Text>)}
+              {exp.bullets.map((b, j) => (
+                <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
+              ))}
             </View>
           ))}
         </View>
