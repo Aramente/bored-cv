@@ -294,10 +294,33 @@ export default function Chat() {
       }
 
       if (!response.is_complete) {
-        // Background draft — update CV preview progressively
+        // Background draft — MERGE with existing cvData, don't replace
         draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang)
-          .then((cv) => setCvData(cv))
-          .catch(() => {}); // silent fail — draft is best-effort
+          .then((draft) => {
+            const current = useStore.getState().cvData;
+            if (!current) { setCvData(draft); return; }
+            // Only update experiences/summary/skills from draft — preserve education, languages, personal info
+            setCvData({
+              ...current,
+              summary: draft.summary || current.summary,
+              experiences: draft.experiences.length > 0 ? draft.experiences : current.experiences,
+              skills: draft.skills.length > 0 ? draft.skills : current.skills,
+              match_score: draft.match_score || current.match_score,
+              strengths: draft.strengths.length > 0 ? draft.strengths : current.strengths,
+              improvements: draft.improvements.length > 0 ? draft.improvements : current.improvements,
+              // PRESERVE these from the original — draft often drops them
+              education: current.education,
+              languages: current.languages,
+              name: current.name,
+              title: current.title,
+              email: current.email,
+              phone: current.phone,
+              linkedin: current.linkedin,
+              location: current.location,
+              language: current.language,
+            });
+          })
+          .catch(() => {});
       }
 
       if (response.is_complete) {
