@@ -572,3 +572,45 @@ textarea.input { resize: vertical; min-height: 120px; }
   .steps-grid { grid-template-columns: 1fr; }
   .hero h1 { font-size: 28px; }
 }
+
+/* Auth */
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.15s;
+}
+.auth-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-light);
+}
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.auth-email {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.auth-logout {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}

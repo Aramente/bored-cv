@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
+import AuthButton from "../components/AuthButton";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
@@ -31,6 +32,7 @@ export default function Editor() {
         <span className="logo">bored cv</span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="btn-secondary" onClick={() => setStep("templates")}>{t("common.back")}</button>
+          <AuthButton />
           <LanguageToggle />
         </div>
       </nav>

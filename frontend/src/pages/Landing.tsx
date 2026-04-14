@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
+import AuthButton from "../components/AuthButton";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -17,7 +18,10 @@ export default function Landing() {
     <div className="page landing">
       <nav className="nav">
         <span className="logo">bored cv</span>
-        <LanguageToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <AuthButton />
+          <LanguageToggle />
+        </div>
       </nav>
 
       <section className="hero">

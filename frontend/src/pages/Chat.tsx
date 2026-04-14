@@ -5,6 +5,7 @@ import { chatNext, generateCV } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
+import AuthButton from "../components/AuthButton";
 
 function CVPreviewPanel() {
   const { cvData, updateCvField } = useStore();
@@ -156,7 +157,10 @@ export default function Chat() {
     <div className="page chat-split">
       <nav className="nav">
         <span className="logo">bored cv</span>
-        <LanguageToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <AuthButton />
+          <LanguageToggle />
+        </div>
       </nav>
 
       <div className="chat-split-body">

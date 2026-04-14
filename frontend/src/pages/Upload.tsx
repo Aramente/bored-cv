@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
 import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
+import AuthButton from "../components/AuthButton";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
@@ -67,7 +68,10 @@ export default function Upload() {
     <div className="page">
       <nav className="nav">
         <span className="logo">bored cv</span>
-        <LanguageToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <AuthButton />
+          <LanguageToggle />
+        </div>
       </nav>
       <div className="page-content">
         <h1>{t("upload.title")}</h1>

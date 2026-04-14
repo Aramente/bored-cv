@@ -87,6 +87,7 @@ interface AppState {
   cvData: CVData | null;
   selectedTemplate: TemplateId;
   tone: string;
+  user: { email: string; provider: string } | null;
   setStep: (step: Step) => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
@@ -96,6 +97,7 @@ interface AppState {
   setSelectedTemplate: (t: TemplateId) => void;
   setTone: (tone: string) => void;
   updateCvField: (path: string, value: string) => void;
+  setUser: (user: { email: string; provider: string } | null) => void;
   reset: () => void;
 }
 
@@ -108,6 +110,7 @@ const initialState = {
   cvData: null,
   selectedTemplate: "clean" as TemplateId,
   tone: "startup",
+  user: null,
 };
 
 export const useStore = create<AppState>()(persist((set) => ({
@@ -120,6 +123,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setCvData: (cvData) => set({ cvData }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
+  setUser: (user) => set({ user }),
   updateCvField: (path, value) =>
     set((s) => {
       if (!s.cvData) return s;
@@ -155,5 +159,6 @@ export const useStore = create<AppState>()(persist((set) => ({
     cvData: state.cvData,
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,
+    // user is intentionally excluded — session is server-side
   }),
 }));

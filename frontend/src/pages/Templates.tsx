@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { PDFViewer } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
+import AuthButton from "../components/AuthButton";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
@@ -28,7 +29,10 @@ export default function Templates() {
     <div className="page">
       <nav className="nav">
         <span className="logo">bored cv</span>
-        <LanguageToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <AuthButton />
+          <LanguageToggle />
+        </div>
       </nav>
       <div className="page-content">
         <h1>{t("templates.title")}</h1>
