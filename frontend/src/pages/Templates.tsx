@@ -33,7 +33,7 @@ export default function Templates() {
   return (
     <div className="page">
       <nav className="nav">
-        <span className="logo">bored cv</span>
+        <span className="logo" onClick={() => useStore.getState().setStep("landing")} style={{cursor:"pointer"}}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />
