@@ -19,9 +19,22 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/projects`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((data) => { setProjects(data); setLoading(false); })
+    const token = localStorage.getItem("bored-cv-token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    fetch(`${API_URL}/api/projects`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("not authed");
+        return r.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
