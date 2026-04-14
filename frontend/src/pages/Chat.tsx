@@ -216,10 +216,15 @@ export default function Chat() {
         improvements: [],
       });
     }
-    if (messages.length === 0 && gapAnalysis && gapAnalysis.questions.length > 0) {
+  }, []);
+
+  // Show first question when analysis completes (may arrive async from background)
+  useEffect(() => {
+    const currentMessages = useStore.getState().messages;
+    if (currentMessages.length === 0 && gapAnalysis && gapAnalysis.questions.length > 0) {
       addMessage({ role: "assistant", content: gapAnalysis.questions[0] });
     }
-  }, []);
+  }, [gapAnalysis]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || !profile || !offer || !gapAnalysis) return;
@@ -287,8 +292,8 @@ export default function Chat() {
     sendMessage(input);
   };
 
-  // Route guard: redirect if no data
-  if (!profile || !offer || !gapAnalysis) {
+  // Route guard: need at least profile + offer
+  if (!profile || !offer) {
     return (
       <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
@@ -330,6 +335,14 @@ export default function Chat() {
           </div>
 
           <div className="chat-messages">
+            {!gapAnalysis && messages.length === 0 && (
+              <div className="chat-msg assistant">
+                <div className="chat-bubble">
+                  <span className="spinner" style={{ marginRight: 8 }} />
+                  {t("upload.step_analyzing")}
+                </div>
+              </div>
+            )}
             {messages.map((msg, i) => (
               <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
             ))}

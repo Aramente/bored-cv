@@ -77,13 +77,15 @@ export default function Upload() {
       };
       setCvData(initialCv);
 
-      setLoadingStep(t("upload.step_analyzing"));
-      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
-      const gap = await analyzeProfile(profile, offer, captcha, lang);
-      setGapAnalysis(gap);
-
+      // Go to chat immediately — analyze in background
       setLoadingStep(t("upload.step_ready"));
       navigate("/chat");
+
+      // Background: analyze profile vs offer (first chat question appears when done)
+      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
+      analyzeProfile(profile, offer, captcha, lang)
+        .then((gap) => useStore.getState().setGapAnalysis(gap))
+        .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

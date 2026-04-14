@@ -279,7 +279,11 @@ Respond in valid JSON only:
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=3000, temperature=0.3),
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=3000,
+                temperature=0.3,
+                thinking_config={"thinking_budget": 0},  # Fast draft, no deep reasoning
+            ),
         )
         data = self._parse_json(response.text)
         return CVData(**data)
