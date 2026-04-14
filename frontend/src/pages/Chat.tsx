@@ -102,6 +102,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [voiceError, setVoiceError] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -197,17 +198,25 @@ export default function Chat() {
           </div>
 
           {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
+          {isRecording && (
+            <div className="recording-banner">
+              🎤 recording... click stop when you're done
+            </div>
+          )}
           <form className="chat-input-bar" onSubmit={handleSubmit}>
             <input
-              className="input"
+              className={`input ${isRecording ? "input-recording" : ""}`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={t("chat.placeholder")}
+              placeholder={isRecording ? "speaking..." : t("chat.placeholder")}
               disabled={loading}
+              readOnly={isRecording}
             />
             <VoiceInput
-              onResult={(text) => { setVoiceError(""); sendMessage(text); }}
+              onResult={(text) => { setVoiceError(""); setInput(""); sendMessage(text); }}
+              onInterim={(text) => setInput(text)}
               onError={(msg) => setVoiceError(msg)}
+              onListeningChange={(l) => { setIsRecording(l); if (l) setInput(""); }}
               lang={i18n.language}
             />
             <button className="btn-primary" type="submit" disabled={!input.trim() || loading}

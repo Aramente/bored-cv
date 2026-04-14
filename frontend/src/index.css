@@ -553,6 +553,23 @@ textarea.input { resize: vertical; min-height: 120px; }
   50% { opacity: 0.5; }
 }
 
+/* Recording state */
+.recording-banner {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--red);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  animation: pulse 1.5s infinite;
+}
+.input-recording {
+  border-color: var(--red) !important;
+  background: rgba(239, 68, 68, 0.04) !important;
+  color: var(--text-muted) !important;
+}
+
 /* Logo image */
 .logo-img {
   height: 40px;
