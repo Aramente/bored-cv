@@ -183,19 +183,25 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
    d) NOT RELEVANT — mentioning things that don't connect to the target role
       Every bullet should pass the test: "Would the person reading THIS job offer care about this?"
 
-2. TELL MICRO-STORIES. Each bullet should be a tiny story: what was the situation, what did you DO, what CHANGED.
-   ✅ "Inherited a 2-person HR team at Germinal, grew it to 8, built the entire onboarding flow — new hires were productive in 5 days instead of 3 weeks"
-   ✅ "Ran payroll across 4 countries at Mindflow (FR, US, UK, DE) with zero errors over 14 months — even during the series A crunch"
+2. XYZ FORMULA for every bullet: "Accomplished [X] as measured by [Y] by doing [Z]."
+   ✅ "Grew the team from 2 to 8 (X) in 6 months (Y) by building a sourcing pipeline and running 150+ interviews (Z)"
+   ✅ "Cut time-to-productivity from 3 weeks to 5 days (X/Y) by designing a structured onboarding program with buddy system (Z)"
+   NOT every bullet needs all three, but the best ones do.
 
-3. USE THE CANDIDATE'S ACTUAL DETAILS from the conversation. Real company names, real numbers, real context. If they said "12 people", write "12 people", not "a team of professionals".
+3. NUMBERS WITH CONTEXT. Raw numbers are noise. Numbers with benchmarks are signal.
+   ❌ "Exceeded sales quota"
+   ✅ "118% of quota in a year where team average was 79%"
+   ❌ "Managed payroll"
+   ✅ "Ran payroll across 4 countries (FR, US, UK, DE) with zero errors over 14 months — even during series A crunch"
 
-4. DON'T KEYWORD-STUFF. The CV should naturally demonstrate the skills the offer asks for, through specific examples — not by listing buzzwords. If the offer says "data-driven", don't write "data-driven mindset" — write the actual KPI they tracked.
+4. USE THE CANDIDATE'S ACTUAL WORDS AND DETAILS. Real company names, real numbers, real context from the conversation. If they said "12 people", write "12 people", not "a team of professionals". The CV must sound like THEM, not like ChatGPT wrote it. 74% of hiring managers now spot AI-generated resumes — and reject them.
 
-5. SUMMARY: 2 sentences. First sentence = who they are (specific, not generic). Second = what makes them perfect for THIS role (referencing something concrete).
-   ✅ "HR leader who built people ops from scratch at two startups (Germinal, Mindflow), scaling from 5 to 80 employees. Fluent in multi-country payroll, HRIS setup, and the chaos of hypergrowth."
+5. ATS OPTIMIZATION. Use the EXACT terminology from the job offer. If the offer says "HRIS", write "HRIS" — not "HR information systems". If it says "payroll", write "payroll" — not "compensation management". Mirror their words naturally in bullets.
+
+6. SUMMARY: 2 sentences. First = who they are WITH numbers (years, companies, scale). Second = what makes them perfect for THIS specific role.
+   ✅ "6+ years building People ops from scratch at 3 startups (Germinal, Mindflow, Figures), scaling teams from 5 to 80. Hands-on HR generalist fluent in multi-country payroll, HRIS, and the organized chaos of hypergrowth."
    ❌ "Experienced HR professional with a passion for building great teams and driving organizational success."
-
-6. ONLY INCLUDE RELEVANT EXPERIENCES. If a role doesn't relate to the target job, skip it entirely. Better a 3-experience CV that tells a story than a 7-experience CV that dilutes the message.
+   The summary is about THEM (the company), not about YOU (the candidate). What do you bring to THEIR problem?
 
 7. SKILLS: This is NOT a keyword dump. Group skills into 2-3 meaningful categories that match the offer's structure. Each skill must be something the candidate PROVED in their experience bullets.
    ✅ "HR Ops: multi-country payroll (FR/US/UK/DE), HRIS (Deel, BambooHR), onboarding design"
