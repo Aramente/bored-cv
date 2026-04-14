@@ -42,23 +42,24 @@ Description: {offer.description}
 Requirements: {self._format_requirements(offer)}
 
 YOUR TASK:
-1. Identify which of the candidate's experiences are RELEVANT to this offer (ignore the rest)
-2. For each relevant experience, identify what's missing: metrics, specifics, framing
-3. Generate a coaching plan: a sequence of SHORT, FOCUSED questions — one topic per question
+1. Pick the 2-3 experiences from the candidate's profile that are MOST relevant to this job offer
+2. For each, figure out what's missing: metrics, team size, concrete results, tools
+3. Write SHORT, FOCUSED questions — one specific thing per question
 
 RULES FOR QUESTIONS:
-- Start with a triage message that tells the candidate which 2-3 experiences you want to focus on and WHY
-- Then plan follow-up questions for each relevant experience, ONE AT A TIME
-- Each question should target ONE specific thing: a metric, a team size, a result, a tool used
-- BAD question: "Tell me about your leadership experience, team management, and how you drove results"
-- GOOD question: "At [Company], you managed a team — how many people were on it?"
-- Include questions that anticipate common startup/tech interview themes: ownership, impact, ambiguity, speed, cross-functional work
-- Max 7 questions total, ordered by importance
+- The FIRST question should say something like: "I see your roles at [Company A] and [Company B] are the most relevant here. Let's start with [Company A] — [specific question]."
+  This tells the candidate what to focus on AND asks a specific question in the same breath. No broad "tell me about your experiences".
+- Every question after that: ONE company, ONE topic.
+- BAD: "Tell me about your leadership experience, how you managed teams, and what results you achieved"
+- GOOD: "At Mindflow, you were Head of People — how many people did you hire during your time there?"
+- GOOD: "At Germinal, what was your biggest win in terms of process or culture you built?"
+- Think about what a startup/tech interviewer would ask: ownership, scrappiness, measurable impact, cross-functional work, dealing with ambiguity
+- Max 6 questions total, ordered from most to least important
 
 Respond in valid JSON only:
-{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["question 1 should be the triage message identifying relevant experiences", "question 2: focused follow-up on experience A", "question 3: focused follow-up", "..."]}}
+{{"matched_skills": ["skills from candidate that match the offer"], "gaps": ["requirements the candidate doesn't clearly demonstrate"], "questions": ["first question that names relevant companies AND asks something specific", "follow-up question about company A", "question about company B", "..."]}}
 
-IMPORTANT: Write ALL output in {lang_instruction}."""
+IMPORTANT: Write ALL output in {lang_instruction}. Be direct, warm, slightly casual — like a smart friend helping with a CV, not a corporate HR bot."""
 
         response = self.model.generate_content(
             prompt,

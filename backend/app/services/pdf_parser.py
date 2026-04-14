@@ -1,131 +1,122 @@
 import io
-import re
+import json
+import os
 
+import google.generativeai as genai
 import pdfplumber
 
 from app.models import Education, Experience, Profile
 
-SECTION_HEADERS = {"about", "experience", "education", "skills", "languages", "certifications", "honors"}
 
-
-def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
-    """Parse a LinkedIn PDF export into a structured Profile."""
+def extract_pdf_text(pdf_bytes: bytes) -> str:
+    """Extract raw text from a PDF file."""
     with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-        lines: list[str] = []
+        pages = []
         for page in pdf.pages:
             text = page.extract_text()
             if text:
-                lines.extend(text.split("\n"))
+                pages.append(text)
+    return "\n\n".join(pages)
 
-    lines = [line.strip() for line in lines if line.strip()]
-    if len(lines) < 3:
+
+def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
+    """Parse a LinkedIn PDF export using LLM for robust extraction."""
+    raw_text = extract_pdf_text(pdf_bytes)
+
+    if len(raw_text.strip()) < 50:
         return Profile(name="", title="")
 
-    name = lines[0]
-    title = lines[1] if len(lines) > 1 else ""
-    location = ""
-    start_idx = 2
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        return _fallback_parse(raw_text)
 
-    if len(lines) > 2 and not _is_section_header(lines[2]):
-        if "," in lines[2] or any(w in lines[2].lower() for w in ["france", "paris", "london", "remote"]):
-            location = lines[2]
-            start_idx = 3
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
-    sections = _split_sections(lines[start_idx:])
+    prompt = f"""Extract structured profile data from this LinkedIn PDF export. The text is messy because LinkedIn PDFs use a two-column layout — sections are interleaved. Use your judgment to reconstruct the correct structure.
 
-    summary = " ".join(sections.get("about", []))
-    experiences = _parse_experiences(sections.get("experience", []))
-    education = _parse_education(sections.get("education", []))
-    skills = _parse_skills(sections.get("skills", []))
+RAW TEXT:
+{raw_text[:8000]}
 
-    return Profile(
-        name=name,
-        title=title,
-        location=location,
-        summary=summary,
-        experiences=experiences,
-        education=education,
-        skills=skills,
-    )
+Return valid JSON only:
+{{
+  "name": "full name (just the person's name, not 'Coordonnées' or other labels)",
+  "title": "current or most recent job title",
+  "location": "city, country",
+  "email": "email if found, otherwise empty string",
+  "summary": "professional summary/about section if found, otherwise empty string",
+  "experiences": [
+    {{
+      "title": "job title",
+      "company": "company name",
+      "dates": "date range as written",
+      "description": "role description as a single paragraph",
+      "bullets": ["key achievement or responsibility 1", "key achievement 2"]
+    }}
+  ],
+  "education": [
+    {{
+      "degree": "degree name",
+      "school": "school name",
+      "year": "graduation year or date range"
+    }}
+  ],
+  "skills": ["skill1", "skill2"]
+}}
 
+IMPORTANT:
+- Extract ALL experiences from all pages, not just the first few
+- Keep the original language of descriptions (don't translate)
+- For bullets, split multi-sentence descriptions into separate items
+- If a field is not found, use empty string or empty array
+- The name is usually on the first line, possibly after 'Coordonnées' or 'Contact'"""
 
-def _is_section_header(line: str) -> bool:
-    return line.lower().strip() in SECTION_HEADERS
-
-
-def _split_sections(lines: list[str]) -> dict[str, list[str]]:
-    sections: dict[str, list[str]] = {}
-    current_section = ""
-    for line in lines:
-        if _is_section_header(line):
-            current_section = line.lower().strip()
-            sections[current_section] = []
-        elif current_section:
-            sections[current_section].append(line)
-    return sections
-
-
-def _parse_experiences(lines: list[str]) -> list[Experience]:
-    experiences: list[Experience] = []
-    i = 0
-    while i < len(lines):
-        title = lines[i]
-        company = lines[i + 1] if i + 1 < len(lines) else ""
-        dates = ""
-        description_lines: list[str] = []
-
-        i += 2
-        if i < len(lines) and _looks_like_date(lines[i]):
-            dates = lines[i]
-            i += 1
-
-        while i < len(lines) and not _looks_like_title(lines, i):
-            description_lines.append(lines[i])
-            i += 1
-
-        description = " ".join(description_lines)
-        bullets = [b.strip().lstrip("•-").strip() for b in description_lines if b.strip()]
-
-        experiences.append(
-            Experience(title=title, company=company, dates=dates, description=description, bullets=bullets)
+    try:
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=4000, temperature=0.1),
         )
-    return experiences
+        cleaned = response.text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+            cleaned = cleaned.rsplit("```", 1)[0]
+        data = json.loads(cleaned)
+
+        return Profile(
+            name=data.get("name", ""),
+            title=data.get("title", ""),
+            location=data.get("location", ""),
+            email=data.get("email", ""),
+            summary=data.get("summary", ""),
+            experiences=[
+                Experience(
+                    title=exp.get("title", ""),
+                    company=exp.get("company", ""),
+                    dates=exp.get("dates", ""),
+                    description=exp.get("description", ""),
+                    bullets=exp.get("bullets", []),
+                )
+                for exp in data.get("experiences", [])
+            ],
+            education=[
+                Education(
+                    degree=edu.get("degree", ""),
+                    school=edu.get("school", ""),
+                    year=edu.get("year", ""),
+                )
+                for edu in data.get("education", [])
+            ],
+            skills=data.get("skills", []),
+        )
+    except Exception:
+        return _fallback_parse(raw_text)
 
 
-def _looks_like_date(line: str) -> bool:
-    date_patterns = [
-        r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4}",
-        r"\b\d{4}\s*[-–]\s*(present|\d{4})",
-    ]
-    return any(re.search(p, line, re.IGNORECASE) for p in date_patterns)
-
-
-def _looks_like_title(lines: list[str], idx: int) -> bool:
-    if idx + 1 >= len(lines):
-        return False
-    if idx + 2 < len(lines) and _looks_like_date(lines[idx + 2]):
-        return True
-    return False
-
-
-def _parse_education(lines: list[str]) -> list[Education]:
-    education: list[Education] = []
-    i = 0
-    while i < len(lines):
-        degree = lines[i]
-        school = lines[i + 1] if i + 1 < len(lines) else ""
-        year = ""
-        i += 2
-        if i < len(lines) and re.search(r"\b\d{4}\b", lines[i]):
-            year = lines[i]
-            i += 1
-        education.append(Education(degree=degree, school=school, year=year))
-    return education
-
-
-def _parse_skills(lines: list[str]) -> list[str]:
-    skills: list[str] = []
-    for line in lines:
-        parts = re.split(r"[·•,]", line)
-        skills.extend(p.strip() for p in parts if p.strip())
-    return skills
+def _fallback_parse(raw_text: str) -> Profile:
+    """Basic fallback if LLM is unavailable."""
+    lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
+    name = lines[0] if lines else ""
+    for prefix in ["Coordonnées ", "Contact "]:
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+    return Profile(name=name, title=lines[1] if len(lines) > 1 else "")
