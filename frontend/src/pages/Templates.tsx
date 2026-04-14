@@ -6,9 +6,11 @@ import AuthButton from "../components/AuthButton";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
+import Retro from "../templates/Retro";
+import Consultant from "../templates/Consultant";
 
-const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal };
-const templateKeys: TemplateId[] = ["clean", "contrast", "minimal"];
+const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant };
+const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant"];
 
 export default function Templates() {
   const { t } = useTranslation();
@@ -55,7 +57,7 @@ export default function Templates() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 24 }}>
           {templateKeys.map((key) => (
             <div
               key={key}

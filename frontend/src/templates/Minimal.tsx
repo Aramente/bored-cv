@@ -3,24 +3,24 @@ import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
-  page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b", padding: 32 },
-  name: { fontSize: 24, fontFamily: "Helvetica-Bold", color: "#0f172a", marginBottom: 2 },
-  title: { fontSize: 12, color: "#6366f1", marginBottom: 4 },
-  contact: { fontSize: 9, color: "#94a3b8", marginBottom: 20 },
-  divider: { borderBottomWidth: 0.5, borderBottomColor: "#e2e8f0", marginBottom: 12 },
+  page: { fontFamily: "Helvetica", fontSize: 10, color: "#111111", padding: 32 },
+  name: { fontSize: 24, fontFamily: "Helvetica-Bold", color: "#000000", marginBottom: 2 },
+  title: { fontSize: 12, color: "#333333", marginBottom: 4 },
+  contact: { fontSize: 9, color: "#555555", marginBottom: 20 },
+  divider: { borderBottomWidth: 0.25, borderBottomColor: "#cccccc", marginBottom: 12 },
   section: { marginBottom: 14 },
-  sectionTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#94a3b8", marginBottom: 8 },
+  sectionTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#555555", marginBottom: 8 },
   highlights: { marginBottom: 14 },
-  highlightsLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#94a3b8", marginBottom: 6 },
-  highlightBullet: { fontSize: 10, color: "#1e293b", lineHeight: 1.55, marginBottom: 3, paddingLeft: 10 },
+  highlightsLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#555555", marginBottom: 6 },
+  highlightBullet: { fontSize: 10, color: "#111111", lineHeight: 1.55, marginBottom: 3, paddingLeft: 10 },
   expBlock: { marginBottom: 12 },
   expRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
   expTitle: { fontSize: 10, fontFamily: "Helvetica-Bold" },
-  expDates: { fontSize: 9, color: "#94a3b8" },
-  expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#6366f1", marginBottom: 3 },
-  bullet: { fontSize: 9, color: "#475569", marginBottom: 2, paddingLeft: 8 },
+  expDates: { fontSize: 9, color: "#555555" },
+  expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#222222", marginBottom: 3 },
+  bullet: { fontSize: 9, color: "#333333", marginBottom: 2, paddingLeft: 8 },
   skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  skill: { fontSize: 9, color: "#475569" },
+  skill: { fontSize: 9, color: "#333333" },
   eduBlock: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
 });
 
@@ -72,7 +72,7 @@ export default function Minimal({ data }: TemplateProps) {
           {data.education.map((e, i) => (
             <View key={i} style={styles.eduBlock}>
               <Text style={{ fontSize: 9 }}>{e.degree}  —  {e.school}</Text>
-              <Text style={{ fontSize: 9, color: "#94a3b8" }}>{e.year}</Text>
+              <Text style={{ fontSize: 9, color: "#555555" }}>{e.year}</Text>
             </View>
           ))}
         </View>

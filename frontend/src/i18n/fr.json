@@ -45,6 +45,10 @@
     "contrast_desc": "header sombre, grosse présence. énergie leadership.",
     "minimal": "Chill",
     "minimal_desc": "espacement élégant. marche partout. sans effort.",
+    "retro": "Rétro",
+    "retro_desc": "vibes machine à écrire. se démarque.",
+    "consultant": "Consultant",
+    "consultant_desc": "structure McKinsey. formation en premier.",
     "select": "celui-là →"
   },
   "editor": {

@@ -1,0 +1,86 @@
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import type { TemplateProps } from "./types";
+import { BoldMetrics } from "./BoldMetrics";
+
+const styles = StyleSheet.create({
+  page: { fontFamily: "Courier", fontSize: 10, color: "#2c2415", padding: "32 36", backgroundColor: "#faf5e8" },
+  header: { borderWidth: 2, borderColor: "#2c2415", padding: "12 14", marginBottom: 18, backgroundColor: "#faf5e8" },
+  name: { fontSize: 20, fontFamily: "Courier-Bold", textTransform: "uppercase", letterSpacing: 2, marginBottom: 3 },
+  titleLine: { fontSize: 10, fontFamily: "Courier-Oblique", marginBottom: 6 },
+  contact: { fontSize: 8, fontFamily: "Courier", color: "#5c4a2a" },
+  divider: { borderBottomWidth: 2, borderBottomColor: "#2c2415", marginBottom: 2 },
+  dividerThin: { borderBottomWidth: 0.5, borderBottomColor: "#8a7050", marginBottom: 10 },
+  section: { marginBottom: 14 },
+  sectionTitle: { fontSize: 10, fontFamily: "Courier-Bold", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 2 },
+  expBlock: { marginBottom: 10 },
+  expHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 1 },
+  expCompany: { fontSize: 10, fontFamily: "Courier-Bold" },
+  expDates: { fontSize: 9, fontFamily: "Courier", color: "#5c4a2a" },
+  expTitle: { fontSize: 9, fontFamily: "Courier-Oblique", marginBottom: 4, color: "#5c4a2a" },
+  bullet: { fontSize: 9, fontFamily: "Courier", color: "#2c2415", marginBottom: 2, paddingLeft: 10 },
+  summary: { fontSize: 9, fontFamily: "Courier-Oblique", lineHeight: 1.6, marginBottom: 14, color: "#3c2e10", borderLeftWidth: 2, borderLeftColor: "#8a7050", paddingLeft: 10 },
+  skillsText: { fontSize: 9, fontFamily: "Courier", color: "#2c2415", lineHeight: 1.5 },
+  eduRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  eduDegree: { fontSize: 9, fontFamily: "Courier-Bold" },
+  eduMeta: { fontSize: 8, fontFamily: "Courier", color: "#5c4a2a" },
+});
+
+export default function Retro({ data }: TemplateProps) {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.name}>{data.name}</Text>
+          <Text style={styles.titleLine}>_{data.title}_</Text>
+          <Text style={styles.contact}>{[data.email, data.location].filter(Boolean).join("  //  ")}</Text>
+        </View>
+
+        {data.summary && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{data.language === "fr" ? "PROFIL" : "PROFILE"}</Text>
+            <View style={styles.divider} />
+            <View style={styles.dividerThin} />
+            <Text style={styles.summary}>{data.summary}</Text>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{data.language === "fr" ? "EXPÉRIENCE" : "EXPERIENCE"}</Text>
+          <View style={styles.divider} />
+          <View style={styles.dividerThin} />
+          {data.experiences.map((exp, i) => (
+            <View key={i} style={styles.expBlock}>
+              <View style={styles.expHeader}>
+                <Text style={styles.expCompany}>{exp.company}</Text>
+                <Text style={styles.expDates}>[{exp.dates}]</Text>
+              </View>
+              <Text style={styles.expTitle}>{exp.title}</Text>
+              {exp.bullets.map((b, j) => (
+                <BoldMetrics key={j} text={`>> ${b}`} style={styles.bullet} />
+              ))}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{data.language === "fr" ? "FORMATION" : "EDUCATION"}</Text>
+          <View style={styles.divider} />
+          <View style={styles.dividerThin} />
+          {data.education.map((e, i) => (
+            <View key={i} style={styles.eduRow}>
+              <Text style={styles.eduDegree}>{e.degree}</Text>
+              <Text style={styles.eduMeta}>{e.school}  [{e.year}]</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{data.language === "fr" ? "COMPÉTENCES" : "SKILLS"}</Text>
+          <View style={styles.divider} />
+          <View style={styles.dividerThin} />
+          <Text style={styles.skillsText}>{data.skills.join(", ")}</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+}

@@ -4,12 +4,12 @@ import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
-  header: { backgroundColor: "#0f172a", color: "#ffffff", padding: "28 24 20 24" },
+  header: { background: "linear-gradient(135deg, #0f172a, #1e3a5f)", backgroundColor: "#0f172a", color: "#ffffff", padding: "28 24 20 24" },
   headerName: { fontSize: 22, fontFamily: "Helvetica-Bold", marginBottom: 4 },
   headerTitle: { fontSize: 12, color: "#818cf8", marginBottom: 6 },
   headerContact: { fontSize: 9, color: "#94a3b8" },
   skillsBar: { flexDirection: "row", flexWrap: "wrap", gap: 4, padding: "10 24", backgroundColor: "#f8fafc", borderBottomWidth: 1, borderBottomColor: "#e2e8f0" },
-  skillPill: { backgroundColor: "#eef2ff", color: "#6366f1", padding: "3 8", borderRadius: 10, fontSize: 8, fontFamily: "Helvetica-Bold" },
+  skillPill: { backgroundColor: "#6366f1", color: "#ffffff", padding: "4 10", borderRadius: 6, fontSize: 8, fontFamily: "Helvetica-Bold" },
   highlights: { borderLeftWidth: 4, borderLeftColor: "#6366f1", backgroundColor: "#f5f3ff", padding: "8 12", margin: "12 24 0 24" },
   highlightsLabel: { fontSize: 8, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.8, color: "#6366f1", marginBottom: 4 },
   highlightsText: { fontSize: 10, color: "#1e293b", lineHeight: 1.55 },

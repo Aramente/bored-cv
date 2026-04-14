@@ -45,6 +45,10 @@
     "contrast_desc": "dark header, big presence. leadership energy.",
     "minimal": "Chill",
     "minimal_desc": "elegant spacing. works everywhere. effortless.",
+    "retro": "Retro",
+    "retro_desc": "vintage typewriter vibes. stands out.",
+    "consultant": "Consultant",
+    "consultant_desc": "McKinsey-grade structure. education first.",
     "select": "this one →"
   },
   "editor": {

@@ -75,7 +75,7 @@ export interface CVData {
   language: string;
 }
 
-export type TemplateId = "clean" | "contrast" | "minimal";
+export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";
 export type Step = "landing" | "upload" | "chat" | "templates" | "editor";
 
 interface AppState {

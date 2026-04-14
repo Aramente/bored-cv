@@ -6,8 +6,10 @@ import AuthButton from "../components/AuthButton";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
+import Retro from "../templates/Retro";
+import Consultant from "../templates/Consultant";
 
-const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal } as const;
+const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant } as const;
 
 function EditableField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (

@@ -4,7 +4,7 @@ import { BoldMetrics } from "./BoldMetrics";
 
 const styles = StyleSheet.create({
   page: { flexDirection: "row", fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
-  sidebar: { width: "30%", backgroundColor: "#0f172a", color: "#e2e8f0", padding: 24 },
+  sidebar: { width: "30%", backgroundColor: "#0c1f3d", color: "#e2e8f0", padding: 24, borderTopWidth: 2, borderTopColor: "#F5C542" },
   sidebarName: { fontSize: 16, fontFamily: "Helvetica-Bold", color: "#ffffff", marginBottom: 4 },
   sidebarTitle: { fontSize: 10, color: "#94a3b8", marginBottom: 16 },
   sidebarSection: { marginBottom: 14 },
