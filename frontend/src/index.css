@@ -294,6 +294,7 @@ textarea.input { resize: vertical; min-height: 120px; }
   display: flex;
   flex: 1;
   height: calc(100vh - 60px);
+  overflow: hidden;
 }
 .chat-side {
   flex: 1;
@@ -301,6 +302,7 @@ textarea.input { resize: vertical; min-height: 120px; }
   flex-direction: column;
   padding: 0 16px;
   max-width: 50%;
+  overflow: hidden;
 }
 .cv-side {
   flex: 1;
@@ -308,6 +310,9 @@ textarea.input { resize: vertical; min-height: 120px; }
   overflow-y: auto;
   background: var(--surface);
   max-width: 50%;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 60px);
 }
 .chat-header { padding: 16px 0; }
 
