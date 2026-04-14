@@ -416,7 +416,10 @@ export default function Chat() {
             template: tone,
             tone: tone,
           }).then((res) => {
-            if (res.id) useStore.getState().setProjectId(res.id);
+            if (res.id) {
+              useStore.getState().setProjectId(res.id);
+              useStore.getState().setLastSaved(new Date().toISOString());
+            }
           }).catch(() => {});
         }
         navigate("/templates");

@@ -45,11 +45,23 @@ export default function Upload() {
       const captcha = "";
 
       setLoadingStep(t("upload.step_parsing"));
-      const [profile, offer] = await Promise.all([
-        parseLinkedIn(file, captcha),
-        scrapeOffer(offerTab === "url" ? offerUrl : "", offerTab === "text" ? offerText : "", captcha),
-      ]);
+      const profile = await parseLinkedIn(file, captcha);
       setProfile(profile);
+
+      let offer;
+      try {
+        offer = await scrapeOffer(offerTab === "url" ? offerUrl : "", offerTab === "text" ? offerText : "", captcha);
+      } catch {
+        // Scraping failed — switch to text tab so user can paste manually
+        if (offerTab === "url") {
+          setOfferTab("text");
+          setError(t("upload.scrape_failed"));
+          setLoading(false);
+          setLoadingStep("");
+          return;
+        }
+        throw new Error("Could not parse job description");
+      }
       setOffer(offer);
 
       // Immediately create a CV draft from the LinkedIn profile — don't start blank

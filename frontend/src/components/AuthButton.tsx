@@ -5,6 +5,7 @@ import { API_URL } from "../services/api";
 
 export default function AuthButton() {
   const { user, setUser, reset } = useStore();
+  const lastSaved = useStore((s) => s.lastSaved);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,6 +57,7 @@ export default function AuthButton() {
             </button>
           </>
         )}
+        {lastSaved && <span className="save-indicator">saved ✓</span>}
         <span className="auth-email">{user.email}</span>
         <button
           className="auth-logout"

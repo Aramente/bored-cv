@@ -26,7 +26,8 @@
     "next": "analyze this",
     "step_parsing": "reading your stuff...",
     "step_analyzing": "figuring out what matters... (~1 min, grab a coffee ☕)",
-    "step_ready": "ok got it. let's talk."
+    "step_ready": "ok got it. let's talk.",
+    "scrape_failed": "couldn't read that URL — paste the job description below instead"
   },
   "chat": {
     "title": "let's make you look amazing",

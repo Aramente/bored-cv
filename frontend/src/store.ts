@@ -129,6 +129,8 @@ interface AppState {
   removeCvLanguage: (index: number) => void;
   pushCvHistory: () => void;
   undo: () => void;
+  lastSaved: string | null;
+  setLastSaved: (ts: string) => void;
   setUser: (user: { email: string; provider: string } | null) => void;
   reset: () => void;
 }
@@ -146,6 +148,7 @@ const initialState = {
   projectId: null,
   user: null,
   cvHistory: [] as CVData[],
+  lastSaved: null,
 };
 
 export const useStore = create<AppState>()(persist((set) => ({
@@ -161,6 +164,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setCvLang: (cvLang) => set({ cvLang }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
+  setLastSaved: (lastSaved) => set({ lastSaved }),
   setUser: (user) => set({ user }),
   updateCvField: (path, value) =>
     set((s) => {

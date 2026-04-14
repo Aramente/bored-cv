@@ -254,7 +254,10 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
 11. Write in the language of the job offer.
 
-12. MATCH SCORE: Rate how well this CV matches the offer from 0-100. Be honest — 100 means perfect match. Include 2-3 strengths (what makes this candidate strong) and 1-2 improvements (what's still missing or weak). This helps the user know where to iterate.
+12. ATS & MATCH ANALYSIS:
+   - match_score (0-100): how well this CV would pass an ATS filter for this specific offer. Check: are the exact keywords from the offer present? Are job titles aligned? Are required skills explicitly mentioned?
+   - strengths: 2-3 things that make this CV strong for THIS role (be specific, reference the offer)
+   - improvements: 1-2 concrete things the candidate could still add or change to score higher
 
 Respond in valid JSON only:
 {{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr", "match_score": 78, "strengths": ["Strong HR ops experience across multiple startups", "Multi-country payroll expertise matches requirement"], "improvements": ["No explicit people analytics experience mentioned", "Could highlight more HRIS tool proficiency"]}}"""

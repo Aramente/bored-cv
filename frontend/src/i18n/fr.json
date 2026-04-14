@@ -26,7 +26,8 @@
     "next": "analyse ça",
     "step_parsing": "je lis tes trucs...",
     "step_analyzing": "je regarde ce qui compte... (~1 min, va te chercher un café ☕)",
-    "step_ready": "ok c'est bon. on parle."
+    "step_ready": "ok c'est bon. on parle.",
+    "scrape_failed": "impossible de lire cette URL — colle le texte de l'offre ci-dessous"
   },
   "chat": {
     "title": "on va te rendre irrésistible",

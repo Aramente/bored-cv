@@ -54,23 +54,26 @@ export default function Templates() {
         <h1>{t("templates.title")}</h1>
         <p className="subtitle">{t("templates.subtitle")}</p>
 
-        {cvData.match_score > 0 && (
+        {displayCv.match_score > 0 && (
           <div className="match-score-card">
             <div className="match-score-header">
-              <div className="match-score-number">{cvData.match_score}%</div>
-              <div className="match-score-label">match score</div>
+              <div className="match-score-number">{displayCv.match_score}%</div>
+              <div className="match-score-label">ATS compatibility</div>
+            </div>
+            <div className="ats-bar">
+              <div className="ats-bar-fill" style={{ width: `${displayCv.match_score}%` }} />
             </div>
             <div className="match-score-details">
-              {cvData.strengths.length > 0 && (
+              {displayCv.strengths.length > 0 && (
                 <div className="match-strengths">
-                  <span className="match-icon">💪</span>
-                  {cvData.strengths.map((s, i) => <p key={i}>{s}</p>)}
+                  <span className="match-section-label">strengths</span>
+                  {displayCv.strengths.map((s, i) => <p key={i}>{s}</p>)}
                 </div>
               )}
-              {cvData.improvements.length > 0 && (
+              {displayCv.improvements.length > 0 && (
                 <div className="match-improvements">
-                  <span className="match-icon">🎯</span>
-                  {cvData.improvements.map((s, i) => <p key={i}>{s}</p>)}
+                  <span className="match-section-label">to improve</span>
+                  {displayCv.improvements.map((s, i) => <p key={i}>{s}</p>)}
                 </div>
               )}
             </div>
