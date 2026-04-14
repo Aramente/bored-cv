@@ -69,7 +69,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.3),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.3, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
@@ -139,7 +139,7 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=1000, temperature=0.7),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=1000, temperature=0.7, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return ChatResponse(**data)
@@ -248,7 +248,7 @@ Respond in valid JSON only:
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.4),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.4, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return CVData(**data)
@@ -282,6 +282,7 @@ Respond in valid JSON only:
             generation_config=genai.types.GenerationConfig(
                 max_output_tokens=3000,
                 temperature=0.3,
+                response_mime_type="application/json",
             ),
         )
         data = self._parse_json(response.text)
@@ -301,7 +302,7 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.2),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.2, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return CVData(**data)
@@ -332,6 +333,7 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
 
     def _parse_json(self, text: str) -> dict:
         cleaned = text.strip()
+        # Fallback: strip markdown code blocks if model ignores response_mime_type
         if cleaned.startswith("```"):
             cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
             cleaned = cleaned.rsplit("```", 1)[0]

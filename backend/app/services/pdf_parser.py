@@ -82,44 +82,51 @@ IMPORTANT:
             generation_config=genai.types.GenerationConfig(
                 max_output_tokens=4000,
                 temperature=0.1,
+                response_mime_type="application/json",  # Forces valid JSON output
             ),
         )
-        cleaned = response.text.strip()
-        if cleaned.startswith("```"):
-            cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
-            cleaned = cleaned.rsplit("```", 1)[0]
-        data = json.loads(cleaned)
+        data = json.loads(response.text)
+
+        def s(val: str | None) -> str:
+            """Safe string — convert None/null to empty string."""
+            return str(val) if val else ""
+
+        def sl(val: list | None) -> list:
+            """Safe list — convert None to empty list."""
+            return val if isinstance(val, list) else []
 
         return Profile(
-            name=data.get("name", ""),
-            title=data.get("title", ""),
-            location=data.get("location", ""),
-            email=data.get("email", ""),
-            phone=data.get("phone", ""),
-            linkedin=data.get("linkedin", ""),
-            summary=data.get("summary", ""),
+            name=s(data.get("name")),
+            title=s(data.get("title")),
+            location=s(data.get("location")),
+            email=s(data.get("email")),
+            phone=s(data.get("phone")),
+            linkedin=s(data.get("linkedin")),
+            summary=s(data.get("summary")),
             experiences=[
                 Experience(
-                    title=exp.get("title", ""),
-                    company=exp.get("company", ""),
-                    dates=exp.get("dates", ""),
-                    description=exp.get("description", ""),
-                    bullets=exp.get("bullets", []),
+                    title=s(exp.get("title")),
+                    company=s(exp.get("company")),
+                    dates=s(exp.get("dates")),
+                    description=s(exp.get("description")),
+                    bullets=sl(exp.get("bullets")),
                 )
-                for exp in data.get("experiences", [])
+                for exp in sl(data.get("experiences"))
             ],
             education=[
                 Education(
-                    degree=edu.get("degree", ""),
-                    school=edu.get("school", ""),
-                    year=edu.get("year", ""),
+                    degree=s(edu.get("degree")),
+                    school=s(edu.get("school")),
+                    year=s(edu.get("year")),
                 )
-                for edu in data.get("education", [])
+                for edu in sl(data.get("education"))
             ],
-            skills=data.get("skills", []),
-            languages=data.get("languages", []),
+            skills=sl(data.get("skills")),
+            languages=sl(data.get("languages")),
         )
-    except Exception:
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return _fallback_parse(raw_text)
 
 
