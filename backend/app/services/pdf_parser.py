@@ -82,7 +82,6 @@ IMPORTANT:
             generation_config=genai.types.GenerationConfig(
                 max_output_tokens=4000,
                 temperature=0.1,
-                thinking_config={"thinking_budget": 0},  # No reasoning needed for extraction
             ),
         )
         cleaned = response.text.strip()
