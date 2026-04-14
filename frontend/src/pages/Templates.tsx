@@ -31,8 +31,8 @@ export default function Templates() {
     return (
       <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV generated yet</p>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_generated")}</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ export default function Templates() {
         )}
 
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Tone of voice</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("templates.tone_label")}</p>
           <div className="tone-selector">
             {tones.map((t) => (
               <div
@@ -95,23 +95,23 @@ export default function Templates() {
         </div>
 
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>CV Language</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("templates.lang_label")}</p>
           <div className="lang-selector">
             <button
               className={`card ${cvLang === "fr" ? "selected" : ""}`}
               onClick={() => setCvLang("fr")}
               style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "fr" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
             >
-              🇫🇷 Français
+              🇫🇷 {t("templates.lang_fr")}
             </button>
             <button
               className={`card ${cvLang === "en" ? "selected" : ""}`}
               onClick={() => setCvLang("en")}
               style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "en" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
             >
-              🇬🇧 English
+              🇬🇧 {t("templates.lang_en")}
             </button>
-            {!cvDataAlt && <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "center" }}>translating...</span>}
+            {!cvDataAlt && <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "center" }}>{t("templates.translating")}</span>}
           </div>
         </div>
 

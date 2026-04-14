@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { API_URL } from "../services/api";
@@ -14,6 +15,7 @@ interface Project {
 }
 
 export default function Projects() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,9 +51,9 @@ export default function Projects() {
       </nav>
       <div className="page-content">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h1>your projects</h1>
+          <h1>{t("projects.title")}</h1>
           <button className="btn-primary" onClick={() => navigate("/upload")}>
-            + new CV
+            {t("projects.new")}
           </button>
         </div>
 
@@ -59,8 +61,8 @@ export default function Projects() {
           <div style={{ textAlign: "center", padding: 40 }}><span className="spinner" /></div>
         ) : projects.length === 0 ? (
           <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>
-            <p style={{ fontSize: 18, marginBottom: 8 }}>no projects yet</p>
-            <p style={{ fontSize: 14 }}>create your first CV to get started</p>
+            <p style={{ fontSize: 18, marginBottom: 8 }}>{t("projects.empty")}</p>
+            <p style={{ fontSize: 14 }}>{t("projects.empty_hint")}</p>
           </div>
         ) : (
           <div className="projects-grid">

@@ -30,8 +30,8 @@ export default function Editor() {
     return (
       <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV generated yet</p>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_generated")}</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
         </div>
       </div>
     );
@@ -56,8 +56,8 @@ export default function Editor() {
           <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24 }}>{t("editor.subtitle")}</p>
 
           <div style={{ marginBottom: 20 }}>
-            <EditableField label="Name" value={cvData.name} onChange={(v) => updateCvField("name", v)} />
-            <EditableField label="Title" value={cvData.title} onChange={(v) => updateCvField("title", v)} />
+            <EditableField label={t("editor.name_label")} value={cvData.name} onChange={(v) => updateCvField("name", v)} />
+            <EditableField label={t("editor.title_label")} value={cvData.title} onChange={(v) => updateCvField("title", v)} />
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -82,7 +82,7 @@ export default function Editor() {
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_skills")}</label>
             <input className="input" value={cvData.skills.join(", ")} onChange={(e) => updateCvField("skills", e.target.value)} style={{ marginTop: 4 }} />
-            <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>Comma-separated</p>
+            <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>{t("editor.comma_hint")}</p>
           </div>
 
           <PDFDownloadLink document={<TemplateComponent data={cvData} />} fileName={`${cvData.name.replace(/\s+/g, "_")}_CV.pdf`}>

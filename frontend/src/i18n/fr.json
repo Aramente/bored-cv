@@ -34,7 +34,16 @@
     "placeholder": "tape ici...",
     "voice_start": "maintiens pour parler",
     "voice_stop": "relâche pour envoyer",
-    "generating": "je cuisine ton CV... 🍳"
+    "generating": "je cuisine ton CV... 🍳",
+    "preview_empty": "ton CV apparaîtra ici au fur et à mesure",
+    "preview_title": "brouillon contenu",
+    "preview_editable": "éditable",
+    "preview_hint": "focus : contenu. design & couleurs, c'est après.",
+    "skills_label": "Compétences",
+    "send": "Envoyer",
+    "error_generic": "Un truc a planté. Réessaie ou lance un nouveau CV.",
+    "recording_hint": "enregistrement... clique stop quand t'as fini",
+    "speaking": "je t'écoute..."
   },
   "templates": {
     "title": "choisis ton style",
@@ -49,7 +58,12 @@
     "retro_desc": "vibes machine à écrire. se démarque.",
     "consultant": "Consultant",
     "consultant_desc": "structure McKinsey. formation en premier.",
-    "select": "celui-là →"
+    "select": "celui-là →",
+    "tone_label": "Ton de voix",
+    "lang_label": "Langue du CV",
+    "translating": "traduction en cours...",
+    "lang_fr": "Français",
+    "lang_en": "English"
   },
   "editor": {
     "title": "peaufine le truc",
@@ -59,7 +73,21 @@
     "section_summary": "À propos de toi",
     "section_experience": "Expérience",
     "section_education": "Formation",
-    "section_skills": "Compétences"
+    "section_skills": "Compétences",
+    "name_label": "Nom",
+    "title_label": "Titre",
+    "comma_hint": "Séparés par des virgules"
+  },
+  "projects": {
+    "title": "tes projets",
+    "new": "+ nouveau CV",
+    "empty": "aucun projet pour l'instant",
+    "empty_hint": "crée ton premier CV pour commencer"
+  },
+  "guards": {
+    "no_cv": "pas de CV en cours",
+    "no_generated": "pas encore de CV généré",
+    "start": "lancer un nouveau CV"
   },
   "common": {
     "back": "← retour",

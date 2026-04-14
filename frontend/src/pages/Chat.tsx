@@ -9,6 +9,7 @@ import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
 function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, newVal: string) => void }) {
+  const { t } = useTranslation();
   const { cvData, updateCvField } = useStore();
 
   const handleEdit = (path: string, newVal: string) => {
@@ -31,7 +32,7 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
   if (!cvData) {
     return (
       <div className="cv-preview-empty">
-        <p>your CV will appear here as we build it together</p>
+        <p>{t("chat.preview_empty")}</p>
       </div>
     );
   }
@@ -39,10 +40,10 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
   return (
     <div className="cv-preview-panel">
       <div className="cv-preview-header">
-        <h3>content draft</h3>
-        <span className="cv-preview-badge">editable</span>
+        <h3>{t("chat.preview_title")}</h3>
+        <span className="cv-preview-badge">{t("chat.preview_editable")}</span>
       </div>
-      <p className="cv-preview-hint">focus: content. design & colors come later.</p>
+      <p className="cv-preview-hint">{t("chat.preview_hint")}</p>
       {cvData.match_score > 0 && (
         <div className="match-score-mini">
           <span className="match-score-number-sm">{cvData.match_score}%</span>
@@ -96,7 +97,7 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
           </div>
         ))}
         <div className="cv-edit-skills">
-          <span className="cv-edit-label">Skills</span>
+          <span className="cv-edit-label">{t("chat.skills_label")}</span>
           <input
             className="cv-edit-skills-input"
             value={cvData.skills.join(", ")}
@@ -198,8 +199,8 @@ export default function Chat() {
         navigate("/templates");
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      addMessage({ role: "assistant", content: `⚠️ ${msg}. Try again or start a new CV.` });
+      const msg = err instanceof Error ? err.message : t("chat.error_generic");
+      addMessage({ role: "assistant", content: `⚠️ ${msg}` });
     } finally {
       setLoading(false);
     }
@@ -215,8 +216,8 @@ export default function Chat() {
     return (
       <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>no CV in progress</p>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>start a new CV</button>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_cv")}</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
         </div>
       </div>
     );
@@ -267,7 +268,7 @@ export default function Chat() {
           {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
           {isRecording && (
             <div className="recording-banner">
-              🎤 recording... click stop when you're done
+              🎤 {t("chat.recording_hint")}
             </div>
           )}
           <form className="chat-input-bar" onSubmit={handleSubmit}>
@@ -275,7 +276,7 @@ export default function Chat() {
               className={`input ${isRecording ? "input-recording" : ""}`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isRecording ? "speaking..." : t("chat.placeholder")}
+              placeholder={isRecording ? t("chat.speaking") : t("chat.placeholder")}
               disabled={loading}
               readOnly={isRecording}
             />
@@ -288,7 +289,7 @@ export default function Chat() {
             />
             <button className="btn-primary" type="submit" disabled={!input.trim() || loading}
               style={{ padding: "10px 20px" }}>
-              Send
+              {t("chat.send")}
             </button>
           </form>
         </div>

@@ -34,7 +34,16 @@
     "placeholder": "type here...",
     "voice_start": "hold to talk",
     "voice_stop": "release to send",
-    "generating": "cooking your CV... 🍳"
+    "generating": "cooking your CV... 🍳",
+    "preview_empty": "your CV will appear here as we build it together",
+    "preview_title": "content draft",
+    "preview_editable": "editable",
+    "preview_hint": "focus: content. design & colors come later.",
+    "skills_label": "Skills",
+    "send": "Send",
+    "error_generic": "Something went wrong. Try again or start a new CV.",
+    "recording_hint": "recording... click stop when you're done",
+    "speaking": "speaking..."
   },
   "templates": {
     "title": "pick your vibe",
@@ -49,7 +58,12 @@
     "retro_desc": "vintage typewriter vibes. stands out.",
     "consultant": "Consultant",
     "consultant_desc": "McKinsey-grade structure. education first.",
-    "select": "this one →"
+    "select": "this one →",
+    "tone_label": "Tone of voice",
+    "lang_label": "CV Language",
+    "translating": "translating...",
+    "lang_fr": "Français",
+    "lang_en": "English"
   },
   "editor": {
     "title": "fine-tune it",
@@ -59,7 +73,21 @@
     "section_summary": "About you",
     "section_experience": "Experience",
     "section_education": "Education",
-    "section_skills": "Skills"
+    "section_skills": "Skills",
+    "name_label": "Name",
+    "title_label": "Title",
+    "comma_hint": "Comma-separated"
+  },
+  "projects": {
+    "title": "your projects",
+    "new": "+ new CV",
+    "empty": "no projects yet",
+    "empty_hint": "create your first CV to get started"
+  },
+  "guards": {
+    "no_cv": "no CV in progress",
+    "no_generated": "no CV generated yet",
+    "start": "start a new CV"
   },
   "common": {
     "back": "← back",
