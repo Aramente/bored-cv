@@ -194,7 +194,13 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
    ❌ "Managed payroll"
    ✅ "Ran payroll across 4 countries (FR, US, UK, DE) with zero errors over 14 months — even during series A crunch"
 
-4. USE THE CANDIDATE'S ACTUAL WORDS AND DETAILS. Real company names, real numbers, real context from the conversation. If they said "12 people", write "12 people", not "a team of professionals". The CV must sound like THEM, not like ChatGPT wrote it. 74% of hiring managers now spot AI-generated resumes — and reject them.
+4. CONTEXTUALIZE EVERY COMPANY in 5 words or less, right after the company name. The reader needs instant signal.
+   ✅ "Germinal (SaaS, 15→80 employees, Series A)"
+   ✅ "Mindflow (AI automation, seed stage, 12 people)"
+   ✅ "Figures (compensation benchmark, Series B, €1B+ clients)"
+   ❌ "Germinal" alone — means nothing to a recruiter who doesn't know the company
+
+5. USE THE CANDIDATE'S ACTUAL WORDS AND DETAILS. Real company names, real numbers, real context from the conversation. If they said "12 people", write "12 people", not "a team of professionals". The CV must sound like THEM, not like ChatGPT wrote it. 74% of hiring managers now spot AI-generated resumes — and reject them.
 
 5. ATS OPTIMIZATION. Use the EXACT terminology from the job offer. If the offer says "HRIS", write "HRIS" — not "HR information systems". If it says "payroll", write "payroll" — not "compensation management". Mirror their words naturally in bullets.
 

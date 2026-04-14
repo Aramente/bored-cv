@@ -288,7 +288,189 @@ textarea.input { resize: vertical; min-height: 120px; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Chat */
+/* Chat — split screen */
+.chat-split { display: flex; flex-direction: column; }
+.chat-split-body {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px);
+}
+.chat-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  max-width: 50%;
+}
+.cv-side {
+  flex: 1;
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--surface);
+  max-width: 50%;
+}
+.chat-header { padding: 16px 0; }
+
+/* CV live preview panel */
+.cv-preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-dim);
+  font-size: 14px;
+  padding: 32px;
+  text-align: center;
+}
+.cv-preview-panel { padding: 20px; }
+.cv-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.cv-preview-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cv-preview-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cv-edit-name {
+  width: 100%;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.cv-edit-name:hover, .cv-edit-name:focus {
+  border-bottom-color: var(--border);
+  outline: none;
+}
+.cv-edit-title {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  padding: 2px 0;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+.cv-edit-title:hover, .cv-edit-title:focus {
+  border-bottom-color: var(--border);
+  outline: none;
+}
+.cv-edit-summary {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-muted);
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  padding: 4px 0;
+  margin-bottom: 16px;
+  font-family: inherit;
+  resize: none;
+  line-height: 1.5;
+}
+.cv-edit-summary:hover, .cv-edit-summary:focus {
+  border-bottom-color: var(--border);
+  outline: none;
+}
+.cv-edit-exp {
+  margin-bottom: 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+}
+.cv-edit-exp-header { margin-bottom: 4px; }
+.cv-edit-exp-title {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  font-family: inherit;
+}
+.cv-edit-exp-title:hover, .cv-edit-exp-title:focus { outline: none; border-bottom: 1px dashed var(--border); }
+.cv-edit-exp-company {
+  width: 100%;
+  font-size: 12px;
+  color: var(--accent);
+  border: none;
+  background: transparent;
+  padding: 1px 0;
+  font-family: inherit;
+}
+.cv-edit-exp-company:hover, .cv-edit-exp-company:focus { outline: none; border-bottom: 1px dashed var(--border); }
+.cv-edit-exp-dates {
+  width: 100%;
+  font-size: 11px;
+  color: var(--text-dim);
+  border: none;
+  background: transparent;
+  padding: 1px 0;
+  margin-bottom: 4px;
+  font-family: inherit;
+}
+.cv-edit-exp-dates:hover, .cv-edit-exp-dates:focus { outline: none; border-bottom: 1px dashed var(--border); }
+.cv-edit-bullet {
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  padding: 2px 0 2px 12px;
+  font-family: inherit;
+}
+.cv-edit-bullet:hover, .cv-edit-bullet:focus {
+  outline: none;
+  background: var(--surface-hover);
+  border-radius: 4px;
+}
+.cv-edit-bullet::before { content: "• "; color: var(--text-dim); }
+.cv-edit-skills { margin-top: 16px; }
+.cv-edit-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+.cv-edit-skills-input {
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-muted);
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.cv-edit-skills-input:hover, .cv-edit-skills-input:focus {
+  border-bottom-color: var(--border);
+  outline: none;
+}
+
+/* Legacy single-column chat (unused but kept for compat) */
 .chat-page { display: flex; flex-direction: column; }
 .chat-container {
   flex: 1;
@@ -299,7 +481,12 @@ textarea.input { resize: vertical; min-height: 120px; }
   width: 100%;
   padding: 0 16px;
 }
-.chat-header { padding: 16px 0; }
+
+@media (max-width: 768px) {
+  .chat-split-body { flex-direction: column; }
+  .chat-side, .cv-side { max-width: 100%; }
+  .cv-side { height: 40vh; border-left: none; border-top: 1px solid var(--border); }
+}
 .chat-messages {
   flex: 1;
   overflow-y: auto;
