@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV } from "../services/api";
+import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV, translateCV } from "../services/api";
 import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
@@ -10,7 +10,7 @@ import AuthButton from "../components/AuthButton";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, setCvDataAlt } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -109,7 +109,7 @@ export default function Upload() {
           const current = useStore.getState().cvData;
           if (!current) return;
           // Merge: keep personal info from original, use AI-improved content
-          useStore.getState().setCvData({
+          const merged = {
             ...current,
             summary: draft.summary || current.summary,
             experiences: draft.experiences.length > 0 ? draft.experiences : current.experiences,
@@ -119,7 +119,13 @@ export default function Upload() {
             match_score: draft.match_score || 0,
             strengths: draft.strengths || [],
             improvements: draft.improvements || [],
-          });
+          };
+          useStore.getState().setCvData(merged);
+          // Auto-translate to the other language
+          const altLang = (draft.language || lang) === "fr" ? "en" : "fr";
+          translateCV(merged, altLang)
+            .then((alt) => useStore.getState().setCvDataAlt(alt))
+            .catch((e) => console.warn("Draft translation failed:", e));
         })
         .catch((e) => console.warn("Draft CV failed:", e));
     } catch (err) {

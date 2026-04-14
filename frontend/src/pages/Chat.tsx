@@ -15,7 +15,7 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
   onQuickAction?: (action: string, expIndex: number) => void;
 }) {
   const { t } = useTranslation();
-  const { cvData, cvOriginal, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
+  const { cvData, cvOriginal, cvDataAlt, cvLang, setCvLang, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
   const profile = useStore((s) => s.profile);
   const [flashIndex, setFlashIndex] = useState<number | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -61,14 +61,37 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
           <button className="cv-undo-btn" onClick={undo} disabled={cvHistory.length === 0} title="Undo">↩</button>
         </div>
       </div>
-      <p className="cv-preview-hint">{t("chat.preview_hint")}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <p className="cv-preview-hint">{t("chat.preview_hint")}</p>
+        {cvDataAlt && (
+          <div className="cv-view-toggle" style={{ marginBottom: 8 }}>
+            <button className={cvLang === "fr" ? "active" : ""} onClick={() => setCvLang("fr")}>FR</button>
+            <button className={cvLang === "en" ? "active" : ""} onClick={() => setCvLang("en")}>EN</button>
+          </div>
+        )}
+      </div>
       {cvData.match_score > 0 && (
         <div className="match-score-mini">
           <span className="match-score-number-sm">{cvData.match_score}%</span>
           <span> match</span>
         </div>
       )}
-      {showOriginal && cvOriginal ? (
+      {/* Show alt language version in read-only if selected */}
+      {cvDataAlt && cvLang !== (cvData.language || "en") ? (
+        <div className="cv-preview-content cv-original">
+          <p className="cv-original-label">{cvLang === "fr" ? "version française" : "english version"} — read only</p>
+          <div className="cv-edit-name" style={{ opacity: 0.8 }}>{cvDataAlt.name}</div>
+          <div className="cv-edit-title" style={{ opacity: 0.8 }}>{cvDataAlt.title}</div>
+          <p style={{ fontSize: 13, color: "#666", margin: "8px 0" }}>{cvDataAlt.summary}</p>
+          {cvDataAlt.experiences.map((exp, i) => (
+            <div key={i} className="cv-edit-exp" style={{ opacity: 0.8 }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{exp.title}</div>
+              <div style={{ fontSize: 12, color: "#666" }}>{exp.company} — {exp.dates}</div>
+              {exp.bullets.map((b, j) => <div key={j} style={{ fontSize: 12, color: "#888", paddingLeft: 10 }}>• {b}</div>)}
+            </div>
+          ))}
+        </div>
+      ) : showOriginal && cvOriginal ? (
         <div className="cv-preview-content cv-original">
           <p className="cv-original-label">original LinkedIn — read only</p>
           <div className="cv-edit-name" style={{ opacity: 0.6 }}>{cvOriginal.name}</div>
