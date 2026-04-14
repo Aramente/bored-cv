@@ -765,3 +765,63 @@ textarea.input { resize: vertical; min-height: 120px; }
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* Templates grid */
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1024px) {
+  .templates-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .templates-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Tone selector */
+.tone-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Language selector */
+.lang-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+/* Editor split */
+@media (max-width: 768px) {
+  .editor-split {
+    flex-direction: column !important;
+  }
+  .editor-left, .editor-right {
+    max-width: 100% !important;
+    flex: none !important;
+    height: auto !important;
+  }
+  .editor-right {
+    height: 50vh !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border) !important;
+  }
+}
+
+/* Nav responsive */
+@media (max-width: 640px) {
+  .nav { padding: 12px 16px; }
+  .auth-buttons { gap: 4px; }
+  .auth-btn { padding: 4px 8px; font-size: 11px; }
+  .auth-email { display: none; }
+  .auth-user { gap: 4px; }
+}
+
+/* Match score responsive */
+@media (max-width: 640px) {
+  .match-score-details { flex-direction: column; gap: 12px; }
+  .match-score-number { font-size: 28px; }
+}

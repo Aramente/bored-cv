@@ -96,7 +96,7 @@ export default function Templates() {
 
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>CV Language</p>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="lang-selector">
             <button
               className={`card ${cvLang === "fr" ? "selected" : ""}`}
               onClick={() => setCvLang("fr")}
@@ -115,7 +115,7 @@ export default function Templates() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 24 }}>
+        <div className="templates-grid">
           {templateKeys.map((key) => (
             <div
               key={key}

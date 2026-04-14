@@ -50,8 +50,8 @@ export default function Editor() {
         </div>
       </nav>
 
-      <div style={{ display: "flex", height: "calc(100vh - 60px)" }}>
-        <div style={{ flex: 1, overflow: "auto", padding: 24 }}>
+      <div className="editor-split" style={{ display: "flex", height: "calc(100vh - 60px)" }}>
+        <div className="editor-left" style={{ flex: 1, overflow: "auto", padding: 24 }}>
           <h1 style={{ fontSize: 20, marginBottom: 4 }}>{t("editor.title")}</h1>
           <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24 }}>{t("editor.subtitle")}</p>
 
@@ -94,7 +94,7 @@ export default function Editor() {
           </PDFDownloadLink>
         </div>
 
-        <div style={{ flex: 1, borderLeft: "1px solid var(--border)", background: "var(--surface)" }}>
+        <div className="editor-right" style={{ flex: 1, borderLeft: "1px solid var(--border)", background: "var(--surface)" }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
             <TemplateComponent data={cvData} />
           </PDFViewer>
