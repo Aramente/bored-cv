@@ -20,10 +20,13 @@ class Profile(BaseModel):
     title: str
     location: str = ""
     email: str = ""
+    phone: str = ""
+    linkedin: str = ""
     summary: str = ""
     experiences: list[Experience] = []
     education: list[Education] = []
     skills: list[str] = []
+    languages: list[str] = []
 
 
 class OfferRequirement(BaseModel):
@@ -75,11 +78,14 @@ class CVData(BaseModel):
     name: str
     title: str
     email: str = ""
+    phone: str = ""
+    linkedin: str = ""
     location: str = ""
     summary: str
     experiences: list[RewrittenExperience]
     education: list[Education]
     skills: list[str]
+    languages: list[str] = []
     language: str = "en"
     match_score: int = 0
     strengths: list[str] = []

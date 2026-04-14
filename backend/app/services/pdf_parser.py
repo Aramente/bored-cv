@@ -44,6 +44,8 @@ Return valid JSON only:
   "title": "current or most recent job title",
   "location": "city, country",
   "email": "email if found, otherwise empty string",
+  "phone": "phone number if found, otherwise empty string",
+  "linkedin": "LinkedIn URL if found, otherwise empty string",
   "summary": "professional summary/about section if found, otherwise empty string",
   "experiences": [
     {{
@@ -61,7 +63,8 @@ Return valid JSON only:
       "year": "graduation year or date range"
     }}
   ],
-  "skills": ["skill1", "skill2"]
+  "skills": ["skill1", "skill2"],
+  "languages": ["French (Native)", "English (Fluent)", "Spanish (Professional)"]
 }}
 
 IMPORTANT:
@@ -69,7 +72,9 @@ IMPORTANT:
 - Keep the original language of descriptions (don't translate)
 - For bullets, split multi-sentence descriptions into separate items
 - If a field is not found, use empty string or empty array
-- The name is usually on the first line, possibly after 'Coordonnées' or 'Contact'"""
+- The name is usually on the first line, possibly after 'Coordonnées' or 'Contact'
+- Languages section: extract with proficiency level (Native, Fluent, Professional, etc.)
+- Phone number: often near the top, may start with + or country code"""
 
     try:
         response = model.generate_content(
@@ -87,6 +92,8 @@ IMPORTANT:
             title=data.get("title", ""),
             location=data.get("location", ""),
             email=data.get("email", ""),
+            phone=data.get("phone", ""),
+            linkedin=data.get("linkedin", ""),
             summary=data.get("summary", ""),
             experiences=[
                 Experience(
@@ -107,6 +114,7 @@ IMPORTANT:
                 for edu in data.get("education", [])
             ],
             skills=data.get("skills", []),
+            languages=data.get("languages", []),
         )
     except Exception:
         return _fallback_parse(raw_text)

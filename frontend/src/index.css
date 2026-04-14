@@ -482,6 +482,56 @@ textarea.input { resize: vertical; min-height: 120px; }
   outline: none;
 }
 
+/* CV sections */
+.cv-section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+.cv-section:last-child { border-bottom: none; }
+.cv-edit-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+.cv-edit-contact {
+  font-size: 11px;
+  color: #888;
+}
+.cv-edit-edu {
+  margin-bottom: 6px;
+}
+.cv-edit-edu-degree {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  display: block;
+}
+.cv-edit-edu-school {
+  font-size: 12px;
+  color: #666;
+  display: block;
+}
+.cv-edit-edu-year {
+  font-size: 11px;
+  color: #999;
+  display: block;
+}
+.cv-edit-languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.cv-edit-lang-tag {
+  font-size: 12px;
+  color: #555;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
 /* Legacy single-column chat (unused but kept for compat) */
 .chat-page { display: flex; flex-direction: column; }
 .chat-container {

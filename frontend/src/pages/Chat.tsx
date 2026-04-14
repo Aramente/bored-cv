@@ -51,52 +51,103 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
         </div>
       )}
       <div className="cv-preview-content">
-        <input
-          className="cv-edit-name"
-          value={cvData.name}
-          onBlur={(e) => handleEdit("name", e.target.value)} onChange={(e) => updateCvField("name", e.target.value)}
-        />
-        <input
-          className="cv-edit-title"
-          value={cvData.title}
-          onBlur={(e) => handleEdit("title", e.target.value)} onChange={(e) => updateCvField("title", e.target.value)}
-        />
-        <textarea
-          className="cv-edit-summary"
-          value={cvData.summary}
-          onChange={(e) => updateCvField("summary", e.target.value)}
-          rows={3}
-        />
-        {cvData.experiences.map((exp, i) => (
-          <div key={i} className="cv-edit-exp">
-            <div className="cv-edit-exp-header">
-              <input
-                className="cv-edit-exp-title"
-                value={exp.title}
-                onChange={(e) => updateCvField(`experiences.${i}.title`, e.target.value)}
-              />
-              <input
-                className="cv-edit-exp-company"
-                value={exp.company}
-                onChange={(e) => updateCvField(`experiences.${i}.company`, e.target.value)}
-              />
-              <input
-                className="cv-edit-exp-dates"
-                value={exp.dates}
-                onChange={(e) => updateCvField(`experiences.${i}.dates`, e.target.value)}
-              />
-            </div>
-            {exp.bullets.map((bullet, j) => (
-              <input
-                key={j}
-                className="cv-edit-bullet"
-                value={bullet}
-                onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
-              />
-            ))}
+        {/* Personal Info */}
+        <div className="cv-section">
+          <input
+            className="cv-edit-name"
+            value={cvData.name}
+            onBlur={(e) => handleEdit("name", e.target.value)}
+            onChange={(e) => updateCvField("name", e.target.value)}
+          />
+          <input
+            className="cv-edit-title"
+            value={cvData.title}
+            onBlur={(e) => handleEdit("title", e.target.value)}
+            onChange={(e) => updateCvField("title", e.target.value)}
+          />
+          <div className="cv-edit-contact-row">
+            {cvData.email && <span className="cv-edit-contact">{cvData.email}</span>}
+            {cvData.phone && <span className="cv-edit-contact">{cvData.phone}</span>}
+            {cvData.location && <span className="cv-edit-contact">{cvData.location}</span>}
+            {cvData.linkedin && <span className="cv-edit-contact">{cvData.linkedin}</span>}
           </div>
-        ))}
-        <div className="cv-edit-skills">
+        </div>
+
+        {/* Summary */}
+        <div className="cv-section">
+          <span className="cv-edit-label">{t("editor.section_summary")}</span>
+          <textarea
+            className="cv-edit-summary"
+            value={cvData.summary}
+            onChange={(e) => updateCvField("summary", e.target.value)}
+            onBlur={(e) => handleEdit("summary", e.target.value)}
+            rows={3}
+          />
+        </div>
+
+        {/* Experiences */}
+        <div className="cv-section">
+          <span className="cv-edit-label">{t("editor.section_experience")}</span>
+          {cvData.experiences.map((exp, i) => (
+            <div key={`exp-${i}-${exp.company}`} className="cv-edit-exp">
+              <div className="cv-edit-exp-header">
+                <input
+                  className="cv-edit-exp-title"
+                  value={exp.title}
+                  onChange={(e) => updateCvField(`experiences.${i}.title`, e.target.value)}
+                  onBlur={(e) => handleEdit(`experiences.${i}.title`, e.target.value)}
+                />
+                <input
+                  className="cv-edit-exp-company"
+                  value={exp.company}
+                  onChange={(e) => updateCvField(`experiences.${i}.company`, e.target.value)}
+                  onBlur={(e) => handleEdit(`experiences.${i}.company`, e.target.value)}
+                />
+                <input
+                  className="cv-edit-exp-dates"
+                  value={exp.dates}
+                  onChange={(e) => updateCvField(`experiences.${i}.dates`, e.target.value)}
+                />
+              </div>
+              {exp.bullets.map((bullet, j) => (
+                <input
+                  key={`bullet-${i}-${j}`}
+                  className="cv-edit-bullet"
+                  value={bullet}
+                  onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
+                  onBlur={(e) => handleEdit(`experiences.${i}.bullets.${j}`, e.target.value)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Education */}
+        <div className="cv-section">
+          <span className="cv-edit-label">{t("editor.section_education")}</span>
+          {cvData.education.map((edu, i) => (
+            <div key={`edu-${i}-${edu.school}`} className="cv-edit-edu">
+              <span className="cv-edit-edu-degree">{edu.degree}</span>
+              <span className="cv-edit-edu-school">{edu.school}</span>
+              <span className="cv-edit-edu-year">{edu.year}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Languages */}
+        {cvData.languages && cvData.languages.length > 0 && (
+          <div className="cv-section">
+            <span className="cv-edit-label">Languages</span>
+            <div className="cv-edit-languages">
+              {cvData.languages.map((lang, i) => (
+                <span key={i} className="cv-edit-lang-tag">{lang}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Skills */}
+        <div className="cv-section">
           <span className="cv-edit-label">{t("chat.skills_label")}</span>
           <input
             className="cv-edit-skills-input"
@@ -146,6 +197,8 @@ export default function Chat() {
         name: profile.name,
         title: profile.title,
         email: profile.email,
+        phone: profile.phone || "",
+        linkedin: profile.linkedin || "",
         location: profile.location,
         summary: profile.summary,
         experiences: profile.experiences.map((exp) => ({
@@ -156,6 +209,7 @@ export default function Chat() {
         })),
         education: profile.education,
         skills: profile.skills,
+        languages: profile.languages || [],
         language: i18n.language.startsWith("fr") ? "fr" : "en",
         match_score: 0,
         strengths: [],

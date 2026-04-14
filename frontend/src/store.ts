@@ -20,10 +20,13 @@ export interface Profile {
   title: string;
   location: string;
   email: string;
+  phone: string;
+  linkedin: string;
   summary: string;
   experiences: Experience[];
   education: Education[];
   skills: string[];
+  languages: string[];
 }
 
 export interface OfferRequirement {
@@ -67,11 +70,14 @@ export interface CVData {
   name: string;
   title: string;
   email: string;
+  phone: string;
+  linkedin: string;
   location: string;
   summary: string;
   experiences: RewrittenExperience[];
   education: Education[];
   skills: string[];
+  languages: string[];
   language: string;
   match_score: number;
   strengths: string[];

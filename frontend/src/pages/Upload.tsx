@@ -57,6 +57,8 @@ export default function Upload() {
         name: profile.name,
         title: profile.title,
         email: profile.email,
+        phone: profile.phone || "",
+        linkedin: profile.linkedin || "",
         location: profile.location,
         summary: profile.summary,
         experiences: profile.experiences.map((exp) => ({
@@ -67,6 +69,7 @@ export default function Upload() {
         })),
         education: profile.education,
         skills: profile.skills,
+        languages: profile.languages || [],
         language: i18n.language.startsWith("fr") ? "fr" : "en",
         match_score: 0,
         strengths: [],
