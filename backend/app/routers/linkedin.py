@@ -17,10 +17,16 @@ async def parse_linkedin(file: UploadFile = File(...)):
 
     try:
         profile = parse_linkedin_pdf(contents)
-    except Exception:
-        raise HTTPException(status_code=422, detail="Could not parse PDF")
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Could not parse PDF: {e}")
 
     if not profile.name:
         raise HTTPException(status_code=422, detail="Could not extract profile data from PDF")
+
+    # Return with debug info if parsing fell back to basic parser
+    if len(profile.experiences) == 0 and len(contents) > 1000:
+        # Likely fell back — return what we got but flag it
+        import logging
+        logging.warning(f"PDF parser returned 0 experiences for {len(contents)} byte file — likely fell back to basic parser")
 
     return profile

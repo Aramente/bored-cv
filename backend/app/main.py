@@ -38,20 +38,35 @@ async def health():
 
 @app.get("/api/debug-parse")
 async def debug_parse():
-    """Temporary debug endpoint — test Gemini JSON output."""
+    """Debug: test full PDF parser pipeline."""
+    import traceback
     import google.generativeai as genai
+    from app.services.pdf_parser import extract_pdf_text
     key = os.environ.get("GEMINI_API_KEY", "")
     genai.configure(api_key=key)
     model = genai.GenerativeModel("gemini-2.5-flash")
+
+    # Test with a small fake PDF text
+    test_text = "Coordonnées Kevin Duchier\n0033786626512\nkevin@gmail.com\nExpérience\nFounder\nSloow\nseptembre 2025 - Present\nBuilding stuff"
+
+    prompt = f"""Extract structured profile data from this LinkedIn PDF export.
+
+RAW TEXT:
+{test_text}
+
+Return valid JSON with: name, title, email, phone, linkedin, location, summary, experiences, education, skills, languages."""
+
     try:
         r = model.generate_content(
-            'Return JSON: {"test": "hello"}',
+            prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=100,
+                max_output_tokens=2000,
                 temperature=0.1,
                 response_mime_type="application/json",
             ),
         )
-        return {"ok": True, "response": r.text, "sdk_version": genai.__version__}
+        import json
+        data = json.loads(r.text)
+        return {"ok": True, "name": data.get("name"), "experiences": len(data.get("experiences", [])), "sdk": genai.__version__}
     except Exception as e:
-        return {"ok": False, "error": str(e), "sdk_version": genai.__version__}
+        return {"ok": False, "error": str(e), "traceback": traceback.format_exc(), "sdk": genai.__version__}
