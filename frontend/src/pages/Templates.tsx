@@ -20,7 +20,7 @@ export default function Templates() {
   return (
     <div className="page">
       <nav className="nav">
-        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
+        <span className="logo">bored cv</span>
         <LanguageToggle />
       </nav>
       <div className="page-content">

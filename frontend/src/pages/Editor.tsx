@@ -28,7 +28,7 @@ export default function Editor() {
   return (
     <div className="page">
       <nav className="nav">
-        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
+        <span className="logo">bored cv</span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="btn-secondary" onClick={() => setStep("templates")}>{t("common.back")}</button>
           <LanguageToggle />

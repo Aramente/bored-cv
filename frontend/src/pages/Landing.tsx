@@ -16,7 +16,7 @@ export default function Landing() {
   return (
     <div className="page landing">
       <nav className="nav">
-        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
+        <span className="logo">bored cv</span>
         <LanguageToggle />
       </nav>
 

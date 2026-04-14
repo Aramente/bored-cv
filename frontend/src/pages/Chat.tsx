@@ -78,7 +78,7 @@ export default function Chat() {
   return (
     <div className="page chat-page">
       <nav className="nav">
-        <img src="/bored-cv/logo.webp" alt="Bored CV" className="logo-img" />
+        <span className="logo">bored cv</span>
         <LanguageToggle />
       </nav>
 
