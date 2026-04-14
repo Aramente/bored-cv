@@ -110,6 +110,14 @@ interface AppState {
   setSelectedTemplate: (t: TemplateId) => void;
   setTone: (tone: string) => void;
   updateCvField: (path: string, value: string) => void;
+  addCvExperience: () => void;
+  removeCvExperience: (index: number) => void;
+  addCvBullet: (expIndex: number) => void;
+  removeCvBullet: (expIndex: number, bulletIndex: number) => void;
+  addCvEducation: () => void;
+  removeCvEducation: (index: number) => void;
+  addCvLanguage: (lang: string) => void;
+  removeCvLanguage: (index: number) => void;
   setUser: (user: { email: string; provider: string } | null) => void;
   reset: () => void;
 }
@@ -165,6 +173,54 @@ export const useStore = create<AppState>()(persist((set) => ({
       obj[keys[keys.length - 1]] = value;
       return { cvData: cv };
     }),
+  addCvExperience: () => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.experiences.push({ title: "", company: "", dates: "", bullets: [""] });
+    return { cvData: cv };
+  }),
+  removeCvExperience: (index) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.experiences.splice(index, 1);
+    return { cvData: cv };
+  }),
+  addCvBullet: (expIndex) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.experiences[expIndex]?.bullets.push("");
+    return { cvData: cv };
+  }),
+  removeCvBullet: (expIndex, bulletIndex) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.experiences[expIndex]?.bullets.splice(bulletIndex, 1);
+    return { cvData: cv };
+  }),
+  addCvEducation: () => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.education.push({ degree: "", school: "", year: "" });
+    return { cvData: cv };
+  }),
+  removeCvEducation: (index) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.education.splice(index, 1);
+    return { cvData: cv };
+  }),
+  addCvLanguage: (lang) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.languages.push(lang);
+    return { cvData: cv };
+  }),
+  removeCvLanguage: (index) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = structuredClone(s.cvData);
+    cv.languages.splice(index, 1);
+    return { cvData: cv };
+  }),
   reset: () => set(initialState),
 }), {
   name: "bored-cv-session",

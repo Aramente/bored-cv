@@ -501,23 +501,96 @@ textarea.input { resize: vertical; min-height: 120px; }
 }
 .cv-edit-edu {
   margin-bottom: 6px;
+  position: relative;
 }
-.cv-edit-edu-degree {
-  font-size: 13px;
-  font-weight: 600;
-  color: #333;
-  display: block;
+.cv-edit-edu-degree, .cv-edit-edu-school, .cv-edit-edu-year {
+  width: 100%;
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  padding: 1px 0;
+  outline: none;
 }
-.cv-edit-edu-school {
-  font-size: 12px;
-  color: #666;
-  display: block;
+.cv-edit-edu-degree { font-size: 13px; font-weight: 600; color: #333; }
+.cv-edit-edu-school { font-size: 12px; color: #666; }
+.cv-edit-edu-year { font-size: 11px; color: #999; }
+.cv-edit-edu-degree:hover, .cv-edit-edu-school:hover, .cv-edit-edu-year:hover,
+.cv-edit-edu-degree:focus, .cv-edit-edu-school:focus, .cv-edit-edu-year:focus {
+  border-bottom: 1px dashed var(--border);
 }
-.cv-edit-edu-year {
+
+/* Add/remove buttons */
+.cv-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.cv-add-btn {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.cv-add-btn:hover { background: var(--accent); color: white; }
+.cv-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.cv-remove-btn:hover { color: var(--red); }
+.cv-edit-exp { position: relative; }
+.cv-bullet-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cv-bullet-row .cv-edit-bullet { flex: 1; }
+.cv-remove-btn-sm {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+.cv-remove-btn-sm:hover { color: var(--red); }
+.cv-add-btn-sm {
+  background: none;
+  border: none;
+  color: var(--accent);
   font-size: 11px;
-  color: #999;
-  display: block;
+  cursor: pointer;
+  padding: 2px 0;
+  margin-top: 2px;
 }
+.cv-add-btn-sm:hover { text-decoration: underline; }
+.cv-remove-btn-inline {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0;
+}
+.cv-remove-btn-inline:hover { color: var(--red); }
 .cv-edit-languages {
   display: flex;
   flex-wrap: wrap;

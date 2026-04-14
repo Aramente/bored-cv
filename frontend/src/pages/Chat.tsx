@@ -10,7 +10,7 @@ import AuthButton from "../components/AuthButton";
 
 function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, newVal: string) => void }) {
   const { t } = useTranslation();
-  const { cvData, updateCvField } = useStore();
+  const { cvData, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage } = useStore();
 
   const handleEdit = (path: string, newVal: string) => {
     if (!cvData) return;
@@ -87,64 +87,86 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
 
         {/* Experiences */}
         <div className="cv-section">
-          <span className="cv-edit-label">{t("editor.section_experience")}</span>
+          <div className="cv-section-header">
+            <span className="cv-edit-label">{t("editor.section_experience")}</span>
+            <button className="cv-add-btn" onClick={addCvExperience}>+</button>
+          </div>
           {cvData.experiences.map((exp, i) => (
             <div key={`exp-${i}-${exp.company}`} className="cv-edit-exp">
+              <button className="cv-remove-btn" onClick={() => removeCvExperience(i)}>×</button>
               <div className="cv-edit-exp-header">
                 <input
                   className="cv-edit-exp-title"
                   value={exp.title}
                   onChange={(e) => updateCvField(`experiences.${i}.title`, e.target.value)}
                   onBlur={(e) => handleEdit(`experiences.${i}.title`, e.target.value)}
+                  placeholder="Job title"
                 />
                 <input
                   className="cv-edit-exp-company"
                   value={exp.company}
                   onChange={(e) => updateCvField(`experiences.${i}.company`, e.target.value)}
                   onBlur={(e) => handleEdit(`experiences.${i}.company`, e.target.value)}
+                  placeholder="Company"
                 />
                 <input
                   className="cv-edit-exp-dates"
                   value={exp.dates}
                   onChange={(e) => updateCvField(`experiences.${i}.dates`, e.target.value)}
+                  placeholder="Dates"
                 />
               </div>
               {exp.bullets.map((bullet, j) => (
-                <input
-                  key={`bullet-${i}-${j}`}
-                  className="cv-edit-bullet"
-                  value={bullet}
-                  onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
-                  onBlur={(e) => handleEdit(`experiences.${i}.bullets.${j}`, e.target.value)}
-                />
+                <div key={`bullet-${i}-${j}`} className="cv-bullet-row">
+                  <input
+                    className="cv-edit-bullet"
+                    value={bullet}
+                    onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
+                    onBlur={(e) => handleEdit(`experiences.${i}.bullets.${j}`, e.target.value)}
+                    placeholder="Achievement..."
+                  />
+                  <button className="cv-remove-btn-sm" onClick={() => removeCvBullet(i, j)}>×</button>
+                </div>
               ))}
+              <button className="cv-add-btn-sm" onClick={() => addCvBullet(i)}>+ bullet</button>
             </div>
           ))}
         </div>
 
         {/* Education */}
         <div className="cv-section">
-          <span className="cv-edit-label">{t("editor.section_education")}</span>
+          <div className="cv-section-header">
+            <span className="cv-edit-label">{t("editor.section_education")}</span>
+            <button className="cv-add-btn" onClick={addCvEducation}>+</button>
+          </div>
           {cvData.education.map((edu, i) => (
             <div key={`edu-${i}-${edu.school}`} className="cv-edit-edu">
-              <span className="cv-edit-edu-degree">{edu.degree}</span>
-              <span className="cv-edit-edu-school">{edu.school}</span>
-              <span className="cv-edit-edu-year">{edu.year}</span>
+              <button className="cv-remove-btn-sm" onClick={() => removeCvEducation(i)}>×</button>
+              <input className="cv-edit-edu-degree" value={edu.degree} onChange={(e) => updateCvField(`education.${i}.degree`, e.target.value)} placeholder="Degree" />
+              <input className="cv-edit-edu-school" value={edu.school} onChange={(e) => updateCvField(`education.${i}.school`, e.target.value)} placeholder="School" />
+              <input className="cv-edit-edu-year" value={edu.year} onChange={(e) => updateCvField(`education.${i}.year`, e.target.value)} placeholder="Year" />
             </div>
           ))}
         </div>
 
         {/* Languages */}
-        {cvData.languages && cvData.languages.length > 0 && (
-          <div className="cv-section">
+        <div className="cv-section">
+          <div className="cv-section-header">
             <span className="cv-edit-label">Languages</span>
-            <div className="cv-edit-languages">
-              {cvData.languages.map((lang, i) => (
-                <span key={i} className="cv-edit-lang-tag">{lang}</span>
-              ))}
-            </div>
+            <button className="cv-add-btn" onClick={() => {
+              const lang = prompt("Language (e.g. Spanish (Professional))");
+              if (lang) addCvLanguage(lang);
+            }}>+</button>
           </div>
-        )}
+          <div className="cv-edit-languages">
+            {(cvData.languages || []).map((lang, i) => (
+              <span key={i} className="cv-edit-lang-tag">
+                {lang}
+                <button className="cv-remove-btn-inline" onClick={() => removeCvLanguage(i)}>×</button>
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* Skills */}
         <div className="cv-section">
