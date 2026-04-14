@@ -948,3 +948,100 @@ textarea.input { resize: vertical; min-height: 120px; }
   .match-score-details { flex-direction: column; gap: 12px; }
   .match-score-number { font-size: 28px; }
 }
+
+/* Quick actions per experience */
+.cv-quick-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.cv-quick-actions button {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: none;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cv-quick-actions button:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Undo button */
+.cv-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.cv-undo-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.cv-undo-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border-light);
+}
+.cv-undo-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Visual feedback on changes */
+@keyframes flash-yellow {
+  0% { background-color: rgba(245, 197, 66, 0.3); }
+  100% { background-color: transparent; }
+}
+.cv-edit-exp.just-changed, .cv-edit-edu.just-changed {
+  animation: flash-yellow 1.5s ease-out;
+}
+
+/* Collapsible sections */
+.cv-section-header { cursor: pointer; user-select: none; }
+.cv-collapse-icon { font-size: 12px; color: #999; margin-left: 4px; }
+
+/* Experience top row with badge and remove */
+.cv-edit-exp-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.cv-edit-exp-top-row .cv-remove-btn {
+  position: static;
+  flex-shrink: 0;
+}
+
+/* Progress badges */
+.cv-progress-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cv-progress-badge.raw {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+.cv-progress-badge.improved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}

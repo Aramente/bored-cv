@@ -8,9 +8,16 @@ import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
-function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, newVal: string) => void }) {
+function CVPreviewPanel({ onEdit, onQuickAction }: {
+  onEdit?: (field: string, oldVal: string, newVal: string) => void;
+  onQuickAction?: (action: string, expIndex: number) => void;
+}) {
   const { t } = useTranslation();
-  const { cvData, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage } = useStore();
+  const { cvData, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
+  const profile = useStore((s) => s.profile);
+  const [flashIndex, setFlashIndex] = useState<number | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggle = (section: string) => setCollapsed((c) => ({ ...c, [section]: !c[section] }));
 
   const handleEdit = (path: string, newVal: string) => {
     if (!cvData) return;
@@ -41,7 +48,10 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
     <div className="cv-preview-panel">
       <div className="cv-preview-header">
         <h3>{t("chat.preview_title")}</h3>
-        <span className="cv-preview-badge">{t("chat.preview_editable")}</span>
+        <div className="cv-preview-actions">
+          <button className="cv-undo-btn" onClick={undo} disabled={cvHistory.length === 0} title="Undo">↩</button>
+          <span className="cv-preview-badge">{t("chat.preview_editable")}</span>
+        </div>
       </div>
       <p className="cv-preview-hint">{t("chat.preview_hint")}</p>
       {cvData.match_score > 0 && (
@@ -87,61 +97,79 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
 
         {/* Experiences */}
         <div className="cv-section">
-          <div className="cv-section-header">
-            <span className="cv-edit-label">{t("editor.section_experience")}</span>
-            <button className="cv-add-btn" onClick={addCvExperience}>+</button>
+          <div className="cv-section-header" onClick={() => toggle("experiences")}>
+            <span className="cv-edit-label">{t("editor.section_experience")} ({cvData.experiences.length})</span>
+            <span className="cv-collapse-icon">{collapsed.experiences ? '▸' : '▾'}</span>
+            <button className="cv-add-btn" onClick={(e) => { e.stopPropagation(); addCvExperience(); }}>+</button>
           </div>
-          {cvData.experiences.map((exp, i) => (
-            <div key={`exp-${i}-${exp.company}`} className="cv-edit-exp">
-              <button className="cv-remove-btn" onClick={() => removeCvExperience(i)}>×</button>
-              <div className="cv-edit-exp-header">
-                <input
-                  className="cv-edit-exp-title"
-                  value={exp.title}
-                  onChange={(e) => updateCvField(`experiences.${i}.title`, e.target.value)}
-                  onBlur={(e) => handleEdit(`experiences.${i}.title`, e.target.value)}
-                  placeholder="Job title"
-                />
-                <input
-                  className="cv-edit-exp-company"
-                  value={exp.company}
-                  onChange={(e) => updateCvField(`experiences.${i}.company`, e.target.value)}
-                  onBlur={(e) => handleEdit(`experiences.${i}.company`, e.target.value)}
-                  placeholder="Company"
-                />
-                <input
-                  className="cv-edit-exp-dates"
-                  value={exp.dates}
-                  onChange={(e) => updateCvField(`experiences.${i}.dates`, e.target.value)}
-                  placeholder="Dates"
-                />
-              </div>
-              {exp.bullets.map((bullet, j) => (
-                <div key={`bullet-${i}-${j}`} className="cv-bullet-row">
-                  <input
-                    className="cv-edit-bullet"
-                    value={bullet}
-                    onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
-                    onBlur={(e) => handleEdit(`experiences.${i}.bullets.${j}`, e.target.value)}
-                    placeholder="Achievement..."
-                  />
-                  <button className="cv-remove-btn-sm" onClick={() => removeCvBullet(i, j)}>×</button>
+          {!collapsed.experiences && cvData.experiences.map((exp, i) => {
+            const isImproved = profile && profile.experiences[i] && (
+              exp.bullets.join("") !== (profile.experiences[i]?.bullets || []).join("") ||
+              exp.title !== profile.experiences[i]?.title
+            );
+            return (
+              <div key={`exp-${i}-${exp.company}`} className={`cv-edit-exp ${flashIndex === i ? 'just-changed' : ''}`}>
+                <div className="cv-edit-exp-top-row">
+                  <span className={`cv-progress-badge ${isImproved ? 'improved' : 'raw'}`}>
+                    {isImproved ? '✓ improved' : 'raw'}
+                  </span>
+                  <button className="cv-remove-btn" onClick={() => { pushCvHistory(); removeCvExperience(i); }}>×</button>
                 </div>
-              ))}
-              <button className="cv-add-btn-sm" onClick={() => addCvBullet(i)}>+ bullet</button>
-            </div>
-          ))}
+                <div className="cv-edit-exp-header">
+                  <input
+                    className="cv-edit-exp-title"
+                    value={exp.title}
+                    onChange={(e) => updateCvField(`experiences.${i}.title`, e.target.value)}
+                    onBlur={(e) => handleEdit(`experiences.${i}.title`, e.target.value)}
+                    placeholder="Job title"
+                  />
+                  <input
+                    className="cv-edit-exp-company"
+                    value={exp.company}
+                    onChange={(e) => updateCvField(`experiences.${i}.company`, e.target.value)}
+                    onBlur={(e) => handleEdit(`experiences.${i}.company`, e.target.value)}
+                    placeholder="Company"
+                  />
+                  <input
+                    className="cv-edit-exp-dates"
+                    value={exp.dates}
+                    onChange={(e) => updateCvField(`experiences.${i}.dates`, e.target.value)}
+                    placeholder="Dates"
+                  />
+                </div>
+                {exp.bullets.map((bullet, j) => (
+                  <div key={`bullet-${i}-${j}`} className="cv-bullet-row">
+                    <input
+                      className="cv-edit-bullet"
+                      value={bullet}
+                      onChange={(e) => updateCvField(`experiences.${i}.bullets.${j}`, e.target.value)}
+                      onBlur={(e) => handleEdit(`experiences.${i}.bullets.${j}`, e.target.value)}
+                      placeholder="Achievement..."
+                    />
+                    <button className="cv-remove-btn-sm" onClick={() => removeCvBullet(i, j)}>×</button>
+                  </div>
+                ))}
+                <button className="cv-add-btn-sm" onClick={() => addCvBullet(i)}>+ bullet</button>
+                <div className="cv-quick-actions">
+                  <button onClick={() => { onQuickAction?.("improve", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>✨ improve</button>
+                  <button onClick={() => { onQuickAction?.("shorten", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>✂️ shorten</button>
+                  <button onClick={() => { onQuickAction?.("metrics", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>📊 add metrics</button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Education */}
         <div className="cv-section">
-          <div className="cv-section-header">
-            <span className="cv-edit-label">{t("editor.section_education")}</span>
-            <button className="cv-add-btn" onClick={addCvEducation}>+</button>
+          <div className="cv-section-header" onClick={() => toggle("education")}>
+            <span className="cv-edit-label">{t("editor.section_education")} ({cvData.education.length})</span>
+            <span className="cv-collapse-icon">{collapsed.education ? '▸' : '▾'}</span>
+            <button className="cv-add-btn" onClick={(e) => { e.stopPropagation(); addCvEducation(); }}>+</button>
           </div>
-          {cvData.education.map((edu, i) => (
+          {!collapsed.education && cvData.education.map((edu, i) => (
             <div key={`edu-${i}-${edu.school}`} className="cv-edit-edu">
-              <button className="cv-remove-btn-sm" onClick={() => removeCvEducation(i)}>×</button>
+              <button className="cv-remove-btn-sm" onClick={() => { pushCvHistory(); removeCvEducation(i); }}>×</button>
               <input className="cv-edit-edu-degree" value={edu.degree} onChange={(e) => updateCvField(`education.${i}.degree`, e.target.value)} placeholder="Degree" />
               <input className="cv-edit-edu-school" value={edu.school} onChange={(e) => updateCvField(`education.${i}.school`, e.target.value)} placeholder="School" />
               <input className="cv-edit-edu-year" value={edu.year} onChange={(e) => updateCvField(`education.${i}.year`, e.target.value)} placeholder="Year" />
@@ -151,21 +179,25 @@ function CVPreviewPanel({ onEdit }: { onEdit?: (field: string, oldVal: string, n
 
         {/* Languages */}
         <div className="cv-section">
-          <div className="cv-section-header">
-            <span className="cv-edit-label">Languages</span>
-            <button className="cv-add-btn" onClick={() => {
+          <div className="cv-section-header" onClick={() => toggle("languages")}>
+            <span className="cv-edit-label">Languages ({(cvData.languages || []).length})</span>
+            <span className="cv-collapse-icon">{collapsed.languages ? '▸' : '▾'}</span>
+            <button className="cv-add-btn" onClick={(e) => {
+              e.stopPropagation();
               const lang = prompt("Language (e.g. Spanish (Professional))");
               if (lang) addCvLanguage(lang);
             }}>+</button>
           </div>
-          <div className="cv-edit-languages">
-            {(cvData.languages || []).map((lang, i) => (
-              <span key={i} className="cv-edit-lang-tag">
-                {lang}
-                <button className="cv-remove-btn-inline" onClick={() => removeCvLanguage(i)}>×</button>
-              </span>
-            ))}
-          </div>
+          {!collapsed.languages && (
+            <div className="cv-edit-languages">
+              {(cvData.languages || []).map((lang, i) => (
+                <span key={i} className="cv-edit-lang-tag">
+                  {lang}
+                  <button className="cv-remove-btn-inline" onClick={() => { pushCvHistory(); removeCvLanguage(i); }}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Skills */}
@@ -206,6 +238,18 @@ export default function Chat() {
       role: "user",
       content: `✏️ I edited ${fieldName}: "${newVal}"`,
     });
+  };
+
+  const handleQuickAction = (action: string, expIndex: number) => {
+    const cv = useStore.getState().cvData;
+    if (!cv || !cv.experiences[expIndex]) return;
+    const exp = cv.experiences[expIndex];
+    const actionText: Record<string, string> = {
+      improve: `improve the description for my role as ${exp.title} at ${exp.company}`,
+      shorten: `make the bullets shorter and punchier for ${exp.title} at ${exp.company}`,
+      metrics: `add specific metrics and numbers to my ${exp.title} role at ${exp.company}`,
+    };
+    sendMessage(actionText[action] || action);
   };
 
   useEffect(() => {
@@ -266,6 +310,7 @@ export default function Chat() {
 
       // Process CV actions from the chat
       if (response.cv_actions && response.cv_actions.length > 0) {
+        useStore.getState().pushCvHistory(); // Save state before changes
         const store = useStore.getState();
         for (const action of response.cv_actions) {
           if (!action.target && action.action !== "edit_field") continue; // skip empty targets
@@ -467,7 +512,7 @@ export default function Chat() {
 
         {/* Right: live CV preview */}
         <div className="cv-side">
-          <CVPreviewPanel onEdit={handleCvEdit} />
+          <CVPreviewPanel onEdit={handleCvEdit} onQuickAction={handleQuickAction} />
         </div>
       </div>
     </div>

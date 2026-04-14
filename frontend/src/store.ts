@@ -106,6 +106,7 @@ interface AppState {
   tone: string;
   projectId: number | null;
   user: { email: string; provider: string } | null;
+  cvHistory: CVData[];
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
@@ -126,6 +127,8 @@ interface AppState {
   removeCvEducation: (index: number) => void;
   addCvLanguage: (lang: string) => void;
   removeCvLanguage: (index: number) => void;
+  pushCvHistory: () => void;
+  undo: () => void;
   setUser: (user: { email: string; provider: string } | null) => void;
   reset: () => void;
 }
@@ -142,6 +145,7 @@ const initialState = {
   tone: "startup",
   projectId: null,
   user: null,
+  cvHistory: [] as CVData[],
 };
 
 export const useStore = create<AppState>()(persist((set) => ({
@@ -229,6 +233,19 @@ export const useStore = create<AppState>()(persist((set) => ({
     cv.languages.splice(index, 1);
     return { cvData: cv };
   }),
+  pushCvHistory: () => set((s) => {
+    if (!s.cvData) return s;
+    const history = [...s.cvHistory, structuredClone(s.cvData)].slice(-20);
+    return { cvHistory: history };
+  }),
+  undo: () => set((s) => {
+    if (s.cvHistory.length === 0) return s;
+    const prev = s.cvHistory[s.cvHistory.length - 1];
+    return {
+      cvData: structuredClone(prev),
+      cvHistory: s.cvHistory.slice(0, -1),
+    };
+  }),
   reset: () => set(initialState),
 }), {
   name: "bored-cv-session",
@@ -241,5 +258,6 @@ export const useStore = create<AppState>()(persist((set) => ({
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,
     // user is intentionally excluded — session is server-side
+    // cvHistory is intentionally excluded — too large for localStorage
   }),
 }));
