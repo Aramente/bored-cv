@@ -54,9 +54,17 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface CvAction {
+  action: string;
+  target: string;
+  value: string;
+  index: number;
+}
+
 export interface ChatResponse {
   message: string;
   is_complete: boolean;
+  cv_actions: CvAction[];
 }
 
 export interface RewrittenExperience {

@@ -264,6 +264,35 @@ export default function Chat() {
 
       addMessage({ role: "assistant", content: response.message });
 
+      // Process CV actions from the chat
+      if (response.cv_actions && response.cv_actions.length > 0) {
+        const store = useStore.getState();
+        for (const action of response.cv_actions) {
+          if (action.action === "remove_experience" && store.cvData) {
+            const idx = store.cvData.experiences.findIndex(
+              (e) => e.company.toLowerCase().includes(action.target.toLowerCase()) ||
+                     e.title.toLowerCase().includes(action.target.toLowerCase())
+            );
+            if (idx >= 0) store.removeCvExperience(idx);
+          } else if (action.action === "add_bullet" && store.cvData) {
+            const idx = store.cvData.experiences.findIndex(
+              (e) => e.company.toLowerCase().includes(action.target.toLowerCase())
+            );
+            if (idx >= 0) {
+              store.addCvBullet(idx);
+              const bulletIdx = store.cvData.experiences[idx].bullets.length;
+              store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value);
+            }
+          } else if (action.action === "remove_education" && store.cvData) {
+            const idx = store.cvData.education.findIndex(
+              (e) => e.school.toLowerCase().includes(action.target.toLowerCase()) ||
+                     e.degree.toLowerCase().includes(action.target.toLowerCase())
+            );
+            if (idx >= 0) store.removeCvEducation(idx);
+          }
+        }
+      }
+
       if (!response.is_complete) {
         // Background draft — update CV preview progressively
         draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang)

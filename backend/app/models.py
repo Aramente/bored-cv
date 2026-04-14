@@ -62,9 +62,17 @@ class ChatRequest(BaseModel):
     ui_language: str = "en"
 
 
+class CvAction(BaseModel):
+    action: str  # "remove_experience", "add_bullet", "reorder", "edit_field"
+    target: str = ""  # company name, field path, etc.
+    value: str = ""  # new value for edits/adds
+    index: int = -1  # for positional operations
+
+
 class ChatResponse(BaseModel):
     message: str
     is_complete: bool = False
+    cv_actions: list[CvAction] = []
 
 
 class RewrittenExperience(BaseModel):
