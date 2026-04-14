@@ -6,6 +6,9 @@ from fastapi.responses import RedirectResponse
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+BASE_URL = os.environ.get("BASE_URL", "https://aramente-bored-cv-api.hf.space")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://aramente.github.io/bored-cv/")
+
 oauth = OAuth()
 
 oauth.register(
@@ -29,7 +32,7 @@ oauth.register(
 
 @router.get("/google/login")
 async def google_login(request: Request):
-    redirect_uri = request.url_for("google_callback")
+    redirect_uri = f"{BASE_URL}/api/auth/google/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
@@ -38,12 +41,12 @@ async def google_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user_info = token.get("userinfo", {})
     request.session["user"] = {"email": user_info.get("email", ""), "provider": "google"}
-    return RedirectResponse(url="/")
+    return RedirectResponse(url=FRONTEND_URL)
 
 
 @router.get("/github/login")
 async def github_login(request: Request):
-    redirect_uri = request.url_for("github_callback")
+    redirect_uri = f"{BASE_URL}/api/auth/github/callback"
     return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
@@ -53,7 +56,7 @@ async def github_callback(request: Request):
     resp = await oauth.github.get("user", token=token)
     user_data = resp.json()
     request.session["user"] = {"email": user_data.get("login", ""), "provider": "github"}
-    return RedirectResponse(url="/")
+    return RedirectResponse(url=FRONTEND_URL)
 
 
 @router.get("/me")
