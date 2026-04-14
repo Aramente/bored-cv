@@ -85,6 +85,7 @@ interface AppState {
   messages: ChatMessage[];
   cvData: CVData | null;
   selectedTemplate: TemplateId;
+  tone: string;
   setStep: (step: Step) => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
@@ -92,6 +93,7 @@ interface AppState {
   addMessage: (msg: ChatMessage) => void;
   setCvData: (cv: CVData) => void;
   setSelectedTemplate: (t: TemplateId) => void;
+  setTone: (tone: string) => void;
   updateCvField: (path: string, value: string) => void;
   reset: () => void;
 }
@@ -104,6 +106,7 @@ const initialState = {
   messages: [],
   cvData: null,
   selectedTemplate: "clean" as TemplateId,
+  tone: "startup",
 };
 
 export const useStore = create<AppState>((set) => ({
@@ -115,6 +118,7 @@ export const useStore = create<AppState>((set) => ({
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setCvData: (cvData) => set({ cvData }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
+  setTone: (tone) => set({ tone }),
   updateCvField: (path, value) =>
     set((s) => {
       if (!s.cvData) return s;

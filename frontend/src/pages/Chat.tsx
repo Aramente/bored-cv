@@ -12,6 +12,7 @@ export default function Chat() {
     profile, offer, gapAnalysis,
     messages, addMessage,
     setCvData, setStep,
+    tone,
   } = useStore();
 
   const [input, setInput] = useState("");
@@ -47,7 +48,7 @@ export default function Chat() {
 
       if (response.is_complete) {
         setGenerating(true);
-        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang);
+        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang, tone);
         setCvData(cv);
         setStep("templates");
       }

@@ -11,7 +11,14 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal"];
 
 export default function Templates() {
   const { t } = useTranslation();
-  const { cvData, selectedTemplate, setSelectedTemplate, setStep } = useStore();
+  const { cvData, selectedTemplate, setSelectedTemplate, setStep, tone, setTone } = useStore();
+
+  const tones = [
+    { id: "startup", label: "Startup", desc: "direct, punchy, ownership vibes" },
+    { id: "corporate", label: "Corporate", desc: "polished but not generic" },
+    { id: "creative", label: "Creative", desc: "bold, shows personality" },
+    { id: "minimal", label: "Minimal", desc: "ultra-concise, pure signal" },
+  ];
 
   if (!cvData) return null;
 
@@ -26,6 +33,23 @@ export default function Templates() {
       <div className="page-content">
         <h1>{t("templates.title")}</h1>
         <p className="subtitle">{t("templates.subtitle")}</p>
+
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Tone of voice</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {tones.map((t) => (
+              <div
+                key={t.id}
+                className={`card ${tone === t.id ? "selected" : ""}`}
+                onClick={() => setTone(t.id)}
+                style={{ flex: "0 0 auto", padding: "8px 14px", cursor: "pointer" }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{t.label}</span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 6 }}>{t.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
           {templateKeys.map((key) => (

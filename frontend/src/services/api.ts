@@ -52,8 +52,8 @@ export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapA
   return post("/api/chat", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<CVData> {
-  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
+export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, tone?: string): Promise<CVData> {
+  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", tone: tone || "startup" }, captchaToken);
 }
 
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
