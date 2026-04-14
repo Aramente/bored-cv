@@ -15,10 +15,11 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
   onQuickAction?: (action: string, expIndex: number) => void;
 }) {
   const { t } = useTranslation();
-  const { cvData, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
+  const { cvData, cvOriginal, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
   const profile = useStore((s) => s.profile);
   const [flashIndex, setFlashIndex] = useState<number | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [showOriginal, setShowOriginal] = useState(false);
   const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
   const toggle = (section: string) => setCollapsed((c) => ({ ...c, [section]: !c[section] }));
 
@@ -53,11 +54,11 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
         <h3>{t("chat.preview_title")}</h3>
         <div className="cv-preview-actions">
           <div className="cv-view-toggle">
-            <button className={viewMode === "edit" ? "active" : ""} onClick={() => setViewMode("edit")}>edit</button>
-            <button className={viewMode === "preview" ? "active" : ""} onClick={() => setViewMode("preview")}>preview</button>
+            <button className={viewMode === "edit" && !showOriginal ? "active" : ""} onClick={() => { setViewMode("edit"); setShowOriginal(false); }}>edit</button>
+            <button className={viewMode === "preview" ? "active" : ""} onClick={() => { setViewMode("preview"); setShowOriginal(false); }}>preview</button>
+            {cvOriginal && <button className={showOriginal ? "active" : ""} onClick={() => { setShowOriginal(!showOriginal); setViewMode("edit"); }}>v0</button>}
           </div>
           <button className="cv-undo-btn" onClick={undo} disabled={cvHistory.length === 0} title="Undo">↩</button>
-          <span className="cv-preview-badge">{t("chat.preview_editable")}</span>
         </div>
       </div>
       <p className="cv-preview-hint">{t("chat.preview_hint")}</p>
@@ -67,7 +68,20 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
           <span> match</span>
         </div>
       )}
-      {viewMode === "preview" ? (
+      {showOriginal && cvOriginal ? (
+        <div className="cv-preview-content cv-original">
+          <p className="cv-original-label">original LinkedIn — read only</p>
+          <div className="cv-edit-name" style={{ opacity: 0.6 }}>{cvOriginal.name}</div>
+          <div className="cv-edit-title" style={{ opacity: 0.6 }}>{cvOriginal.title}</div>
+          {cvOriginal.experiences.map((exp, i) => (
+            <div key={i} className="cv-edit-exp" style={{ opacity: 0.6 }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{exp.title}</div>
+              <div style={{ fontSize: 12, color: "#666" }}>{exp.company} — {exp.dates}</div>
+              {exp.bullets.map((b, j) => <div key={j} style={{ fontSize: 12, color: "#888", paddingLeft: 10 }}>• {b}</div>)}
+            </div>
+          ))}
+        </div>
+      ) : viewMode === "preview" ? (
         <div style={{ height: "calc(100% - 80px)" }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
             <Minimal data={cvData} />

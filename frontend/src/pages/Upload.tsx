@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { parseLinkedIn, scrapeOffer, analyzeProfile } from "../services/api";
+import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV } from "../services/api";
 import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
@@ -10,7 +10,7 @@ import AuthButton from "../components/AuthButton";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -64,8 +64,8 @@ export default function Upload() {
       }
       setOffer(offer);
 
-      // Immediately create a CV draft from the LinkedIn profile — don't start blank
-      const initialCv: CVData = {
+      // Save LinkedIn raw as V0 (original)
+      const rawCv: CVData = {
         name: profile.name,
         title: profile.title,
         email: profile.email,
@@ -87,16 +87,40 @@ export default function Upload() {
         strengths: [],
         improvements: [],
       };
-      setCvData(initialCv);
+      setCvOriginal(rawCv);
+      setCvData(rawCv); // Show raw first, AI draft replaces it
 
-      // Go to chat immediately — analyze in background
+      // Go to chat immediately
       setLoadingStep(t("upload.step_ready"));
       navigate("/chat");
 
-      // Background: analyze profile vs offer (first chat question appears when done)
+      // Background: analyze + create AI-improved first draft
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
-      analyzeProfile(profile, offer, captcha, lang)
+      const captchaForBg = "";
+
+      // Analyze in background
+      analyzeProfile(profile, offer, captchaForBg, lang)
         .then((gap) => useStore.getState().setGapAnalysis(gap))
+        .catch(() => {});
+
+      // AI-improved first draft in background — replaces raw LinkedIn with a better version
+      draftCV(profile, offer, { matched_skills: [], gaps: [], questions: [] }, [], captchaForBg, lang)
+        .then((draft) => {
+          const current = useStore.getState().cvData;
+          if (!current) return;
+          // Merge: keep personal info from original, use AI-improved content
+          useStore.getState().setCvData({
+            ...current,
+            summary: draft.summary || current.summary,
+            experiences: draft.experiences.length > 0 ? draft.experiences : current.experiences,
+            skills: draft.skills.length > 0 ? draft.skills : current.skills,
+            education: current.education,
+            languages: current.languages,
+            match_score: draft.match_score || 0,
+            strengths: draft.strengths || [],
+            improvements: draft.improvements || [],
+          });
+        })
         .catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

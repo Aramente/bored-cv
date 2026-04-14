@@ -100,6 +100,7 @@ interface AppState {
   gapAnalysis: GapAnalysis | null;
   messages: ChatMessage[];
   cvData: CVData | null;
+  cvOriginal: CVData | null;  // V0 — raw LinkedIn data
   cvDataAlt: CVData | null;
   cvLang: "fr" | "en";
   selectedTemplate: TemplateId;
@@ -114,6 +115,7 @@ interface AppState {
   setMessages: (msgs: ChatMessage[]) => void;
   setProjectId: (id: number | null) => void;
   setCvData: (cv: CVData) => void;
+  setCvOriginal: (cv: CVData) => void;
   setCvDataAlt: (cv: CVData) => void;
   setCvLang: (lang: "fr" | "en") => void;
   setSelectedTemplate: (t: TemplateId) => void;
@@ -141,6 +143,7 @@ const initialState = {
   gapAnalysis: null,
   messages: [],
   cvData: null,
+  cvOriginal: null,
   cvDataAlt: null,
   cvLang: "fr" as "fr" | "en",
   selectedTemplate: "clean" as TemplateId,
@@ -160,6 +163,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setMessages: (messages) => set({ messages }),
   setProjectId: (projectId) => set({ projectId }),
   setCvData: (cvData) => set({ cvData }),
+  setCvOriginal: (cvOriginal) => set({ cvOriginal }),
   setCvDataAlt: (cvDataAlt) => set({ cvDataAlt }),
   setCvLang: (cvLang) => set({ cvLang }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
