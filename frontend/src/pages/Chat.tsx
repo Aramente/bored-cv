@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
-import { chatNext, generateCV } from "../services/api";
+import { chatNext, generateCV, draftCV } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
@@ -122,6 +122,13 @@ export default function Chat() {
       const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang);
 
       addMessage({ role: "assistant", content: response.message });
+
+      if (!response.is_complete) {
+        // Background draft — update CV preview progressively
+        draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang)
+          .then((cv) => setCvData(cv))
+          .catch(() => {}); // silent fail — draft is best-effort
+      }
 
       if (response.is_complete) {
         setGenerating(true);

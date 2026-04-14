@@ -56,6 +56,10 @@ export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: Ga
   return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", tone: tone || "startup" }, captchaToken);
 }
 
+export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<CVData> {
+  return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
+}
+
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
   const res = await fetch(`${API_URL}/api/auth/quota`, { credentials: "include" });
   return res.json();
