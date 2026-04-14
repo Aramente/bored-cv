@@ -89,6 +89,7 @@ class GenerateRequest(BaseModel):
     gap_analysis: GapAnalysis
     messages: list[ChatMessage]
     ui_language: str = "en"
+    tone: str = "startup"  # startup, corporate, creative, minimal
 
 
 class OfferScrapeRequest(BaseModel):

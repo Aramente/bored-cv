@@ -75,7 +75,17 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> ChatResponse:
-        conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        # Token optimization: only send last 6 messages + summary of earlier ones
+        if len(messages) > 6:
+            early = messages[:-4]
+            recent = messages[-4:]
+            summary_parts = []
+            for m in early:
+                if m.role == "user":
+                    summary_parts.append(f"- User said: {m.content[:150]}")
+            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
+        else:
+            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
         lang_instruction = "French" if ui_language == "fr" else "English"
 
         prompt = f"""You are a senior career coach helping someone build a killer CV for a specific job. You act like a great interview prep partner.
@@ -114,7 +124,8 @@ YOUR COACHING RULES:
 DECISION:
 - If the user's last answer was vague → ask them to be more specific (with a concrete suggestion)
 - If you have enough for this experience → move to the next relevant experience
-- If all relevant experiences are covered with concrete metrics → set is_complete to true
+- ONLY set is_complete to true when you've asked AT LEAST 3 questions AND received concrete answers with numbers/specifics for each. If in doubt, ask one more.
+- Before completing, always offer one final reframe: "Voilà ce que j'ai retenu — [summary]. On génère ton CV ?"
 
 Respond in valid JSON only:
 {{"message": "your short, focused question or reframing suggestion", "is_complete": false or true}}
@@ -128,12 +139,12 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
         data = self._parse_json(response.text)
         return ChatResponse(**data)
 
-    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> CVData:
+    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup") -> CVData:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
 
-        prompt = f"""You are an expert CV writer. Rewrite this candidate's CV to perfectly match the job offer, using insights from the conversation.
+        prompt = f"""You write CVs that get people hired. Not corporate-sounding CVs that blend in with 200 others. CVs that a recruiter REMEMBERS.
 
-CANDIDATE PROFILE:
+CANDIDATE:
 Name: {profile.name}
 Title: {profile.title}
 Email: {profile.email}
@@ -145,27 +156,44 @@ Education:
 {self._format_education(profile)}
 Skills: {", ".join(profile.skills)}
 
-JOB OFFER:
-Title: {offer.title} at {offer.company}
-Requirements: {self._format_requirements(offer)}
+TARGET ROLE: {offer.title} at {offer.company}
+Key requirements: {self._format_requirements(offer)}
 
-CONVERSATION INSIGHTS:
+WHAT THE CANDIDATE TOLD YOU IN THE CONVERSATION:
 {conversation}
 
 MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
 
-INSTRUCTIONS:
-- Rewrite the professional summary to directly address what the offer is looking for
-- Rewrite each experience's bullet points to emphasize skills relevant to the offer
-- Use specific numbers and achievements from the conversation
-- Reorder skills to put the most offer-relevant ones first
-- Keep it truthful — enhance presentation, don't fabricate
-- Detect the job offer language and write the CV in that language
-- Max 4-5 bullet points per experience
-- Make bullets achievement-oriented: "Verb + what + impact"
+TONE OF VOICE: {self._get_tone_instruction(tone)}
+
+WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
+
+1. ANTI-BULLSHIT. Never write generic corporate filler like:
+   ❌ "Led cross-functional initiatives to drive strategic outcomes"
+   ❌ "Proven track record of delivering results in fast-paced environments"
+   ❌ "Passionate about leveraging synergies to optimize workflows"
+   These say nothing. A recruiter's eyes glaze over.
+
+2. TELL MICRO-STORIES. Each bullet should be a tiny story: what was the situation, what did you DO, what CHANGED.
+   ✅ "Inherited a 2-person HR team at Germinal, grew it to 8, built the entire onboarding flow — new hires were productive in 5 days instead of 3 weeks"
+   ✅ "Ran payroll across 4 countries at Mindflow (FR, US, UK, DE) with zero errors over 14 months — even during the series A crunch"
+
+3. USE THE CANDIDATE'S ACTUAL DETAILS from the conversation. Real company names, real numbers, real context. If they said "12 people", write "12 people", not "a team of professionals".
+
+4. DON'T KEYWORD-STUFF. The CV should naturally demonstrate the skills the offer asks for, through specific examples — not by listing buzzwords. If the offer says "data-driven", don't write "data-driven mindset" — write the actual KPI they tracked.
+
+5. SUMMARY: 2 sentences. First sentence = who they are (specific, not generic). Second = what makes them perfect for THIS role (referencing something concrete).
+   ✅ "HR leader who built people ops from scratch at two startups (Germinal, Mindflow), scaling from 5 to 80 employees. Fluent in multi-country payroll, HRIS setup, and the chaos of hypergrowth."
+   ❌ "Experienced HR professional with a passion for building great teams and driving organizational success."
+
+6. ONLY INCLUDE RELEVANT EXPERIENCES. If a role doesn't relate to the target job, skip it entirely. Better a 3-experience CV that tells a story than a 7-experience CV that dilutes the message.
+
+7. SKILLS: only list skills that the offer actually cares about AND that the candidate actually demonstrated. No padding.
+
+8. Write in the language of the job offer.
 
 Respond in valid JSON only:
-{{"name": "{profile.name}", "title": "rewritten professional title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2-3 sentence professional summary tailored to the offer", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["achievement-oriented bullet 1", "bullet 2"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["most relevant skill first", "..."], "language": "en or fr (detected from job offer)"}}"""
+{{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr"}}"""
 
         response = self.model.generate_content(
             prompt,
@@ -173,6 +201,15 @@ Respond in valid JSON only:
         )
         data = self._parse_json(response.text)
         return CVData(**data)
+
+    def _get_tone_instruction(self, tone: str) -> str:
+        tones = {
+            "startup": "Direct, confident, action-oriented. Short punchy sentences. Use first-person implied (no 'I'). Show scrappiness and ownership. Think: YC founder describing what they built.",
+            "corporate": "Polished and structured but NOT generic. Still use specific numbers and stories. Think: McKinsey associate who actually did the work, not just made the slides.",
+            "creative": "Bold, slightly unconventional. Can break format rules. Show personality. Think: senior designer's portfolio — the work speaks, but with flair.",
+            "minimal": "Ultra-concise. One line per bullet, max 10 words. Pure signal, zero fluff. Think: senior engineer's resume — code speaks louder than words.",
+        }
+        return tones.get(tone, tones["startup"])
 
     def _format_experiences(self, profile: Profile) -> str:
         parts = []
