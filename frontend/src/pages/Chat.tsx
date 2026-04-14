@@ -268,27 +268,35 @@ export default function Chat() {
       if (response.cv_actions && response.cv_actions.length > 0) {
         const store = useStore.getState();
         for (const action of response.cv_actions) {
-          if (action.action === "remove_experience" && store.cvData) {
+          if (!action.target && action.action !== "edit_field") continue; // skip empty targets
+          const target = (action.target || "").toLowerCase();
+
+          if (action.action === "remove_experience" && store.cvData && target) {
             const idx = store.cvData.experiences.findIndex(
-              (e) => e.company.toLowerCase().includes(action.target.toLowerCase()) ||
-                     e.title.toLowerCase().includes(action.target.toLowerCase())
+              (e) => e.company.toLowerCase().includes(target) ||
+                     e.title.toLowerCase().includes(target)
             );
             if (idx >= 0) store.removeCvExperience(idx);
-          } else if (action.action === "add_bullet" && store.cvData) {
+          } else if (action.action === "add_bullet" && store.cvData && target) {
             const idx = store.cvData.experiences.findIndex(
-              (e) => e.company.toLowerCase().includes(action.target.toLowerCase())
+              (e) => e.company.toLowerCase().includes(target)
             );
             if (idx >= 0) {
               store.addCvBullet(idx);
-              const bulletIdx = store.cvData.experiences[idx].bullets.length;
-              store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value);
+              const newCv = useStore.getState().cvData;
+              if (newCv) {
+                const bulletIdx = newCv.experiences[idx].bullets.length - 1;
+                store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value);
+              }
             }
-          } else if (action.action === "remove_education" && store.cvData) {
+          } else if (action.action === "remove_education" && store.cvData && target) {
             const idx = store.cvData.education.findIndex(
-              (e) => e.school.toLowerCase().includes(action.target.toLowerCase()) ||
-                     e.degree.toLowerCase().includes(action.target.toLowerCase())
+              (e) => e.school.toLowerCase().includes(target) ||
+                     e.degree.toLowerCase().includes(target)
             );
             if (idx >= 0) store.removeCvEducation(idx);
+          } else if (action.action === "edit_field" && store.cvData) {
+            store.updateCvField(action.target, action.value);
           }
         }
       }
