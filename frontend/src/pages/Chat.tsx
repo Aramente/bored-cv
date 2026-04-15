@@ -162,7 +162,7 @@ function CVPreviewPanel({ onEdit, onQuickAction }: {
               <div key={`exp-${i}-${exp.company}`} className={`cv-edit-exp ${flashIndex === i ? 'just-changed' : ''}`}>
                 <div className="cv-edit-exp-top-row">
                   <span className={`cv-progress-badge ${isImproved ? 'improved' : 'raw'}`}>
-                    {isImproved ? '✓ improved' : 'raw'}
+                    {isImproved ? '✓ edited' : 'original'}
                   </span>
                   <button className="cv-remove-btn" onClick={() => { pushCvHistory(); removeCvExperience(i); }}>×</button>
                 </div>
