@@ -39,21 +39,20 @@ async def health():
 @app.get("/api/debug-db")
 async def debug_db():
     """Debug: check DB status."""
-    import sqlite3
-    from app.db import get_db_path, get_db
-    path = get_db_path()
-    exists = os.path.exists(path)
-    data_dir_exists = os.path.isdir("/data")
+    from app.db import get_db, USE_TURSO, TURSO_URL
     project_count = 0
     user_count = 0
-    if exists:
+    try:
         with get_db() as conn:
-            project_count = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
-            user_count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+            row = conn.execute("SELECT COUNT(*) as cnt FROM projects").fetchone()
+            project_count = row["cnt"] if row else 0
+            row = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()
+            user_count = row["cnt"] if row else 0
+    except Exception as e:
+        return {"error": str(e), "turso": USE_TURSO, "turso_url": TURSO_URL[:30] + "..." if TURSO_URL else ""}
     return {
-        "db_path": path,
-        "exists": exists,
-        "data_dir": data_dir_exists,
+        "driver": "turso" if USE_TURSO else "sqlite",
+        "turso_url": TURSO_URL[:30] + "..." if TURSO_URL else "",
         "users": user_count,
         "projects": project_count,
     }
