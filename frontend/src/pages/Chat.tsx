@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { chatNext, generateCV, draftCV, translateCV, saveProject } from "../services/api";
+import { chatNext, generateCV, draftCV, translateCV, saveProject, getKnowledge } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
@@ -24,6 +24,8 @@ export default function Chat() {
   const [generating, setGenerating] = useState(false);
   const [voiceError, setVoiceError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [knownFacts, setKnownFacts] = useState<string[]>([]);
+  const [contradictions, setContradictions] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const handleCvEdit = useCallback((field: string, oldVal: string, newVal: string) => {
@@ -46,6 +48,21 @@ export default function Chat() {
     };
     sendMessage(actionText[action] || action);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const token = localStorage.getItem("bored-cv-token");
+    if (token) {
+      getKnowledge()
+        .then((kb) => {
+          const facts = kb.experiences.map((e: any) =>
+            `${e.company} (${e.title}): ${(e.best_bullets || []).slice(0, 2).join("; ")}`
+          ).filter((f: string) => f.length > 10);
+          setKnownFacts(facts);
+          setContradictions(kb.contradictions || []);
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,7 +116,7 @@ export default function Chat() {
       const allMessages = [...currentMessages, { role: "user" as const, content: text }];
       const captcha = "";
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
-      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang);
+      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang, knownFacts, contradictions);
 
       addMessage({ role: "assistant", content: response.message });
 

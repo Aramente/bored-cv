@@ -74,7 +74,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
 
-    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> ChatResponse:
+    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None) -> ChatResponse:
         # Token optimization: only send last 6 messages + summary of earlier ones
         if len(messages) > 6:
             early = messages[:-4]
@@ -88,6 +88,14 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
             conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
         lang_instruction = "French" if ui_language == "fr" else "English"
 
+        knowledge_context = ""
+        if known_facts or contradictions:
+            knowledge_context = "\n\nKNOWLEDGE FROM PREVIOUS CV PROJECTS:"
+            if known_facts:
+                knowledge_context += "\n\nKnown facts (don't re-ask these, use them directly):\n" + "\n".join(f"- {f}" for f in known_facts[:20])
+            if contradictions:
+                knowledge_context += "\n\nContradictions to clarify (ask the user which is correct):\n" + "\n".join(f"- {c}" for c in contradictions[:10])
+
         prompt = f"""You are the best career interviewer in the world. You have a talent for making people realize what's extraordinary in their experience — things THEY think are normal but that a recruiter would find impressive.
 
 People don't know what's interesting about themselves. They say "I did 30 recruitments" and think that's enough. Your job is to DIG DEEPER — uncover the CONTEXT, the CHALLENGES, the PROCESS, the RESULTS that make a boring fact into a compelling story.
@@ -95,7 +103,7 @@ People don't know what's interesting about themselves. They say "I did 30 recrui
 CANDIDATE: {profile.name} — {profile.title}
 TARGET ROLE: {offer.title} at {offer.company}
 GAPS: {", ".join(gap_analysis.gaps)}
-PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}
+PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}{knowledge_context}
 
 CONVERSATION SO FAR:
 {conversation}

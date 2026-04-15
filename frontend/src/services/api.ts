@@ -51,8 +51,17 @@ export async function analyzeProfile(profile: Profile, offer: Offer, captchaToke
   return post("/api/analyze", { profile, offer, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<ChatResponse> {
-  return post("/api/chat", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
+export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[]): Promise<ChatResponse> {
+  return post("/api/chat", {
+    profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en",
+    known_facts: knownFacts || [], contradictions: contradictions || [],
+  }, captchaToken);
+}
+
+export async function getKnowledge(): Promise<{ experiences: any[]; facts: any[]; contradictions: string[] }> {
+  const res = await fetch(`${API_URL}/api/knowledge`, { headers: getAuthHeaders() });
+  if (!res.ok) return { experiences: [], facts: [], contradictions: [] };
+  return res.json();
 }
 
 export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, tone?: string): Promise<CVData> {

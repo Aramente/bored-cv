@@ -60,6 +60,8 @@ class ChatRequest(BaseModel):
     gap_analysis: GapAnalysis
     messages: list[ChatMessage] = []
     ui_language: str = "en"
+    known_facts: list[str] = []
+    contradictions: list[str] = []
 
 
 class CvAction(BaseModel):
