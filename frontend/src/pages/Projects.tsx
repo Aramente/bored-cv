@@ -20,7 +20,7 @@ export default function Projects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const { offer, cvData, profile, gapAnalysis, messages } = useStore();
+  const { offer, cvData } = useStore();
 
   useEffect(() => {
     const allProjects: Project[] = [];

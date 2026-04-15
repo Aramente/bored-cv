@@ -59,7 +59,7 @@ export default function Landing() {
             <span className="ba-label">Bored CV</span>
             <div className="ba-content">
               <p className="ba-title">Head of People Operations</p>
-              <p className="ba-company">Mindflow · AI automation · seed → Series A</p>
+              <p className="ba-company">Mindflow (AI automation, seed→Series A, 12→45 employees)</p>
               <p className="ba-bullet">Built People ops from scratch for a distributed team across 3 countries. Ran payroll in FR/US/UK with zero errors over 14 months. Cut onboarding time from 3 weeks to 5 days.</p>
             </div>
           </div>
