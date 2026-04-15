@@ -7,11 +7,12 @@ import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
 interface Project {
-  id: number;
+  id: number | string;
   name: string;
   offer_title: string;
   match_score: number;
   updated_at: string;
+  source: "server" | "local";
 }
 
 export default function Projects() {
@@ -19,26 +20,55 @@ export default function Projects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const { offer, cvData, profile, gapAnalysis, messages } = useStore();
 
   useEffect(() => {
-    const token = localStorage.getItem("bored-cv-token");
-    if (!token) {
-      setLoading(false);
-      return;
+    const allProjects: Project[] = [];
+
+    // Always check localStorage for current session project
+    if (offer && cvData) {
+      allProjects.push({
+        id: "current",
+        name: offer.company || offer.title || "Current project",
+        offer_title: offer.title,
+        match_score: cvData.match_score || 0,
+        updated_at: new Date().toISOString(),
+        source: "local",
+      });
     }
-    fetch(`${API_URL}/api/projects`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("not authed");
-        return r.json();
+
+    // Also try server DB if logged in
+    const token = localStorage.getItem("bored-cv-token");
+    if (token) {
+      fetch(`${API_URL}/api/projects`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((data) => {
-        if (Array.isArray(data)) setProjects(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+        .then((r) => r.ok ? r.json() : [])
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const serverProjects = data.map((p: any) => ({ ...p, source: "server" as const }));
+            // Merge: don't duplicate current project if it's also on server
+            const merged = [...allProjects];
+            for (const sp of serverProjects) {
+              if (!merged.some((m) => m.name === sp.name)) {
+                merged.push(sp);
+              }
+            }
+            setProjects(merged);
+          }
+          setLoading(false);
+        })
+        .catch(() => { setProjects(allProjects); setLoading(false); });
+    } else {
+      setProjects(allProjects);
+      setLoading(false);
+    }
+  }, [offer, cvData]);
+
+  const loadCurrentProject = () => {
+    // Data is already in the store from localStorage persist — just navigate
+    navigate("/chat");
+  };
 
   return (
     <div className="page">
@@ -52,7 +82,7 @@ export default function Projects() {
       <div className="page-content">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h1>{t("projects.title")}</h1>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>
+          <button className="btn-primary" onClick={() => { useStore.getState().reset(); navigate("/upload"); }}>
             {t("projects.new")}
           </button>
         </div>
@@ -68,21 +98,25 @@ export default function Projects() {
           <div className="projects-grid">
             {projects.map((p) => (
               <div key={p.id} className="project-card" onClick={async () => {
-                try {
-                  const { loadProject } = await import("../services/api");
-                  const project = await loadProject(p.id);
-                  const store = useStore.getState();
-                  store.setProjectId(p.id);
-                  if (project.profile_data) store.setProfile(project.profile_data);
-                  if (project.offer_data) store.setOffer(project.offer_data);
-                  if (project.gap_analysis) store.setGapAnalysis(project.gap_analysis);
-                  if (project.cv_data) store.setCvData(project.cv_data);
-                  store.setMessages(project.messages || []);
-                  if (project.template) store.setSelectedTemplate(project.template);
-                  if (project.tone) store.setTone(project.tone);
-                  navigate("/chat");
-                } catch {
-                  navigate("/upload");
+                if (p.source === "local") {
+                  loadCurrentProject();
+                } else {
+                  try {
+                    const { loadProject } = await import("../services/api");
+                    const project = await loadProject(p.id as number);
+                    const store = useStore.getState();
+                    store.setProjectId(p.id as number);
+                    if (project.profile_data) store.setProfile(project.profile_data);
+                    if (project.offer_data) store.setOffer(project.offer_data);
+                    if (project.gap_analysis) store.setGapAnalysis(project.gap_analysis);
+                    if (project.cv_data) store.setCvData(project.cv_data);
+                    store.setMessages(project.messages || []);
+                    if (project.template) store.setSelectedTemplate(project.template);
+                    if (project.tone) store.setTone(project.tone);
+                    navigate("/chat");
+                  } catch {
+                    navigate("/upload");
+                  }
                 }
               }}>
                 <div className="project-card-header">
@@ -92,7 +126,10 @@ export default function Projects() {
                   )}
                 </div>
                 <p className="project-offer">{p.offer_title}</p>
-                <p className="project-date">{new Date(p.updated_at).toLocaleDateString()}</p>
+                <p className="project-date">
+                  {p.source === "local" && "📱 "}
+                  {new Date(p.updated_at).toLocaleDateString()}
+                </p>
               </div>
             ))}
           </div>
