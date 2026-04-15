@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
   eduBlock: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
 });
 
-export default function Minimal({ data }: TemplateProps) {
+export default function Minimal({ data, brandColors }: TemplateProps) {
+  const accentColor = brandColors?.primary || "#555555";
   // Split summary into bullet points if it contains line breaks or sentence separators
   const highlightLines = data.summary
     ? data.summary.split(/\n|(?<=\.)\s+(?=[A-ZÁÀÂÄÉÈÊËÎÏÔÙÛÜÇ])/).filter(Boolean)
@@ -40,7 +41,7 @@ export default function Minimal({ data }: TemplateProps) {
         {data.summary && (
           <>
             <View style={styles.highlights}>
-              <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+              <Text style={[styles.highlightsLabel, { color: accentColor }]}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
               {highlightLines.length > 1
                 ? highlightLines.map((line, i) => (
                     <Text key={i} style={styles.highlightBullet}>· {line.trim()}</Text>
@@ -52,7 +53,7 @@ export default function Minimal({ data }: TemplateProps) {
           </>
         )}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
+          <Text style={[styles.sectionTitle, { color: accentColor }]}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
           {data.experiences.map((exp, i) => (
             <View key={i} style={styles.expBlock}>
               <View style={styles.expRow}>
@@ -68,7 +69,7 @@ export default function Minimal({ data }: TemplateProps) {
         </View>
         <View style={styles.divider} />
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{data.language === "fr" ? "Formation" : "Education"}</Text>
+          <Text style={[styles.sectionTitle, { color: accentColor }]}>{data.language === "fr" ? "Formation" : "Education"}</Text>
           {data.education.map((e, i) => (
             <View key={i} style={styles.eduBlock}>
               <Text style={{ fontSize: 9 }}>{e.degree}  —  {e.school}</Text>
@@ -78,7 +79,7 @@ export default function Minimal({ data }: TemplateProps) {
         </View>
         <View style={styles.divider} />
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{data.language === "fr" ? "Compétences" : "Skills"}</Text>
+          <Text style={[styles.sectionTitle, { color: accentColor }]}>{data.language === "fr" ? "Compétences" : "Skills"}</Text>
           <View style={styles.skillsRow}>
             {data.skills.map((s, i) => (
               <Text key={i} style={styles.skill}>{s}{i < data.skills.length - 1 ? "  ·" : ""}</Text>

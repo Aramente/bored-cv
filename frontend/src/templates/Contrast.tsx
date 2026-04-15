@@ -26,32 +26,34 @@ const styles = StyleSheet.create({
   eduSchool: { fontSize: 8, color: "#94a3b8" },
 });
 
-export default function Contrast({ data }: TemplateProps) {
+export default function Contrast({ data, brandColors }: TemplateProps) {
+  const accentColor = brandColors?.primary || "#6366f1";
+  const headerBg = brandColors?.secondary || "#0f172a";
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: headerBg }]}>
           <Text style={styles.headerName}>{data.name}</Text>
-          <Text style={styles.headerTitle}>{data.title}</Text>
+          <Text style={[styles.headerTitle, { color: accentColor }]}>{data.title}</Text>
           <Text style={styles.headerContact}>{[data.location, data.email].filter(Boolean).join("  ·  ")}</Text>
         </View>
         <View style={styles.skillsBar}>
-          {data.skills.map((s, i) => <Text key={i} style={styles.skillPill}>{s}</Text>)}
+          {data.skills.map((s, i) => <Text key={i} style={[styles.skillPill, { backgroundColor: accentColor }]}>{s}</Text>)}
         </View>
         {data.summary && (
-          <View style={styles.highlights}>
-            <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+          <View style={[styles.highlights, { borderLeftColor: accentColor }]}>
+            <Text style={[styles.highlightsLabel, { color: accentColor }]}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
             <Text style={styles.highlightsText}>{data.summary}</Text>
           </View>
         )}
         <View style={styles.body}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
+            <Text style={[styles.sectionTitle, { borderBottomColor: accentColor }]}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
               <View key={i} style={styles.expBlock}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
                 <View style={styles.expMeta}>
-                  <Text style={styles.expCompany}>{exp.company}</Text>
+                  <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>
                   <Text style={styles.expDates}>{exp.dates}</Text>
                 </View>
                 {exp.bullets.map((b, j) => (
@@ -61,7 +63,7 @@ export default function Contrast({ data }: TemplateProps) {
             ))}
           </View>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{data.language === "fr" ? "Formation" : "Education"}</Text>
+            <Text style={[styles.sectionTitle, { borderBottomColor: accentColor }]}>{data.language === "fr" ? "Formation" : "Education"}</Text>
             {data.education.map((e, i) => (
               <View key={i} style={{ marginBottom: 4 }}>
                 <Text style={styles.eduItem}>{e.degree}</Text>

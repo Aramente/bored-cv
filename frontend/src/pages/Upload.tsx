@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV, translateCV } from "../services/api";
+import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV, translateCV, extractColors } from "../services/api";
 import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
@@ -63,6 +63,17 @@ export default function Upload() {
         throw new Error("Could not parse job description");
       }
       setOffer(offer);
+
+      // Extract company brand colors in background (non-blocking)
+      if (offerTab === "url" && offerUrl) {
+        extractColors(offerUrl)
+          .then((colors) => {
+            if (colors.colors.length >= 2) {
+              useStore.getState().setBrandColors({ primary: colors.primary, secondary: colors.secondary });
+            }
+          })
+          .catch(() => {});
+      }
 
       // Save LinkedIn raw as V0 (original)
       const rawCv: CVData = {

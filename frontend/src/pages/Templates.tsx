@@ -16,7 +16,7 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "co
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone, brandColors, useBrandColors, setUseBrandColors } = useStore();
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
@@ -118,6 +118,23 @@ export default function Templates() {
           </div>
         </div>
 
+        {brandColors && (
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>
+              <input
+                type="checkbox"
+                checked={useBrandColors}
+                onChange={(e) => setUseBrandColors(e.target.checked)}
+              />
+              <span>Use company colors</span>
+              <span style={{ display: "inline-flex", gap: 4, marginLeft: 4 }}>
+                <span style={{ width: 14, height: 14, borderRadius: 3, background: brandColors.primary, border: "1px solid var(--border)" }} />
+                <span style={{ width: 14, height: 14, borderRadius: 3, background: brandColors.secondary, border: "1px solid var(--border)" }} />
+              </span>
+            </label>
+          </div>
+        )}
+
         <div className="templates-grid">
           {templateKeys.map((key) => (
             <div
@@ -133,7 +150,7 @@ export default function Templates() {
 
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: 500, marginBottom: 16 }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
-            <PreviewComponent data={displayCv} />
+            <PreviewComponent data={displayCv} brandColors={useBrandColors ? brandColors : null} />
           </PDFViewer>
         </div>
 

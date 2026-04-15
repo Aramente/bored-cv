@@ -108,6 +108,10 @@ interface AppState {
   projectId: number | null;
   user: { email: string; provider: string } | null;
   cvHistory: CVData[];
+  brandColors: { primary: string; secondary: string } | null;
+  useBrandColors: boolean;
+  setBrandColors: (colors: { primary: string; secondary: string } | null) => void;
+  setUseBrandColors: (use: boolean) => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
@@ -152,6 +156,8 @@ const initialState = {
   user: null,
   cvHistory: [] as CVData[],
   lastSaved: null,
+  brandColors: null,
+  useBrandColors: true,
 };
 
 export const useStore = create<AppState>()(persist((set) => ({
@@ -169,6 +175,8 @@ export const useStore = create<AppState>()(persist((set) => ({
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
   setLastSaved: (lastSaved) => set({ lastSaved }),
+  setBrandColors: (brandColors) => set({ brandColors }),
+  setUseBrandColors: (useBrandColors) => set({ useBrandColors }),
   setUser: (user) => set({ user }),
   updateCvField: (path, value) =>
     set((s) => {

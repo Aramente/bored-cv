@@ -46,11 +46,12 @@ function BoldLeadBullet({ text, style }: { text: string; style: Style }) {
   return <BoldMetrics text={text} style={style} />;
 }
 
-export default function Consultant({ data }: TemplateProps) {
+export default function Consultant({ data, brandColors }: TemplateProps) {
+  const accentColor = brandColors?.primary || "#111111";
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.topRule} />
+        <View style={[styles.topRule, { borderTopColor: accentColor }]} />
         <View style={styles.topRuleThin} />
 
         <View style={styles.nameBlock}>
@@ -62,7 +63,7 @@ export default function Consultant({ data }: TemplateProps) {
         {/* Education first — consultant convention */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Formation" : "Education"}</Text>
-          <View style={styles.rule} />
+          <View style={[styles.rule, { borderBottomColor: accentColor }]} />
           {data.education.map((e, i) => (
             <View key={i} style={styles.eduRow}>
               <View>
@@ -77,21 +78,21 @@ export default function Consultant({ data }: TemplateProps) {
         {/* Skills second */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Compétences" : "Core Competencies"}</Text>
-          <View style={styles.rule} />
+          <View style={[styles.rule, { borderBottomColor: accentColor }]} />
           <Text style={styles.skillsText}>{data.skills.join("  ·  ")}</Text>
         </View>
 
         {data.summary && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "Profil" : "Executive Summary"}</Text>
-            <View style={styles.rule} />
+            <View style={[styles.rule, { borderBottomColor: accentColor }]} />
             <Text style={styles.summary}>{data.summary}</Text>
           </View>
         )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience Professionnelle" : "Professional Experience"}</Text>
-          <View style={styles.rule} />
+          <View style={[styles.rule, { borderBottomColor: accentColor }]} />
           {data.experiences.map((exp, i) => (
             <View key={i} style={styles.expBlock}>
               <View style={styles.expHeader}>
@@ -107,7 +108,7 @@ export default function Consultant({ data }: TemplateProps) {
         </View>
 
         <View style={styles.bottomRuleThin} />
-        <View style={styles.bottomRule} />
+        <View style={[styles.bottomRule, { borderTopColor: accentColor }]} />
       </Page>
     </Document>
   );

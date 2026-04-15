@@ -25,11 +25,13 @@ const styles = StyleSheet.create({
   eduMeta: { fontSize: 8, fontFamily: "Courier", color: "#5c4a2a" },
 });
 
-export default function Retro({ data }: TemplateProps) {
+export default function Retro({ data, brandColors }: TemplateProps) {
+  const accentColor = brandColors?.primary || "#2c2415";
+  const accentLight = brandColors?.secondary || "#8a7050";
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
+        <View style={[styles.header, { borderColor: accentColor }]}>
           <Text style={styles.name}>{data.name}</Text>
           <Text style={styles.titleLine}>_{data.title}_</Text>
           <Text style={styles.contact}>{[data.email, data.location].filter(Boolean).join("  //  ")}</Text>
@@ -38,16 +40,16 @@ export default function Retro({ data }: TemplateProps) {
         {data.summary && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "PROFIL" : "PROFILE"}</Text>
-            <View style={styles.divider} />
-            <View style={styles.dividerThin} />
-            <Text style={styles.summary}>{data.summary}</Text>
+            <View style={[styles.divider, { borderBottomColor: accentColor }]} />
+            <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
+            <Text style={[styles.summary, { borderLeftColor: accentLight }]}>{data.summary}</Text>
           </View>
         )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "EXPÉRIENCE" : "EXPERIENCE"}</Text>
-          <View style={styles.divider} />
-          <View style={styles.dividerThin} />
+          <View style={[styles.divider, { borderBottomColor: accentColor }]} />
+          <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
           {data.experiences.map((exp, i) => (
             <View key={i} style={styles.expBlock}>
               <View style={styles.expHeader}>
@@ -64,8 +66,8 @@ export default function Retro({ data }: TemplateProps) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "FORMATION" : "EDUCATION"}</Text>
-          <View style={styles.divider} />
-          <View style={styles.dividerThin} />
+          <View style={[styles.divider, { borderBottomColor: accentColor }]} />
+          <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
           {data.education.map((e, i) => (
             <View key={i} style={styles.eduRow}>
               <Text style={styles.eduDegree}>{e.degree}</Text>
@@ -76,8 +78,8 @@ export default function Retro({ data }: TemplateProps) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "COMPÉTENCES" : "SKILLS"}</Text>
-          <View style={styles.divider} />
-          <View style={styles.dividerThin} />
+          <View style={[styles.divider, { borderBottomColor: accentColor }]} />
+          <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
           <Text style={styles.skillsText}>{data.skills.join(", ")}</Text>
         </View>
       </Page>

@@ -25,11 +25,13 @@ const styles = StyleSheet.create({
   contactItem: { fontSize: 8, color: "#cbd5e1", marginBottom: 3 },
 });
 
-export default function Clean({ data }: TemplateProps) {
+export default function Clean({ data, brandColors }: TemplateProps) {
+  const accentColor = brandColors?.primary || "#6366f1";
+  const sidebarBg = brandColors?.secondary || "#0c1f3d";
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.sidebar}>
+        <View style={[styles.sidebar, { backgroundColor: sidebarBg }]}>
           <Text style={styles.sidebarName}>{data.name}</Text>
           <Text style={styles.sidebarTitle}>{data.title}</Text>
           {(data.email || data.location) && (
@@ -57,17 +59,17 @@ export default function Clean({ data }: TemplateProps) {
         </View>
         <View style={styles.main}>
           {data.summary && (
-            <View style={styles.highlights}>
-              <Text style={styles.highlightsLabel}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
+            <View style={[styles.highlights, { borderLeftColor: accentColor }]}>
+              <Text style={[styles.highlightsLabel, { color: accentColor }]}>{data.language === "fr" ? "Points clés" : "Key Highlights"}</Text>
               <Text style={styles.highlightsText}>{data.summary}</Text>
             </View>
           )}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
-              <View key={i} style={styles.expBlock}>
+              <View key={i} style={[styles.expBlock, { borderLeftColor: accentColor }]}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
-                <Text style={styles.expCompany}>{exp.company}</Text>
+                <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>
                 {exp.bullets.map((b, j) => (
                   <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
