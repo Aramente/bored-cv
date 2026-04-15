@@ -36,6 +36,29 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/api/debug-db")
+async def debug_db():
+    """Debug: check DB status."""
+    import sqlite3
+    from app.db import get_db_path, get_db
+    path = get_db_path()
+    exists = os.path.exists(path)
+    data_dir_exists = os.path.isdir("/data")
+    project_count = 0
+    user_count = 0
+    if exists:
+        with get_db() as conn:
+            project_count = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
+            user_count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    return {
+        "db_path": path,
+        "exists": exists,
+        "data_dir": data_dir_exists,
+        "users": user_count,
+        "projects": project_count,
+    }
+
+
 @app.get("/api/debug-parse")
 async def debug_parse():
     """Debug: test full PDF parser pipeline."""
