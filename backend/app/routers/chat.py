@@ -32,6 +32,7 @@ async def chat(req: ChatRequest, request: Request, x_captcha_token: str = Header
         return llm.generate_next_question(
             req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language,
             known_facts=req.known_facts, contradictions=req.contradictions,
+            cv_draft=req.cv_draft,
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")

@@ -74,7 +74,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
 
-    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None) -> ChatResponse:
+    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
         # Token optimization: only send last 6 messages + summary of earlier ones
         if len(messages) > 6:
             early = messages[:-4]
@@ -96,6 +96,24 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
             if contradictions:
                 knowledge_context += "\n\nContradictions to clarify (ask the user which is correct):\n" + "\n".join(f"- {c}" for c in contradictions[:10])
 
+        # Format current CV draft if available
+        cv_draft_context = ""
+        if cv_draft:
+            draft_lines = []
+            for i, exp in enumerate(cv_draft.experiences):
+                bullets = "\n".join(f"      • {b}" for b in exp.bullets)
+                draft_lines.append(f"  [{i}] {exp.title} at {exp.company} ({exp.dates})\n{bullets}")
+            cv_draft_context = f"""
+
+CURRENT CV DRAFT (this is what the user sees on screen right now):
+  Name: {cv_draft.name}
+  Title: {cv_draft.title}
+  Summary: {cv_draft.summary}
+  Experiences:
+{chr(10).join(draft_lines)}
+
+IMPORTANT: When the user asks to edit, merge, delete, or modify something on the CV, use the CURRENT CV DRAFT above as your reference — NOT the original LinkedIn profile. You can see exactly what's on their screen. Act on it directly via cv_actions."""
+
         prompt = f"""You are the best career interviewer in the world. You have a talent for making people realize what's extraordinary in their experience — things THEY think are normal but that a recruiter would find impressive.
 
 People don't know what's interesting about themselves. They say "I did 30 recruitments" and think that's enough. Your job is to DIG DEEPER — uncover the CONTEXT, the CHALLENGES, the PROCESS, the RESULTS that make a boring fact into a compelling story.
@@ -103,7 +121,7 @@ People don't know what's interesting about themselves. They say "I did 30 recrui
 CANDIDATE: {profile.name} — {profile.title}
 TARGET ROLE: {offer.title} at {offer.company}
 GAPS: {", ".join(gap_analysis.gaps)}
-PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}{knowledge_context}
+PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
 
 CONVERSATION SO FAR:
 {conversation}

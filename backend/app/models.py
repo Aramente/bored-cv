@@ -62,6 +62,7 @@ class ChatRequest(BaseModel):
     ui_language: str = "en"
     known_facts: list[str] = []
     contradictions: list[str] = []
+    cv_draft: "CVData | None" = None
 
 
 class CvAction(BaseModel):

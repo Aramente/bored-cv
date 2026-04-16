@@ -51,10 +51,11 @@ export async function analyzeProfile(profile: Profile, offer: Offer, captchaToke
   return post("/api/analyze", { profile, offer, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[]): Promise<ChatResponse> {
+export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[], cvDraft?: CVData | null): Promise<ChatResponse> {
   return post("/api/chat", {
     profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en",
     known_facts: knownFacts || [], contradictions: contradictions || [],
+    cv_draft: cvDraft || null,
   }, captchaToken);
 }
 

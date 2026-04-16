@@ -105,7 +105,8 @@ export default function Chat() {
       const allMessages = [...currentMessages, { role: "user" as const, content: text }];
       const captcha = "";
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
-      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang, knownFacts, contradictions);
+      const currentCv = useStore.getState().cvData;
+      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang, knownFacts, contradictions, currentCv);
 
       addMessage({ role: "assistant", content: response.message });
 
