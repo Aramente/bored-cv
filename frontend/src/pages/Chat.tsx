@@ -37,17 +37,6 @@ export default function Chat() {
     });
   }, [addMessage]);
 
-  const handleQuickAction = useCallback((action: string, expIndex: number) => {
-    const cv = useStore.getState().cvData;
-    if (!cv || !cv.experiences[expIndex]) return;
-    const exp = cv.experiences[expIndex];
-    const actionText: Record<string, string> = {
-      improve: `improve the description for my role as ${exp.title} at ${exp.company}`,
-      shorten: `make the bullets shorter and punchier for ${exp.title} at ${exp.company}`,
-      metrics: `add specific metrics and numbers to my ${exp.title} role at ${exp.company}`,
-    };
-    sendMessage(actionText[action] || action);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const token = localStorage.getItem("bored-cv-token");
@@ -327,7 +316,7 @@ export default function Chat() {
 
         {/* Right: live CV preview */}
         <div className="cv-side">
-          <CVPreviewPanel onEdit={handleCvEdit} onQuickAction={handleQuickAction} />
+          <CVPreviewPanel onEdit={handleCvEdit} />
         </div>
       </div>
     </div>

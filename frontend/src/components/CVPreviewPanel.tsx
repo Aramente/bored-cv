@@ -4,14 +4,12 @@ import { useStore } from "../store";
 
 interface CVPreviewPanelProps {
   onEdit?: (field: string, oldVal: string, newVal: string) => void;
-  onQuickAction?: (action: string, expIndex: number) => void;
 }
 
-function CVPreviewPanelInner({ onEdit, onQuickAction }: CVPreviewPanelProps) {
+function CVPreviewPanelInner({ onEdit }: CVPreviewPanelProps) {
   const { t } = useTranslation();
   const { cvData, cvOriginal, cvDataAlt, cvLang, setCvLang, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
   const profile = useStore((s) => s.profile);
-  const [flashIndex, setFlashIndex] = useState<number | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [showOriginal, setShowOriginal] = useState(false);
   const toggle = (section: string) => setCollapsed((c) => ({ ...c, [section]: !c[section] }));
@@ -141,7 +139,7 @@ function CVPreviewPanelInner({ onEdit, onQuickAction }: CVPreviewPanelProps) {
               exp.title !== profile.experiences[i]?.title
             );
             return (
-              <div key={`exp-${i}-${exp.company}`} className={`cv-edit-exp ${flashIndex === i ? 'just-changed' : ''}`}>
+              <div key={`exp-${i}-${exp.company}`} className="cv-edit-exp">
                 <div className="cv-edit-exp-top-row">
                   <span className={`cv-progress-badge ${isImproved ? 'improved' : 'raw'}`}>
                     {isImproved ? '✓ edited' : 'original'}
@@ -183,11 +181,6 @@ function CVPreviewPanelInner({ onEdit, onQuickAction }: CVPreviewPanelProps) {
                   </div>
                 ))}
                 <button className="cv-add-btn-sm" onClick={() => addCvBullet(i)}>+ bullet</button>
-                <div className="cv-quick-actions">
-                  <button onClick={() => { onQuickAction?.("improve", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>✨ improve</button>
-                  <button onClick={() => { onQuickAction?.("shorten", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>✂️ shorten</button>
-                  <button onClick={() => { onQuickAction?.("metrics", i); setFlashIndex(i); setTimeout(() => setFlashIndex(null), 1500); }}>📊 add metrics</button>
-                </div>
               </div>
             );
           })}
