@@ -111,8 +111,10 @@ interface AppState {
   cvHistory: CVData[];
   brandColors: { primary: string; secondary: string } | null;
   useBrandColors: boolean;
+  targetMarket: "france" | "europe" | "us" | "global";
   setBrandColors: (colors: { primary: string; secondary: string } | null) => void;
   setUseBrandColors: (use: boolean) => void;
+  setTargetMarket: (market: "france" | "europe" | "us" | "global") => void;
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
@@ -156,6 +158,7 @@ const initialState = {
   projectId: null,
   user: null,
   cvHistory: [] as CVData[],
+  targetMarket: "france" as "france" | "europe" | "us" | "global",
   lastSaved: null,
   brandColors: null,
   useBrandColors: true,
@@ -178,6 +181,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setLastSaved: (lastSaved) => set({ lastSaved }),
   setBrandColors: (brandColors) => set({ brandColors }),
   setUseBrandColors: (useBrandColors) => set({ useBrandColors }),
+  setTargetMarket: (targetMarket) => set({ targetMarket }),
   setUser: (user) => set({ user }),
   updateCvField: (path, value) =>
     set((s) => {

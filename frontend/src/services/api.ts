@@ -65,12 +65,12 @@ export async function getKnowledge(): Promise<{ experiences: any[]; facts: any[]
   return res.json();
 }
 
-export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, tone?: string): Promise<CVData> {
-  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", tone: tone || "startup" }, captchaToken);
+export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, tone?: string, market?: string): Promise<CVData> {
+  return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", tone: tone || "startup", target_market: market || "france" }, captchaToken);
 }
 
-export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string): Promise<CVData> {
-  return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en" }, captchaToken);
+export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, market?: string): Promise<CVData> {
+  return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", target_market: market || "france" }, captchaToken);
 }
 
 export async function translateCV(cvData: CVData, targetLanguage: string): Promise<CVData> {

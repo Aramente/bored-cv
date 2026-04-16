@@ -52,15 +52,18 @@ STRATEGY — DON'T BE EXHAUSTIVE:
 - For the other requirements, the CV rewriter will handle the framing — you don't need extra info from the user.
 - Your questions should make the user feel like you GET the job, not like you're reading a checklist.
 
+STAGE CONTEXT — ALWAYS ASK THIS:
+For EACH role, ask: "When you joined [Company], how many people were there? And when you left?" This is one of the most powerful signals on a CV — "joined at 5, left at 80" tells a recruiter more than any bullet. If the candidate doesn't know exact numbers, get an approximation.
+
 ROLE-SPECIFIC PROBING — adapt your questions to the candidate's field. Every specialty has metrics that recruiters EXPECT to see. If they're missing, ASK:
 - **Engineering/Dev**: tech stack, system scale (requests/s, data volume), architecture decisions, team size, CI/CD, testing, production incidents handled
-- **Sales**: quota and attainment (% of target), deal size, pipeline value, sales cycle length, close rate, territory/segment
-- **Marketing**: budget managed, CAC, ROI/ROAS, channels, conversion rates, campaign results with numbers
+- **Sales**: quota and attainment (% of target), deal size, pipeline value, sales cycle length, close rate, territory/segment. Benchmark: 120%+ attainment gets attention, single years look lucky — ask for consistency.
+- **Marketing**: budget managed, CAC, ROI/ROAS, channels, conversion rates, campaign results with numbers. Benchmark: LTV:CAC above 3:1 is the bar.
 - **Product**: user metrics (DAU/MAU, retention, adoption), prioritization method, launch outcomes, A/B test results
 - **HR/People**: headcount growth (from→to), retention rate, time-to-hire, processes built from scratch, countries/entities managed
-- **Finance**: budget size, forecast accuracy, audit outcomes, cost savings achieved
+- **Finance**: budget size, forecast accuracy, audit outcomes, cost savings achieved. SaaS metrics: ARR, NRR, burn multiple, Rule of 40.
 - **Operations**: process improvements (before→after), SLAs, throughput, cost reduction
-- **Design**: projects shipped, user research method, design system contributions, measurable UX improvements
+- **Design**: projects shipped, user research method, design system contributions, measurable UX improvements. Portfolio link is mandatory.
 - **Data/Analytics**: data volume, pipeline reliability, models deployed, business impact of insights
 If the candidate's field isn't listed, think: "What would a hiring manager for THIS role google to benchmark candidates?" — those are your questions.
 
@@ -152,36 +155,40 @@ YOUR INTERVIEWING TECHNIQUE:
    BAD follow-up: "Ok, et les autres process ?"
    GOOD follow-up: "Géré comment ? T'as hérité d'un process existant ou t'as tout construit ? Combien de personnes sont passées par ton onboarding ? Et t'as mesuré un truc genre le temps avant qu'ils soient autonomes ?"
 
-2. PROBE THE RIGHT METRICS FOR THEIR FIELD. Every specialty has numbers recruiters expect. Dig for them:
+2. ALWAYS ASK ABOUT STAGE AND HEADCOUNT. For each company: "Quand t'es arrivé chez [Company], y'avait combien de personnes ? Et quand t'es parti ?" This is gold — "arrivé à 5, parti à 80" tells a recruiter more than any bullet.
+
+3. PROBE THE RIGHT METRICS AND GIVE BENCHMARKS. Every specialty has numbers recruiters expect. When asking, give the user a calibration point so they know their numbers ARE impressive:
    - Engineering: "C'était quoi le stack ? Ça tenait combien de requêtes/jour ? T'avais combien de devs dans l'équipe ?"
-   - Sales: "T'avais quoi comme objectif ? Tu l'as atteint à combien de % ? C'était quoi ton deal moyen ?"
-   - Marketing: "T'avais combien de budget ? Quel ROI sur tes campagnes ? C'était quoi ton CAC ?"
-   - Product: "Combien d'utilisateurs actifs ? T'as mesuré l'adoption de ta feature ? T'as fait des A/B tests ?"
-   - HR: "Vous êtes passés de combien à combien ? C'était quoi le time-to-hire ? T'as monté le process from scratch ?"
+   - Sales: "T'avais quoi comme objectif ? Tu l'as atteint à combien de % ? Pour contexte, au-dessus de 120% ça fait lever la tête d'un recruteur. C'était quoi ton deal moyen ?"
+   - Marketing: "T'avais combien de budget ? Quel ROI sur tes campagnes ? Un LTV:CAC au-dessus de 3:1 c'est le standard — t'étais où ?"
+   - Product: "Combien d'utilisateurs actifs ? T'as mesuré l'adoption de ta feature ? T'as fait des A/B tests — avec quels résultats ?"
+   - HR: "Vous êtes passés de combien à combien ? C'était quoi le time-to-hire ? Pour référence, en dessous de 30 jours en startup c'est bon."
+   - Finance: "C'était quoi l'ARR quand t'es arrivé vs quand t'es parti ? Le NRR ? Le burn multiple ?"
+   - Design: "T'as un portfolio en ligne ? C'est quasi obligatoire. Sinon, combien de projets livrés, et t'as mesuré un impact UX ?"
    Adapt to the candidate's actual role — these are examples, not a checklist.
 
-3. GIVE EXAMPLES TO INSPIRE. People forget what they've done. Help them remember by suggesting what MIGHT have happened:
+4. GIVE EXAMPLES TO INSPIRE. People forget what they've done. Help them remember by suggesting what MIGHT have happened:
    "Chez Mindflow, en tant que Head of People dans une startup AI en hypergrowth — est-ce que t'as dû gérer des trucs comme : des visas pour des talents internationaux ? des négociations salariales compliquées avec des profils ML ? monter un process de perf review from scratch ?"
 
-4. FRAME THE CONTEXT FIRST. Before asking about achievements, help them describe the SITUATION:
+5. FRAME THE CONTEXT FIRST. Before asking about achievements, help them describe the SITUATION:
    "Quand t'es arrivé chez Germinal, c'était quoi l'état des lieux ? Combien de personnes, y'avait déjà des process RH ou tu partais de zéro ? C'est important parce que 'monter une équipe de 5 à 50' c'est 10x plus impressionnant que 'gérer une équipe de 50'."
 
-5. ASK ABOUT CHALLENGES, NOT JUST ACHIEVEMENTS:
+6. ASK ABOUT CHALLENGES, NOT JUST ACHIEVEMENTS:
    "C'était quoi le truc le plus galère dans ce rôle ? Le moment où tu t'es dit 'ok c'est compliqué' — et comment t'as débloqué la situation ?"
 
-6. HELP THEM QUANTIFY. People always underestimate their numbers:
-   "Tu dis que t'as 'amélioré' le process — essaie de mettre un chiffre. Même approximatif. Genre : avant, ça prenait combien de temps / ça coûtait combien / ça touchait combien de personnes ? Et après ton intervention ?"
+7. HELP THEM QUANTIFY WITH BENCHMARKS. People always underestimate their numbers. Give them a reference point:
+   "Tu dis que t'as 'amélioré' le process — essaie de mettre un chiffre. Même approximatif. Genre : avant, ça prenait combien de temps / ça coûtait combien / ça touchait combien de personnes ? Et après ton intervention ? Pour un recruteur, 'réduit de 3 semaines à 5 jours' c'est 10x plus puissant que 'amélioré le process'."
 
-7. ONE QUESTION AT A TIME. But make it a RICH question with context and examples that inspire a detailed answer. 2-4 sentences max.
+8. ONE QUESTION AT A TIME. But make it a RICH question with context and examples that inspire a detailed answer. 2-4 sentences max.
 
-8. REFRAME INTO CV BULLETS. When you have enough detail, propose the bullet:
-   "Avec tout ça, on pourrait écrire : 'Structuré le recrutement chez Mindflow (AI, seed→Series A) : 30 hires en 8 mois, time-to-hire moyen de 3 semaines, process de sourcing LinkedIn + cooptation qui a généré 60% des hires'. Ça te parle ?"
+9. REFRAME INTO CV BULLETS. When you have enough detail, propose the bullet:
+   "Avec tout ça, on pourrait écrire : 'Structuré le recrutement chez Mindflow (AI, seed→Series A, 5→45 personnes) : 30 hires en 8 mois, time-to-hire moyen de 3 semaines, process de sourcing LinkedIn + cooptation qui a généré 60% des hires'. Ça te parle ?"
 
-9. ABSORB LONG ANSWERS. If they give lots of info, note everything and skip ahead. Never re-ask what they already told you.
+10. ABSORB LONG ANSWERS. If they give lots of info, note everything and skip ahead. Never re-ask what they already told you.
 
-10. KEEP IT WARM AND DIRECT. Like a friend who's great at interviews, not a corporate coach.
+11. KEEP IT WARM AND DIRECT. Like a friend who's great at interviews, not a corporate coach.
 
-11. RESPECT USER EDITS. If you see messages starting with "✏️ I edited", the user manually changed something on their CV. This is intentional — respect their choice.
+12. RESPECT USER EDITS. If you see messages starting with "✏️ I edited", the user manually changed something on their CV. This is intentional — respect their choice.
 
 9. EXECUTE CV INSTRUCTIONS IMMEDIATELY. If the user asks to delete, add, move, or modify something on the CV, DO IT via cv_actions. The "target" field MUST contain the company name or section name — NEVER leave it empty.
 
@@ -217,7 +224,7 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
         data = self._parse_json(response.text)
         return ChatResponse(**data)
 
-    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup") -> CVData:
+    def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
 
         prompt = f"""You write CVs the way someone would explain their work to a junior colleague at the startup — direct, specific, with energy and professional depth. Not dumbed down. Not corporate. Just how a competent professional talks about what they actually did, without posturing. That honesty IS what impresses recruiters — because 200 other CVs sound like ChatGPT wrote them.
@@ -244,6 +251,8 @@ MATCHED SKILLS: {", ".join(gap_analysis.matched_skills)}
 
 TONE OF VOICE: {self._get_tone_instruction(tone)}
 
+{self._get_market_instruction(target_market)}
+
 VOICE — THE JUNIOR COLLEAGUE TEST:
 Read every sentence out loud. If you can't imagine someone explaining it to a junior colleague at the startup — someone who understands the work but doesn't need to be impressed — rewrite it. The CV should sound like a competent professional being straight about what they did, not performing for LinkedIn.
    ❌ "Dynamic and entrepreneurial People Operations leader with a strong background in talent acquisition"
@@ -259,6 +268,22 @@ BANNED WORDS AND PHRASES — if ANY of these appear in your output, you have FAI
 "proven ability", "eager to leverage", "fostering", "exceptional employee experiences",
 "people-centric initiatives", "fast-paced", "entrepreneurial"
 These are LinkedIn clichés. They make the CV sound like AI wrote it. USE PLAIN LANGUAGE.
+
+BANNED SENTENCE STARTERS — these are responsibility-voice patterns, not outcome-voice:
+"Responsible for...", "Helped with...", "Worked on...", "Assisted in...", "Participated in...",
+"Involved in...", "Contributed to...", "Supported the...", "Managed the...", "In charge of..."
+These describe a JOB DESCRIPTION, not what the person DID. Rewrite every one as an outcome.
+   ❌ "Responsible for managing the recruitment pipeline"
+   ✅ "Rebuilt the recruitment pipeline from scratch — 30 hires in 8 months, time-to-hire down from 6 weeks to 3"
+   ❌ "Helped with onboarding new employees"
+   ✅ "Designed the onboarding program: new hires hit full speed in 5 days instead of 3 weeks"
+
+STAGE CONTEXT — CRITICAL SIGNAL:
+For EVERY company, include the stage transition in the company context: headcount at arrival → departure, funding stage, key growth moment.
+   ✅ "Mindflow (AI automation, seed→Series A, 5→45 people)"
+   ✅ "Germinal (SaaS, 15→80 employees, raised €8M during tenure)"
+   ❌ "Mindflow" or "Mindflow (AI automation)" — missing the growth story
+If the conversation provided headcount numbers, USE THEM. "Joined at 5, left at 80" is one of the most powerful signals on a CV.
 
 WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
@@ -340,7 +365,7 @@ Respond in valid JSON only:
         data = self._parse_json(response.text)
         return CVData(**data)
 
-    def draft_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en") -> CVData:
+    def draft_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", target_market: str = "france") -> CVData:
         """Generate a quick draft CV from whatever info is available so far."""
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages[-6:])  # only recent messages for speed
 
@@ -357,9 +382,13 @@ Offer description: {offer.description[:2000]}
 
 {f"CONVERSATION: {conversation}" if conversation.strip() else ""}
 
+{self._get_market_instruction(target_market)}
+
 STRICT RULES — VIOLATING THESE IS A FAILURE:
 - NEVER write "Dynamic and entrepreneurial", "proven ability", "strong background", "eager to leverage", "passionate about", "proven track record", "results-driven", "fostering", "exceptional employee experiences", "people-centric", "fast-paced"
 - THE JUNIOR COLLEAGUE TEST: read every sentence out loud. If you can't imagine someone saying it to a junior colleague at the startup — someone who gets the work but doesn't need posturing — rewrite it.
+- NEVER start bullets with: "Responsible for", "Helped with", "Worked on", "Assisted in", "Managed the", "In charge of". These describe a job description, not an outcome. Rewrite as actions with results.
+- STAGE CONTEXT: for each company, include headcount/stage transition: "Company (sector, seed→Series A, 5→45 people)"
 - Summary: 2 short sentences. First = what they do + proof (years, companies, scale). Second = what they bring to THIS role.
   ✅ "6 ans en People Ops, 3 startups (Germinal, Mindflow, Figures), scaling 5→80 personnes. Payroll multi-pays, onboarding from scratch, HRIS Deel."
   ❌ "Dynamic People Operations leader with a strong background in talent acquisition and fostering exceptional employee experiences"
@@ -368,6 +397,7 @@ STRICT RULES — VIOLATING THESE IS A FAILURE:
 - Contextualize companies: "(SaaS, seed→Series A, 12→45 employees)"
 - Include ALL experiences from the profile — calibrate depth by relevance
 - Skills: only concrete, verifiable skills with proof. No soft skills.
+- LANGUAGE: Write ALL CV content in {"French" if ui_language == "fr" else "English"}. The summary, bullets, skills — everything must be in {"French" if ui_language == "fr" else "English"}.
 
 Respond in valid JSON:
 {{"name": "{profile.name}", "title": "operational title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 short operational sentences", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["concrete action + number"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["concrete skill (proof)"], "languages": [], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["specific strength"], "improvements": ["specific gap"]}}"""
@@ -401,6 +431,36 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
         )
         data = self._parse_json(response.text)
         return CVData(**data)
+
+    def _get_market_instruction(self, market: str) -> str:
+        markets = {
+            "france": """FRANCE MARKET NORMS:
+- Language proficiency: use CEFR scale (B2, C1, C2) not "fluent/conversational"
+- Education: if the candidate attended a grande école (Polytechnique, HEC, ESSEC, Centrale, ENS, Sciences Po, ENSAE), make it visible — it carries weight in French hiring
+- Photo: not included by default
+- Hobbies: include ONLY if specific and culturally relevant to the target company — generic "cinema, travel, reading" is a red flag
+- One page maximum unless 10+ years of experience
+- Date of birth, marital status, nationality: do NOT include""",
+            "europe": """EUROPEAN MARKET NORMS:
+- Language proficiency: use CEFR scale (B2, C1, C2) — European standard
+- Photo: not included by default
+- One page preferred, two pages acceptable for 10+ years
+- No date of birth, marital status, or nationality
+- Work authorization status: mention if relevant""",
+            "us": """US MARKET NORMS:
+- No photo, no date of birth, no personal details beyond contact info
+- One page maximum — even for senior roles
+- Aggressive focus on outcomes and metrics — every bullet needs a number
+- Education after experience (unless new grad)
+- Language proficiency: "Professional proficiency" / "Native" — not CEFR""",
+            "global": """GLOBAL MARKET NORMS:
+- No photo, no personal details beyond contact info
+- One page preferred
+- English language default
+- CEFR for language proficiency
+- Focus on outcomes and metrics""",
+        }
+        return markets.get(market, markets["france"])
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {

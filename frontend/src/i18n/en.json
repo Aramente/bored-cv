@@ -34,7 +34,13 @@
     "step_parsing": "reading your stuff...",
     "step_analyzing": "figuring out what matters... (~1 min, grab a coffee ☕)",
     "step_ready": "ok got it. let's talk.",
-    "scrape_failed": "couldn't read that URL — paste the job description below instead"
+    "scrape_failed": "couldn't read that URL — paste the job description below instead",
+    "market_label": "Target market",
+    "market_france": "France",
+    "market_europe": "Europe",
+    "market_us": "US",
+    "market_global": "Global",
+    "market_hint": "adapts CV norms: education weight, language proficiency format, photo defaults"
   },
   "chat": {
     "title": "let's prove you're the one they need",
@@ -84,7 +90,8 @@
     "section_skills": "Skills",
     "name_label": "Name",
     "title_label": "Title",
-    "comma_hint": "Comma-separated"
+    "comma_hint": "Comma-separated",
+    "validation_title": "Pre-export check"
   },
   "projects": {
     "title": "your projects",

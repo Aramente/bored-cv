@@ -20,7 +20,7 @@ async def generate_cv(req: GenerateRequest, request: Request, x_captcha_token: s
     check_rate_limit(request)
     llm = get_llm()
     try:
-        return llm.generate_cv(req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language, req.tone)
+        return llm.generate_cv(req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language, req.tone, target_market=req.target_market)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")
 

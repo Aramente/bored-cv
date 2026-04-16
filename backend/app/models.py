@@ -110,6 +110,7 @@ class GenerateRequest(BaseModel):
     messages: list[ChatMessage]
     ui_language: str = "en"
     tone: str = "startup"  # startup, corporate, creative, minimal
+    target_market: str = "france"  # france, europe, us, global
 
 
 class OfferScrapeRequest(BaseModel):

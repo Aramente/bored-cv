@@ -16,7 +16,7 @@ export default function Chat() {
     profile, offer, gapAnalysis,
     messages, addMessage,
     setCvData, setCvDataAlt,
-    tone,
+    tone, targetMarket,
   } = useStore();
 
   const [input, setInput] = useState("");
@@ -173,38 +173,43 @@ export default function Chat() {
       }
 
       if (!response.is_complete) {
-        // Background draft — MERGE with existing cvData, don't replace
-        draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang)
-          .then((draft) => {
-            const current = useStore.getState().cvData;
-            if (!current) { setCvData(draft); return; }
-            // Only update experiences/summary/skills from draft — preserve education, languages, personal info
-            setCvData({
-              ...current,
-              summary: draft.summary || current.summary,
-              experiences: draft.experiences.length > 0 ? draft.experiences : current.experiences,
-              skills: draft.skills.length > 0 ? draft.skills : current.skills,
-              match_score: draft.match_score || current.match_score,
-              strengths: draft.strengths.length > 0 ? draft.strengths : current.strengths,
-              improvements: draft.improvements.length > 0 ? draft.improvements : current.improvements,
-              // PRESERVE these from the original — draft often drops them
-              education: current.education,
-              languages: current.languages,
-              name: current.name,
-              title: current.title,
-              email: current.email,
-              phone: current.phone,
-              linkedin: current.linkedin,
-              location: current.location,
-              language: current.language,
-            });
-          })
-          .catch(() => {});
+        // Background draft — only update if NO cv_actions were processed this turn
+        // (cv_actions = user edits that should not be overwritten by the draft)
+        const hadActions = response.cv_actions && response.cv_actions.length > 0;
+        if (!hadActions) {
+          draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang, targetMarket)
+            .then((draft) => {
+              const current = useStore.getState().cvData;
+              if (!current) { setCvData(draft); return; }
+              // Merge draft improvements into current, preserving user edits
+              // Only update experiences if the current count matches (no user deletions/merges happened)
+              const experiencesChanged = current.experiences.length !== draft.experiences.length;
+              setCvData({
+                ...current,
+                summary: draft.summary || current.summary,
+                experiences: experiencesChanged ? current.experiences : (draft.experiences.length > 0 ? draft.experiences : current.experiences),
+                skills: draft.skills.length > 0 ? draft.skills : current.skills,
+                match_score: draft.match_score || current.match_score,
+                strengths: draft.strengths.length > 0 ? draft.strengths : current.strengths,
+                improvements: draft.improvements.length > 0 ? draft.improvements : current.improvements,
+                education: current.education,
+                languages: current.languages,
+                name: current.name,
+                title: current.title,
+                email: current.email,
+                phone: current.phone,
+                linkedin: current.linkedin,
+                location: current.location,
+                language: current.language,
+              });
+            })
+            .catch(() => {});
+        }
       }
 
       if (response.is_complete) {
         setGenerating(true);
-        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang, tone);
+        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang, tone, targetMarket);
         setCvData(cv);
         // Auto-translate to the other language
         const altLang = cv.language === "fr" ? "en" : "fr";

@@ -10,7 +10,7 @@ import AuthButton from "../components/AuthButton";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -115,7 +115,7 @@ export default function Upload() {
         .catch((e) => console.warn("Analysis failed:", e));
 
       // AI-improved first draft in background — replaces raw LinkedIn with a better version
-      draftCV(profile, offer, { matched_skills: [], gaps: [], questions: [] }, [], captchaForBg, lang)
+      draftCV(profile, offer, { matched_skills: [], gaps: [], questions: [] }, [], captchaForBg, lang, targetMarket)
         .then((draft) => {
           const current = useStore.getState().cvData;
           if (!current) return;
@@ -253,6 +253,23 @@ export default function Upload() {
               onChange={(e) => setOfferText(e.target.value)}
             />
           )}
+        </section>
+
+        <section style={{ marginBottom: 32 }}>
+          <label className="label">{t("upload.market_label")}</label>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            {(["france", "europe", "us", "global"] as const).map((m) => (
+              <button
+                key={m}
+                className={targetMarket === m ? "btn-primary" : "btn-secondary"}
+                style={{ padding: "8px 16px", fontSize: 13 }}
+                onClick={() => setTargetMarket(m)}
+              >
+                {t(`upload.market_${m}`)}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 6 }}>{t("upload.market_hint")}</p>
         </section>
 
         <button

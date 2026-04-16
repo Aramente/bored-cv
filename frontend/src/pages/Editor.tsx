@@ -12,6 +12,36 @@ import Consultant from "../templates/Consultant";
 
 const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant } as const;
 
+const RESPONSIBILITY_PATTERNS = /^(responsible for|helped with|worked on|assisted in|participated in|involved in|contributed to|supported the|managed the|in charge of)/i;
+const BUZZWORDS = /\b(dynamic|innovative|passionate|leveraged|synergies|spearheaded|orchestrated|cutting-edge|best-in-class|world-class|thought leader|proven track record|results-driven|detail-oriented|team player|strong background|eager to leverage)\b/i;
+
+function validateCV(cv: { summary: string; experiences: { bullets: string[]; company: string }[]; skills: string[] }) {
+  const issues: { type: "warn" | "error"; text: string }[] = [];
+  const allBullets = cv.experiences.flatMap((e) => e.bullets);
+  const bulletsWithNumbers = allBullets.filter((b) => /\d/.test(b));
+  const pctWithNumbers = allBullets.length > 0 ? Math.round((bulletsWithNumbers.length / allBullets.length) * 100) : 0;
+
+  if (pctWithNumbers < 50) issues.push({ type: "warn", text: `Only ${pctWithNumbers}% of bullets have numbers — aim for 60%+` });
+  if (pctWithNumbers >= 60) issues.push({ type: "warn", text: `${pctWithNumbers}% of bullets have numbers — solid` });
+
+  const responsibilityBullets = allBullets.filter((b) => RESPONSIBILITY_PATTERNS.test(b.trim()));
+  if (responsibilityBullets.length > 0) issues.push({ type: "error", text: `${responsibilityBullets.length} bullet(s) start with responsibility-voice ("Responsible for...", "Managed the...")` });
+
+  const buzzwordBullets = allBullets.filter((b) => BUZZWORDS.test(b));
+  if (buzzwordBullets.length > 0) issues.push({ type: "error", text: `${buzzwordBullets.length} bullet(s) contain banned buzzwords` });
+
+  if (cv.summary.length > 300) issues.push({ type: "warn", text: "Summary is long — keep it under 2 sentences" });
+  if (cv.summary.length === 0) issues.push({ type: "warn", text: "No summary — consider adding 2 sentences" });
+
+  const noContextCompanies = cv.experiences.filter((e) => !e.company.includes("("));
+  if (noContextCompanies.length > 0) issues.push({ type: "warn", text: `${noContextCompanies.length} company name(s) missing context "(sector, stage, headcount)"` });
+
+  const softSkills = cv.skills.filter((s) => /^(leadership|communication|teamwork|problem.solving|strategic thinking|creativity|adaptability)$/i.test(s.trim()));
+  if (softSkills.length > 0) issues.push({ type: "error", text: `${softSkills.length} generic soft skill(s) in skills list — remove them` });
+
+  return issues;
+}
+
 function EditableField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ marginBottom: 6 }}>
@@ -84,6 +114,21 @@ export default function Editor() {
             <input className="input" value={cvData.skills.join(", ")} onChange={(e) => updateCvField("skills", e.target.value)} style={{ marginTop: 4 }} />
             <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>{t("editor.comma_hint")}</p>
           </div>
+
+          {(() => {
+            const issues = validateCV(cvData);
+            if (issues.length === 0) return null;
+            return (
+              <div style={{ marginBottom: 16, padding: 12, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>{t("editor.validation_title")}</p>
+                {issues.map((issue, i) => (
+                  <p key={i} style={{ fontSize: 12, color: issue.type === "error" ? "var(--error, #d32f2f)" : "var(--text-muted)", marginBottom: 4 }}>
+                    {issue.type === "error" ? "✗" : "○"} {issue.text}
+                  </p>
+                ))}
+              </div>
+            );
+          })()}
 
           <PDFDownloadLink document={<TemplateComponent data={cvData} />} fileName={`${cvData.name.replace(/\s+/g, "_")}_CV.pdf`}>
             {({ loading: pdfLoading }) => (
