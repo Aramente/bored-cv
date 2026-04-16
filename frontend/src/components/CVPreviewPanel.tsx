@@ -9,7 +9,6 @@ interface CVPreviewPanelProps {
 function CVPreviewPanelInner({ onEdit }: CVPreviewPanelProps) {
   const { t } = useTranslation();
   const { cvData, cvOriginal, cvDataAlt, cvLang, setCvLang, updateCvField, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet, addCvEducation, removeCvEducation, addCvLanguage, removeCvLanguage, pushCvHistory, undo, cvHistory } = useStore();
-  const profile = useStore((s) => s.profile);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [showOriginal, setShowOriginal] = useState(false);
   const toggle = (section: string) => setCollapsed((c) => ({ ...c, [section]: !c[section] }));
@@ -134,16 +133,9 @@ function CVPreviewPanelInner({ onEdit }: CVPreviewPanelProps) {
             <button className="cv-add-btn" onClick={(e) => { e.stopPropagation(); addCvExperience(); }}>+</button>
           </div>
           {!collapsed.experiences && cvData.experiences.map((exp, i) => {
-            const isImproved = profile && profile.experiences[i] && (
-              exp.bullets.join("") !== (profile.experiences[i]?.bullets || []).join("") ||
-              exp.title !== profile.experiences[i]?.title
-            );
             return (
               <div key={`exp-${i}-${exp.company}`} className="cv-edit-exp">
                 <div className="cv-edit-exp-top-row">
-                  <span className={`cv-progress-badge ${isImproved ? 'improved' : 'raw'}`}>
-                    {isImproved ? '✓ edited' : 'original'}
-                  </span>
                   <button className="cv-remove-btn" onClick={() => { pushCvHistory(); removeCvExperience(i); }}>×</button>
                 </div>
                 <div className="cv-edit-exp-header">

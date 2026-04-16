@@ -54,9 +54,16 @@ class TursoRow:
         self._data = {}
         for i, col in enumerate(columns):
             val = values[i]
-            # Turso returns values as {"type": "text", "value": "..."} objects
+            # Turso HTTP API returns typed objects: {"type": "integer", "value": "42"}
             if isinstance(val, dict) and "value" in val:
-                self._data[col] = val["value"]
+                raw = val["value"]
+                vtype = val.get("type", "")
+                if vtype == "integer":
+                    self._data[col] = int(raw)
+                elif vtype == "float":
+                    self._data[col] = float(raw)
+                else:
+                    self._data[col] = raw
             elif isinstance(val, dict) and val.get("type") == "null":
                 self._data[col] = None
             else:
