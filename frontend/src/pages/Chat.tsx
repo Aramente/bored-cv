@@ -144,22 +144,31 @@ export default function Chat() {
             );
             if (idx >= 0) store.removeCvEducation(idx);
           } else if (action.action === "merge_experiences" && store.cvData && target) {
-            const indices = store.cvData.experiences
+            // Re-read store for fresh state (prior actions in this loop may have changed it)
+            const freshStore = useStore.getState();
+            if (!freshStore.cvData) continue;
+            const indices = freshStore.cvData.experiences
               .map((e, i) => (e.company.toLowerCase().includes(target) || e.title.toLowerCase().includes(target)) ? i : -1)
               .filter((i) => i >= 0);
-            if (indices.length >= 2) {
-              const merged = typeof action.value === "string" && action.value ? JSON.parse(action.value) : (action.value || {});
+            console.log("[merge]", { target, indices, totalExperiences: freshStore.cvData.experiences.length });
+            if (indices.length >= 1) {
+              let merged: Record<string, unknown> = {};
+              try {
+                merged = typeof action.value === "string" && action.value ? JSON.parse(action.value) : (action.value && typeof action.value === "object" ? action.value : {});
+              } catch { merged = {}; }
               // Collect all bullets from all matching experiences before removing
-              const allBullets = indices.flatMap((i) => store.cvData!.experiences[i].bullets);
+              const allBullets = indices.flatMap((i) => freshStore.cvData!.experiences[i].bullets);
+              const mergedBullets = merged.bullets as string[] | undefined;
               useStore.setState((s) => {
                 if (!s.cvData) return s;
                 const cv = structuredClone(s.cvData);
                 const first = cv.experiences[indices[0]];
-                first.title = merged.title || first.title;
-                first.company = merged.company || first.company;
-                first.dates = merged.dates || first.dates;
+                first.title = (merged.title as string) || first.title;
+                first.company = (merged.company as string) || first.company;
+                first.dates = (merged.dates as string) || first.dates;
                 // Use LLM's merged bullets if provided and non-empty, otherwise combine all
-                first.bullets = (merged.bullets && merged.bullets.length > 0) ? merged.bullets : allBullets;
+                first.bullets = (mergedBullets && mergedBullets.length > 0) ? mergedBullets : allBullets;
+                // Remove all other matches (reverse order to preserve indices)
                 for (let i = indices.length - 1; i >= 1; i--) {
                   cv.experiences.splice(indices[i], 1);
                 }

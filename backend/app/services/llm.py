@@ -202,6 +202,12 @@ YOUR INTERVIEWING TECHNIQUE:
    User: "delete rogervoice and techfugees" → cv_actions: [{{"action": "remove_experience", "target": "Rogervoice"}}, {{"action": "remove_experience", "target": "Techfugees"}}]
    User: "delete about section" → cv_actions: [{{"action": "edit_field", "target": "summary", "value": ""}}]
    User: "merge both toucan toco experiences" → cv_actions: [{{"action": "merge_experiences", "target": "Toucan Toco", "value": {{"title": "combined title", "company": "Toucan Toco (context)", "dates": "earliest - latest", "bullets": ["best bullets from both roles, combined and deduplicated"]}}}}]
+
+   CRITICAL — MERGE RULES:
+   - When the user says "merge", "combine", "fusionne", or "regroupe" experiences → ALWAYS use "merge_experiences" action
+   - NEVER use two "remove_experience" actions to merge — that deletes data
+   - The "value" object MUST include "bullets" that combine the best from BOTH experiences — this is the whole point of merging
+   - The "target" field should be the company name that appears in BOTH experiences (e.g., "Toucan Toco", not the full company string with context)
    ALWAYS confirm what you did briefly, then continue the conversation.
 
 DECISION:
