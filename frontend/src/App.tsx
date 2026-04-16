@@ -5,6 +5,7 @@ import Chat from "./pages/Chat";
 import Templates from "./pages/Templates";
 import Editor from "./pages/Editor";
 import Projects from "./pages/Projects";
+import ConsentBanner from "./components/ConsentBanner";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ConsentBanner />
     </BrowserRouter>
   );
 }

@@ -82,6 +82,16 @@ export async function getQuota(): Promise<{ authenticated: boolean; daily_limit:
   return res.json();
 }
 
+export async function getConsent(): Promise<{ consented: boolean; asked: boolean }> {
+  const res = await fetch(`${API_URL}/api/auth/consent`, { headers: getAuthHeaders() });
+  if (!res.ok) return { consented: false, asked: false };
+  return res.json();
+}
+
+export async function giveConsent(): Promise<void> {
+  await post("/api/auth/consent", {});
+}
+
 export async function extractColors(url: string): Promise<{ primary: string; secondary: string; colors: string[] }> {
   return post("/api/extract-colors", { url });
 }

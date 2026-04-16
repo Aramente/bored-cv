@@ -101,6 +101,35 @@ async def logout():
     return {"status": "ok"}
 
 
+@router.post("/consent")
+async def update_consent(authorization: str = Header("")):
+    """Update marketing consent for the authenticated user."""
+    user = get_user_from_request(authorization=authorization)
+    if not user:
+        return {"status": "unauthenticated"}
+    from app.db import get_db
+    email = user.get("email", "")
+    with get_db() as conn:
+        conn.execute("UPDATE users SET marketing_consent = 1 WHERE id = ?", (email,))
+    return {"status": "ok"}
+
+
+@router.get("/consent")
+async def get_consent(authorization: str = Header("")):
+    """Check marketing consent status for the authenticated user."""
+    user = get_user_from_request(authorization=authorization)
+    if not user:
+        return {"consented": False, "asked": False}
+    from app.db import get_db
+    email = user.get("email", "")
+    with get_db() as conn:
+        row = conn.execute("SELECT marketing_consent FROM users WHERE id = ?", (email,)).fetchone()
+    if not row:
+        return {"consented": False, "asked": False}
+    consent = row["marketing_consent"]
+    return {"consented": consent == 1 or consent == "1", "asked": True}
+
+
 @router.get("/quota")
 async def get_quota(authorization: str = Header("")):
     user = get_user_from_request(authorization=authorization)

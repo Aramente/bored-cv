@@ -62,13 +62,16 @@ ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
 
 
 @app.get("/api/admin/users")
-async def admin_users(x_admin_secret: str = Header("")):
+async def admin_users(x_admin_secret: str = Header(""), consented_only: bool = False):
     """List all registered users. Protected by ADMIN_SECRET header."""
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
     from app.db import get_db
     with get_db() as conn:
-        rows = conn.execute("SELECT id, email, provider, created_at FROM users ORDER BY created_at DESC").fetchall()
+        if consented_only:
+            rows = conn.execute("SELECT id, email, provider, marketing_consent, created_at FROM users WHERE marketing_consent = 1 ORDER BY created_at DESC").fetchall()
+        else:
+            rows = conn.execute("SELECT id, email, provider, marketing_consent, created_at FROM users ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]
 
 

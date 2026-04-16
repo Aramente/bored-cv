@@ -101,5 +101,10 @@
     "back": "← back",
     "next": "next →",
     "loading": "hold on..."
+  },
+  "consent": {
+    "text": "Get notified about new features?",
+    "yes": "sure, keep me posted",
+    "no": "no thanks"
   }
 }

@@ -101,5 +101,10 @@
     "back": "← retour",
     "next": "suite →",
     "loading": "deux secondes..."
+  },
+  "consent": {
+    "text": "Être notifié des nouvelles fonctionnalités ?",
+    "yes": "oui, tiens-moi au jus",
+    "no": "non merci"
   }
 }

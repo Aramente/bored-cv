@@ -156,6 +156,7 @@ def init_db():
                 id TEXT PRIMARY KEY,
                 email TEXT NOT NULL,
                 provider TEXT NOT NULL,
+                marketing_consent INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -205,6 +206,11 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_facts_user ON facts(user_id);
             CREATE INDEX IF NOT EXISTS idx_facts_knowledge ON facts(knowledge_id)
         """)
+        # Migration: add marketing_consent column if missing
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN marketing_consent INTEGER DEFAULT 0")
+        except Exception:
+            pass  # Column already exists
 
 
 # Initialize on import
