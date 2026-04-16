@@ -37,7 +37,7 @@
     "scrape_failed": "couldn't read that URL — paste the job description below instead"
   },
   "chat": {
-    "title": "let's make you look amazing",
+    "title": "let's prove you're the one they need",
     "subtitle": "I'm gonna ask you some questions. Be specific — numbers, names, results. I'll do the rest.",
     "placeholder": "type here...",
     "voice_start": "hold to talk",

@@ -57,7 +57,8 @@ export interface ChatMessage {
 export interface CvAction {
   action: string;
   target: string;
-  value: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: string | Record<string, any>;
   index: number;
 }
 

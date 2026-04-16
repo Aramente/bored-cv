@@ -66,9 +66,9 @@ class ChatRequest(BaseModel):
 
 
 class CvAction(BaseModel):
-    action: str  # "remove_experience", "add_bullet", "reorder", "edit_field"
+    action: str  # "remove_experience", "add_bullet", "reorder", "edit_field", "merge_experiences"
     target: str = ""  # company name, field path, etc.
-    value: str = ""  # new value for edits/adds
+    value: str | dict | list = ""  # new value for edits/adds; merge_experiences uses dict
     index: int = -1  # for positional operations
 
 
