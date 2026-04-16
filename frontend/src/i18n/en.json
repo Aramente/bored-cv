@@ -7,7 +7,14 @@
     "step1": "Export your LinkedIn as PDF (yes, that's a thing)",
     "step2": "Paste the job link you want",
     "step3": "I ask you smart questions",
-    "step4": "Download a CV that actually slaps"
+    "step4": "Download a CV that actually slaps",
+    "ba_heading": "before → after",
+    "ba_before_title": "Head of People & BDR",
+    "ba_before_company": "Mindflow",
+    "ba_before_bullet": "My goal is to provide the best experience for candidates and employees. We are remote first. We are building a great automation tool for enterprises.",
+    "ba_after_title": "Head of People Operations",
+    "ba_after_company": "Mindflow (AI automation, seed→Series A, 12→45 employees)",
+    "ba_after_bullet": "Built People ops from scratch for a distributed team across 3 countries. Ran payroll in FR/US/UK with zero errors over 14 months. Cut onboarding time from 3 weeks to 5 days."
   },
   "upload": {
     "title": "ok, show me what you got",

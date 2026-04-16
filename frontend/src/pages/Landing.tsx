@@ -44,23 +44,23 @@ export default function Landing() {
       </section>
 
       <section className="before-after">
-        <h2>before → after</h2>
+        <h2>{t("landing.ba_heading")}</h2>
         <div className="ba-container">
           <div className="ba-card ba-before">
             <span className="ba-label">LinkedIn</span>
             <div className="ba-content">
-              <p className="ba-title">Head of People &amp; BDR</p>
-              <p className="ba-company">Mindflow</p>
-              <p className="ba-bullet">My goal is to provide the best experience for candidates and employees. We are remote first. We are building a great automation tool for enterprises.</p>
+              <p className="ba-title">{t("landing.ba_before_title")}</p>
+              <p className="ba-company">{t("landing.ba_before_company")}</p>
+              <p className="ba-bullet">{t("landing.ba_before_bullet")}</p>
             </div>
           </div>
           <div className="ba-arrow">→</div>
           <div className="ba-card ba-after">
             <span className="ba-label">Bored CV</span>
             <div className="ba-content">
-              <p className="ba-title">Head of People Operations</p>
-              <p className="ba-company">Mindflow (AI automation, seed→Series A, 12→45 employees)</p>
-              <p className="ba-bullet">Built People ops from scratch for a distributed team across 3 countries. Ran payroll in FR/US/UK with zero errors over 14 months. Cut onboarding time from 3 weeks to 5 days.</p>
+              <p className="ba-title">{t("landing.ba_after_title")}</p>
+              <p className="ba-company">{t("landing.ba_after_company")}</p>
+              <p className="ba-bullet">{t("landing.ba_after_bullet")}</p>
             </div>
           </div>
         </div>

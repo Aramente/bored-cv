@@ -7,7 +7,14 @@
     "step1": "Exporte ton LinkedIn en PDF (oui, ça existe)",
     "step2": "Colle le lien de l'offre qui te fait envie",
     "step3": "Je te pose des questions malines",
-    "step4": "Télécharge un CV qui envoie du lourd"
+    "step4": "Télécharge un CV qui envoie du lourd",
+    "ba_heading": "avant → après",
+    "ba_before_title": "Head of People & BDR",
+    "ba_before_company": "Mindflow",
+    "ba_before_bullet": "Mon objectif est d'offrir la meilleure expérience aux candidats et aux collaborateurs. Nous sommes en full remote. Nous développons un outil d'automatisation pour les entreprises.",
+    "ba_after_title": "Responsable People Operations",
+    "ba_after_company": "Mindflow (automatisation IA, seed→Série A, 12→45 employés)",
+    "ba_after_bullet": "Création des People ops from scratch pour une équipe distribuée dans 3 pays. Gestion de la paie FR/US/UK avec zéro erreur sur 14 mois. Réduction de l'onboarding de 3 semaines à 5 jours."
   },
   "upload": {
     "title": "ok, montre-moi ce que t'as",
