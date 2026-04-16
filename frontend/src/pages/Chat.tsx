@@ -133,7 +133,7 @@ export default function Chat() {
               const newCv = useStore.getState().cvData;
               if (newCv) {
                 const bulletIdx = newCv.experiences[idx].bullets.length - 1;
-                store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value);
+                store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value as string);
               }
             }
           } else if (action.action === "remove_education" && store.cvData && target) {
@@ -181,7 +181,7 @@ export default function Chat() {
               }
             }
           } else if (action.action === "edit_field" && store.cvData) {
-            store.updateCvField(action.target, action.value);
+            store.updateCvField(action.target, action.value as string);
           }
         }
       }
