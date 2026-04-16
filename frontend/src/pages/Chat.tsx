@@ -148,14 +148,18 @@ export default function Chat() {
               .map((e, i) => (e.company.toLowerCase().includes(target) || e.title.toLowerCase().includes(target)) ? i : -1)
               .filter((i) => i >= 0);
             if (indices.length >= 2) {
-              const merged = typeof action.value === "string" ? JSON.parse(action.value) : action.value;
+              const merged = typeof action.value === "string" && action.value ? JSON.parse(action.value) : (action.value || {});
+              // Collect all bullets from all matching experiences before removing
+              const allBullets = indices.flatMap((i) => store.cvData!.experiences[i].bullets);
               useStore.setState((s) => {
                 if (!s.cvData) return s;
                 const cv = structuredClone(s.cvData);
-                if (merged.title) cv.experiences[indices[0]].title = merged.title;
-                if (merged.company) cv.experiences[indices[0]].company = merged.company;
-                if (merged.dates) cv.experiences[indices[0]].dates = merged.dates;
-                if (merged.bullets) cv.experiences[indices[0]].bullets = merged.bullets;
+                const first = cv.experiences[indices[0]];
+                first.title = merged.title || first.title;
+                first.company = merged.company || first.company;
+                first.dates = merged.dates || first.dates;
+                // Use LLM's merged bullets if provided and non-empty, otherwise combine all
+                first.bullets = (merged.bullets && merged.bullets.length > 0) ? merged.bullets : allBullets;
                 for (let i = indices.length - 1; i >= 1; i--) {
                   cv.experiences.splice(indices[i], 1);
                 }
