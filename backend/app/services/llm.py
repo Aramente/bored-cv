@@ -212,7 +212,7 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=8000, temperature=0.7, response_mime_type="application/json"),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=3000, temperature=0.7, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return ChatResponse(**data)

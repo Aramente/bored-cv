@@ -112,6 +112,7 @@ export default function Chat() {
 
       // Process CV actions from the chat
       if (response.cv_actions && response.cv_actions.length > 0) {
+        console.log("[cv_actions]", JSON.stringify(response.cv_actions, null, 2));
         useStore.getState().pushCvHistory(); // Save state before changes
         const store = useStore.getState();
         for (const action of response.cv_actions) {
