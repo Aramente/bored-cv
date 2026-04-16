@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -56,6 +56,20 @@ async def debug_db():
         "users": user_count,
         "projects": project_count,
     }
+
+
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
+
+
+@app.get("/api/admin/users")
+async def admin_users(x_admin_secret: str = Header("")):
+    """List all registered users. Protected by ADMIN_SECRET header."""
+    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    from app.db import get_db
+    with get_db() as conn:
+        rows = conn.execute("SELECT id, email, provider, created_at FROM users ORDER BY created_at DESC").fetchall()
+    return [dict(r) for r in rows]
 
 
 @app.get("/api/debug-parse")
