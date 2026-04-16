@@ -144,42 +144,23 @@ export default function Chat() {
             );
             if (idx >= 0) store.removeCvEducation(idx);
           } else if (action.action === "merge_experiences" && store.cvData && target) {
-            // Find all experiences matching the target company
             const indices = store.cvData.experiences
               .map((e, i) => (e.company.toLowerCase().includes(target) || e.title.toLowerCase().includes(target)) ? i : -1)
               .filter((i) => i >= 0);
             if (indices.length >= 2) {
-              // Parse merged data from value (can be JSON string or object)
               const merged = typeof action.value === "string" ? JSON.parse(action.value) : action.value;
-              // Remove all but the first match (reverse order to preserve indices)
-              for (let i = indices.length - 1; i >= 1; i--) {
-                store.removeCvExperience(indices[i]);
-              }
-              // Update the remaining one with merged data
-              const cv = useStore.getState().cvData;
-              if (cv && merged) {
-                if (merged.title) store.updateCvField(`experiences.${indices[0]}.title`, merged.title);
-                if (merged.company) store.updateCvField(`experiences.${indices[0]}.company`, merged.company);
-                if (merged.dates) store.updateCvField(`experiences.${indices[0]}.dates`, merged.dates);
-                if (merged.bullets && Array.isArray(merged.bullets)) {
-                  // Replace all bullets
-                  const exp = useStore.getState().cvData?.experiences[indices[0]];
-                  if (exp) {
-                    // Remove existing bullets (reverse)
-                    for (let b = exp.bullets.length - 1; b >= 0; b--) {
-                      store.removeCvBullet(indices[0], b);
-                    }
-                    // Add merged bullets
-                    for (const bullet of merged.bullets) {
-                      store.addCvBullet(indices[0]);
-                      const newExp = useStore.getState().cvData?.experiences[indices[0]];
-                      if (newExp) {
-                        store.updateCvField(`experiences.${indices[0]}.bullets.${newExp.bullets.length - 1}`, bullet);
-                      }
-                    }
-                  }
+              useStore.setState((s) => {
+                if (!s.cvData) return s;
+                const cv = structuredClone(s.cvData);
+                if (merged.title) cv.experiences[indices[0]].title = merged.title;
+                if (merged.company) cv.experiences[indices[0]].company = merged.company;
+                if (merged.dates) cv.experiences[indices[0]].dates = merged.dates;
+                if (merged.bullets) cv.experiences[indices[0]].bullets = merged.bullets;
+                for (let i = indices.length - 1; i >= 1; i--) {
+                  cv.experiences.splice(indices[i], 1);
                 }
-              }
+                return { cvData: cv };
+              });
             }
           } else if (action.action === "edit_field" && store.cvData) {
             store.updateCvField(action.target, action.value as string);
