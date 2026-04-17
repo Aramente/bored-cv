@@ -76,18 +76,24 @@ export default function Chat() {
         improvements: [],
       });
     }
+
+    // Instant first question — no API wait
+    const currentMessages = useStore.getState().messages;
+    if (currentMessages.length === 0 && profile && offer) {
+      const recentExp = profile.experiences[0];
+      const isFr = i18n.language.startsWith("fr");
+      const firstQ = isFr
+        ? `${profile.name}, j'ai lu l'offre de ${offer.title} chez ${offer.company}. Commençons par ${recentExp?.company || "ton dernier poste"} — c'était combien de personnes quand t'es arrivé, et quand t'es parti ?`
+        : `${profile.name}, I read the ${offer.title} role at ${offer.company}. Let's start with ${recentExp?.company || "your most recent role"} — how many people when you joined, and when you left?`;
+      addMessage({ role: "assistant", content: firstQ });
+    }
   }, []);
 
-  // Show first question when analysis completes (may arrive async from background)
-  useEffect(() => {
-    const currentMessages = useStore.getState().messages;
-    if (currentMessages.length === 0 && gapAnalysis && gapAnalysis.questions.length > 0) {
-      addMessage({ role: "assistant", content: gapAnalysis.questions[0] });
-    }
-  }, [gapAnalysis]);
+  // When gap analysis arrives, DON'T add another first message — it's already shown
+  // Just let subsequent chatNext calls use the gap analysis data
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || !profile || !offer || !gapAnalysis) return;
+    if (!text.trim() || !profile || !offer) return;
     if (sendingRef.current) return; // prevent double-send
     sendingRef.current = true;
 
@@ -101,7 +107,8 @@ export default function Chat() {
       const captcha = "";
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
       const currentCv = useStore.getState().cvData;
-      const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang, knownFacts, contradictions, currentCv);
+      const currentGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
+      const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv);
 
       addMessage({ role: "assistant", content: response.message });
 
@@ -194,7 +201,7 @@ export default function Chat() {
         // (cv_actions = user edits that should not be overwritten by the draft)
         const hadActions = response.cv_actions && response.cv_actions.length > 0;
         if (!hadActions) {
-          draftCV(profile, offer, gapAnalysis, allMessages, captcha, lang, targetMarket)
+          draftCV(profile, offer, currentGap, allMessages, captcha, lang, targetMarket)
             .then((draft) => {
               const current = useStore.getState().cvData;
               if (!current) { setCvData(draft); return; }
@@ -225,7 +232,7 @@ export default function Chat() {
 
       if (response.is_complete) {
         setGenerating(true);
-        const cv = await generateCV(profile, offer, gapAnalysis, allMessages, captcha, lang, tone, targetMarket);
+        const cv = await generateCV(profile, offer, currentGap, allMessages, captcha, lang, tone, targetMarket);
         setCvData(cv);
         // Auto-translate to the other language
         const altLang = cv.language === "fr" ? "en" : "fr";
@@ -332,7 +339,7 @@ export default function Chat() {
         </div>
 
         <div className="chat-messages">
-          {!gapAnalysis && messages.length === 0 && (
+          {false && (
             <div className="chat-msg assistant">
               <div className="chat-bubble chat-skeleton">
                 <div className="skeleton-line" style={{ width: "90%" }} />
