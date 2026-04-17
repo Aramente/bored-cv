@@ -290,45 +290,36 @@ If the conversation provided headcount numbers, USE THEM. "Joined at 5, left at 
 
 WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 
-1. ANTI-BULLSHIT. Most CVs are bad because they are:
-   a) TOO SCHOLARLY — they describe responsibilities like a job description, not what the person actually DID
-      ❌ "Responsible for managing HR operations across multiple geographies"
-      ✅ "Ran payroll in 4 countries, from scratch, while the company tripled in size"
-   b) TOO POMPOUS — fancy words that sound impressive but say nothing
-      ❌ "Leveraged strategic synergies to optimize cross-functional workflows"
-      ❌ "Proven track record of delivering results in fast-paced environments"
-      ❌ "Passionate about driving organizational excellence"
-      These are empty calories. A recruiter reads 200 CVs — they remember ZERO of these.
-   c) TOO DESCRIPTIVE — listing what the job was, not what the person achieved
-      ❌ "In charge of the onboarding process for new employees"
-      ✅ "Built onboarding from zero — new hires hit full speed in 5 days instead of 3 weeks"
-   d) NOT RELEVANT — mentioning things that don't connect to the target role
-      Every bullet should pass the test: "Would the person reading THIS job offer care about this?"
+1. EXPERIENCE STRUCTURE — EVERY EXPERIENCE FOLLOWS THIS PATTERN:
+   Bullet 1: CONTEXT + BROAD MISSION — what was the situation, what was your scope
+      ✅ "Built the entire People function from scratch at Mindflow (AI, seed→Series A, 5→45): employer branding, payroll, comp strategy, onboarding, HRIS."
+      ❌ "Responsible for HR operations" — too vague, no context
+   Bullet 2-3: SPOTLIGHTS — 1-2 specific achievements the person is proud of AND that matter for THIS job offer. With metrics.
+      ✅ "Structured recruitment to hit 30 hires in 8 months — built a sourcing pipeline (LinkedIn + cooptation) that generated 60% of hires, time-to-hire: 3 weeks"
+      ✅ "Created a mentoring system after team feedback — NPS auprès des clients went up, reduced early churn"
+      ❌ "Managed recruitment" — no metric, no specifics
+   This pattern (context → scope → 1-2 spotlights) gives every experience the same rhythm. A recruiter can scan it fast.
 
-2. XYZ FORMULA for every bullet: "Accomplished [X] as measured by [Y] by doing [Z]."
-   ✅ "Grew the team from 2 to 8 (X) in 6 months (Y) by building a sourcing pipeline and running 150+ interviews (Z)"
-   ✅ "Cut time-to-productivity from 3 weeks to 5 days (X/Y) by designing a structured onboarding program with buddy system (Z)"
-   NOT every bullet needs all three, but the best ones do.
+2. ANTI-BULLSHIT. No corporate filler, no buzzwords, no responsibility-voice.
+   ❌ "Responsible for managing HR operations across multiple geographies"
+   ✅ "Ran payroll in 4 countries, from scratch, while the company tripled in size"
+   ❌ "Leveraged strategic synergies" / "Proven track record" / "Passionate about" — banned. Use plain language.
 
 3. NUMBERS WITH CONTEXT. Raw numbers are noise. Numbers with benchmarks are signal.
    ❌ "Exceeded sales quota"
    ✅ "118% of quota in a year where team average was 79%"
-   ❌ "Managed payroll"
-   ✅ "Ran payroll across 4 countries (FR, US, UK, DE) with zero errors over 14 months — even during series A crunch"
 
-4. CONTEXTUALIZE EVERY COMPANY in 5 words or less, right after the company name. The reader needs instant signal.
+4. CONTEXTUALIZE EVERY COMPANY: "Company (sector, stage, headcount transition)"
    ✅ "Germinal (SaaS, 15→80 employees, Series A)"
-   ✅ "Mindflow (AI automation, seed stage, 12 people)"
-   ✅ "Figures (compensation benchmark, Series B, €1B+ clients)"
-   ❌ "Germinal" alone — means nothing to a recruiter who doesn't know the company
+   ❌ "Germinal" alone
 
-5. USE THE CANDIDATE'S ACTUAL WORDS AND DETAILS. Real company names, real numbers, real context from the conversation. If they said "12 people", write "12 people", not "a team of professionals". The CV must sound like THEM, not like ChatGPT wrote it. 74% of hiring managers now spot AI-generated resumes — and reject them.
+5. USE THE CANDIDATE'S ACTUAL WORDS. Real names, real numbers, real context. The CV must sound like THEM.
 
-6. WEAVE IN PHILOSOPHY. If the candidate expressed a personal philosophy, belief, or approach during the conversation (e.g., "recruitment is R&D", "candidate experience matters more than speed"), weave it into the summary or as context in the most relevant experience bullet. Philosophy makes a CV memorable — it shows HOW the person thinks, not just what they did. Don't invent philosophy they didn't express — only use what they actually said.
+6. WEAVE IN PHILOSOPHY. If the candidate expressed a personal take on their work (e.g., "recruitment is R&D", "99% of candidates get rejected but it's on us to make them ambassadors"), weave it into the summary or as context in the most relevant experience. Philosophy = memorable. Don't invent it — only use what they actually said.
 
-7. ATS OPTIMIZATION. Use the EXACT terminology from the job offer. If the offer says "HRIS", write "HRIS" — not "HR information systems". If it says "payroll", write "payroll" — not "compensation management". Mirror their words naturally in bullets.
+7. ATS OPTIMIZATION. Mirror the EXACT terminology from the job offer in bullets.
 
-6. SUMMARY: 2 sentences MAX. Written like you're introducing yourself at a dinner — not a conference stage.
+8. SUMMARY: 2 sentences MAX. Written like you're introducing yourself at a dinner — not a conference stage.
    First sentence = what you do + proof (years, companies, scale). Second = what you'd bring to THIS role specifically.
    ✅ "6 ans à monter des fonctions RH from scratch dans 3 startups (Germinal, Mindflow, Figures), de 5 à 80 personnes. Payroll multi-pays, onboarding, HRIS — le genre de bazar organisé qui fait tourner une boîte en hypergrowth."
    ✅ "Built HR from zero at 3 startups (Germinal, Mindflow, Figures), scaling teams from 5 to 80. Multi-country payroll, onboarding programs, HRIS setup — the organized chaos that keeps hypergrowth companies running."
@@ -398,10 +389,13 @@ STRICT RULES — VIOLATING THESE IS A FAILURE:
   ✅ "6 ans en People Ops, 3 startups (Germinal, Mindflow, Figures), scaling 5→80 personnes. Payroll multi-pays, onboarding from scratch, HRIS Deel."
   ❌ "Dynamic People Operations leader with a strong background in talent acquisition and fostering exceptional employee experiences"
   The first one sounds like a person. The second sounds like a robot.
-- Every bullet = a concrete action with a number, not a job description
+- EXPERIENCE PATTERN — every experience follows the same structure:
+  Bullet 1: CONTEXT + BROAD MISSION — situation, full scope of role ("Built entire People function from scratch: employer branding, payroll, comp, onboarding, HRIS")
+  Bullet 2-3: SPOTLIGHTS — 1-2 specific achievements the person is proud of AND that connect to the target offer, with metrics
+  This gives every experience the same scannable rhythm.
 - Contextualize companies: "(SaaS, seed→Series A, 12→45 employees)"
-- Include ALL experiences from the profile — calibrate depth by relevance
-- PHILOSOPHY: If the candidate expressed a personal philosophy or belief in the conversation, weave it into the summary or the most relevant experience bullet. Philosophy shows how they think, not just what they did.
+- Include ALL experiences — calibrate depth by relevance (3-4 bullets for key roles, 1 line for minor ones)
+- PHILOSOPHY: If the candidate expressed a personal take/belief, weave it into summary or relevant bullet.
 - Skills: only concrete, verifiable skills with proof. No soft skills.
 - LANGUAGE: Write ALL CV content in {"French" if ui_language == "fr" else "English"}. The summary, bullets, skills — everything must be in {"French" if ui_language == "fr" else "English"}.
 
