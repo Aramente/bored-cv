@@ -29,6 +29,7 @@ export default function Chat() {
   const [contradictions, setContradictions] = useState<string[]>([]);
   const [showMobileCv, setShowMobileCv] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const sendingRef = useRef(false);
 
   const handleCvEdit = useCallback((field: string, oldVal: string, newVal: string) => {
     if (oldVal === newVal || !newVal.trim()) return;
@@ -97,6 +98,8 @@ export default function Chat() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || !profile || !offer || !gapAnalysis) return;
+    if (sendingRef.current) return; // prevent double-send
+    sendingRef.current = true;
 
     addMessage({ role: "user", content: text });
     setInput("");
@@ -149,10 +152,18 @@ export default function Chat() {
             // Re-read store for fresh state (prior actions in this loop may have changed it)
             const freshStore = useStore.getState();
             if (!freshStore.cvData) continue;
+            // Robust matching: strip parenthetical context and match partial company names
+            const stripParens = (s: string) => s.toLowerCase().replace(/\s*\(.*\)/, "").trim();
+            const targetClean = stripParens(target);
             const indices = freshStore.cvData.experiences
-              .map((e, i) => (e.company.toLowerCase().includes(target) || e.title.toLowerCase().includes(target)) ? i : -1)
+              .map((e, i) => {
+                const companyClean = stripParens(e.company);
+                const titleClean = e.title.toLowerCase();
+                return (companyClean.includes(targetClean) || targetClean.includes(companyClean) ||
+                        e.company.toLowerCase().includes(target) || titleClean.includes(target)) ? i : -1;
+              })
               .filter((i) => i >= 0);
-            console.log("[merge]", { target, indices, totalExperiences: freshStore.cvData.experiences.length });
+            console.log("[merge]", { target, targetClean, indices, companies: freshStore.cvData.experiences.map(e => e.company), totalExperiences: freshStore.cvData.experiences.length });
             if (indices.length >= 1) {
               let merged: Record<string, unknown> = {};
               try {
@@ -192,13 +203,12 @@ export default function Chat() {
             .then((draft) => {
               const current = useStore.getState().cvData;
               if (!current) { setCvData(draft); return; }
-              // Merge draft improvements into current, preserving user edits
-              // Only update experiences if the current count matches (no user deletions/merges happened)
-              const experiencesChanged = current.experiences.length !== draft.experiences.length;
+              // Merge draft improvements into current, ALWAYS preserving user's experiences
+              // Experiences are never overwritten by draft — user edits, deletions, and merges take priority
               setCvData({
                 ...current,
                 summary: draft.summary || current.summary,
-                experiences: experiencesChanged ? current.experiences : (draft.experiences.length > 0 ? draft.experiences : current.experiences),
+                experiences: current.experiences, // ALWAYS keep user's experiences
                 skills: draft.skills.length > 0 ? draft.skills : current.skills,
                 match_score: draft.match_score || current.match_score,
                 strengths: draft.strengths.length > 0 ? draft.strengths : current.strengths,
@@ -256,6 +266,7 @@ export default function Chat() {
       addMessage({ role: "assistant", content: `⚠️ ${msg}` });
     } finally {
       setLoading(false);
+      sendingRef.current = false;
     }
   };
 
