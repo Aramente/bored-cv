@@ -72,7 +72,7 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
             ))}
           </View>
         </View>
-        <Text style={{ position: "absolute", bottom: 12, right: 24, fontSize: 7, color: "#c0c0c0", fontFamily: "Helvetica" }}>made with bored cv</Text>
+        <Text style={{ position: "absolute", bottom: 8, right: 12, fontSize: 6, color: "#e0e0e0", fontFamily: "Helvetica", opacity: 0.4 }}>bcv</Text>
       </Page>
     </Document>
   );
