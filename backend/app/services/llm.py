@@ -20,7 +20,10 @@ class LLMService:
     def model(self):
         if self._model is None:
             genai.configure(api_key=self._api_key)
-            self._model = genai.GenerativeModel("gemini-2.5-flash")
+            self._model = genai.GenerativeModel(
+                "gemini-2.5-flash",
+                request_options={"timeout": 60},
+            )
         return self._model
 
     def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
@@ -231,7 +234,17 @@ Write in {lang_instruction}. Be warm but direct — like a coach, not a chatbot.
         return ChatResponse(**data)
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
-        conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        # Token optimization: summarize long conversations to avoid blowing context window
+        if len(messages) > 6:
+            early = messages[:-4]
+            recent = messages[-4:]
+            summary_parts = []
+            for m in early:
+                if m.role == "user":
+                    summary_parts.append(f"- User said: {m.content[:150]}")
+            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
+        else:
+            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
 
         prompt = f"""You write CVs the way someone would explain their work to a junior colleague at the startup — direct, specific, with energy and professional depth. Not dumbed down. Not corporate. Just how a competent professional talks about what they actually did, without posturing. That honesty IS what impresses recruiters — because 200 other CVs sound like ChatGPT wrote them.
 

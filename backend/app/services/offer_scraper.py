@@ -1,4 +1,6 @@
+import ipaddress
 import re
+from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -6,7 +8,32 @@ from bs4 import BeautifulSoup
 from app.models import Offer, OfferRequirement
 
 
+def _is_safe_url(url: str) -> bool:
+    """Block requests to private/reserved IPs and metadata endpoints."""
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname or ""
+        if not hostname:
+            return False
+        if hostname in ("localhost", "127.0.0.1", "0.0.0.0", "169.254.169.254", "metadata.google.internal"):
+            return False
+        try:
+            ip = ipaddress.ip_address(hostname)
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                return False
+        except ValueError:
+            pass  # hostname is a domain, not an IP — that's fine
+        if parsed.scheme not in ("http", "https"):
+            return False
+        return True
+    except Exception:
+        return False
+
+
 async def scrape_offer_url(url: str) -> Offer | None:
+    if not _is_safe_url(url):
+        return None
+
     # Try SPA-specific APIs first (Ashby, Lever, Greenhouse)
     spa_result = await _try_spa_apis(url)
     if spa_result:

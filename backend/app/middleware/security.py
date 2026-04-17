@@ -1,16 +1,18 @@
 import os
 import time
-from collections import defaultdict
 
 import httpx
 from fastapi import Request, HTTPException
 
+from app.db import get_db
+
 TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRET", "")
 DAILY_TOKEN_BUDGET = int(os.environ.get("DAILY_TOKEN_BUDGET", "500000"))
 
-_ip_usage: dict[str, list[float]] = defaultdict(list)
-_daily_tokens_used = 0
-_day_start = 0.0
+
+def _get_client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    return forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
 
 
 async def verify_turnstile(token: str) -> bool:
@@ -25,33 +27,48 @@ async def verify_turnstile(token: str) -> bool:
 
 
 def check_rate_limit(request: Request, is_authenticated: bool = False) -> None:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    ip = _get_client_ip(request)
     limit = 20 if is_authenticated else 10
     now = time.time()
     day_ago = now - 86400
-    _ip_usage[ip] = [t for t in _ip_usage[ip] if t > day_ago]
-    if len(_ip_usage[ip]) >= limit:
-        raise HTTPException(
-            status_code=429,
-            detail="Rate limit exceeded. Sign in for more generations." if not is_authenticated
-            else "Daily limit reached. Try again tomorrow.",
-        )
-    _ip_usage[ip].append(now)
+
+    with get_db() as conn:
+        # Clean old entries
+        conn.execute("DELETE FROM rate_limits WHERE timestamp < ?", (day_ago,))
+        # Count recent requests from this IP
+        row = conn.execute(
+            "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND timestamp > ?",
+            (ip, day_ago),
+        ).fetchone()
+        count = row["cnt"] if row else 0
+        if count >= limit:
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded. Sign in for more generations." if not is_authenticated
+                else "Daily limit reached. Try again tomorrow.",
+            )
+        conn.execute("INSERT INTO rate_limits (ip, timestamp) VALUES (?, ?)", (ip, now))
 
 
 def check_daily_budget() -> dict:
-    global _daily_tokens_used, _day_start
     now = time.time()
-    if now - _day_start > 86400:
-        _daily_tokens_used = 0
-        _day_start = now
-    remaining = DAILY_TOKEN_BUDGET - _daily_tokens_used
+    today = time.strftime("%Y-%m-%d")
+
+    with get_db() as conn:
+        row = conn.execute("SELECT tokens_used FROM daily_budget WHERE day = ?", (today,)).fetchone()
+        used = row["tokens_used"] if row else 0
+
+    remaining = DAILY_TOKEN_BUDGET - used
     if remaining <= 0:
         raise HTTPException(status_code=429, detail="Service at capacity. Please try again tomorrow.")
-    return {"remaining": remaining, "used": _daily_tokens_used}
+    return {"remaining": remaining, "used": used}
 
 
 def record_token_usage(tokens: int) -> None:
-    global _daily_tokens_used
-    _daily_tokens_used += tokens
+    today = time.strftime("%Y-%m-%d")
+    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO daily_budget (day, tokens_used) VALUES (?, ?) "
+            "ON CONFLICT(day) DO UPDATE SET tokens_used = tokens_used + ?",
+            (today, tokens, tokens),
+        )

@@ -3,15 +3,17 @@ from fastapi import APIRouter, HTTPException, Request
 
 from app.db import get_db
 from app.models import KnowledgeBase, KnowledgeEntry, FactEntry
+from app.routers.auth import get_user_from_request
 
 router = APIRouter(prefix="/api/knowledge", tags=["knowledge"])
 
 
 def _get_user_id(request: Request) -> str:
-    user = request.session.get("user")
-    if not user:
-        raise HTTPException(status_code=401, detail="Sign in to access knowledge base")
-    return user.get("email", "")
+    auth_header = request.headers.get("authorization", "")
+    user = get_user_from_request(authorization=auth_header)
+    if user:
+        return user.get("email", "")
+    raise HTTPException(status_code=401, detail="Sign in to access knowledge base")
 
 
 @router.get("", response_model=KnowledgeBase)

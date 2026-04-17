@@ -10,7 +10,9 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 BASE_URL = os.environ.get("BASE_URL", "https://aramente-bored-cv-api.hf.space")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://aramente.github.io/bored-cv/")
-SECRET = os.environ.get("SESSION_SECRET", "dev-secret-change-me")
+_secret = os.environ.get("SESSION_SECRET", "")
+_dev_mode = os.environ.get("DEV_MODE", "").lower() in ("1", "true", "yes")
+SECRET = _secret if _secret else ("dev-secret-change-me" if _dev_mode else "")
 
 signer = URLSafeTimedSerializer(SECRET)
 
@@ -67,7 +69,7 @@ async def google_callback(request: Request):
     user_info = token.get("userinfo", {})
     email = user_info.get("email", "")
     auth_token = _make_token(email, "google")
-    redirect = f"{FRONTEND_URL}?token={auth_token}&email={email}&provider=google"
+    redirect = f"{FRONTEND_URL}#token={auth_token}&email={email}&provider=google"
     return RedirectResponse(url=redirect)
 
 
@@ -84,7 +86,7 @@ async def github_callback(request: Request):
     user_data = resp.json()
     email = user_data.get("login", "")
     auth_token = _make_token(email, "github")
-    redirect = f"{FRONTEND_URL}?token={auth_token}&email={email}&provider=github"
+    redirect = f"{FRONTEND_URL}#token={auth_token}&email={email}&provider=github"
     return RedirectResponse(url=redirect)
 
 

@@ -208,6 +208,17 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS rate_limits (
+                ip TEXT NOT NULL,
+                timestamp REAL NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS daily_budget (
+                day TEXT PRIMARY KEY,
+                tokens_used INTEGER DEFAULT 0
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_rate_limits_ip ON rate_limits(ip, timestamp);
             CREATE INDEX IF NOT EXISTS idx_knowledge_user ON knowledge(user_id);
             CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);
             CREATE INDEX IF NOT EXISTS idx_facts_user ON facts(user_id);

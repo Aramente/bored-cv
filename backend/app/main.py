@@ -6,9 +6,16 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge
 
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
+DEV_MODE = os.environ.get("DEV_MODE", "").lower() in ("1", "true", "yes")
+if not SESSION_SECRET and not DEV_MODE:
+    raise RuntimeError("SESSION_SECRET environment variable is required in production")
+if not SESSION_SECRET:
+    SESSION_SECRET = "dev-secret-change-me"
+
 app = FastAPI(title="Bored CV API", version="0.1.0")
 
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "dev-secret-change-me"))
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,8 +44,10 @@ async def health():
 
 
 @app.get("/api/debug-db")
-async def debug_db():
-    """Debug: check DB status."""
+async def debug_db(x_admin_secret: str = Header("")):
+    """Debug: check DB status. Protected by ADMIN_SECRET header."""
+    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
     from app.db import get_db, USE_TURSO, TURSO_URL
     project_count = 0
     user_count = 0
@@ -76,8 +85,10 @@ async def admin_users(x_admin_secret: str = Header(""), consented_only: bool = F
 
 
 @app.get("/api/debug-parse")
-async def debug_parse():
-    """Debug: test full PDF parser pipeline."""
+async def debug_parse(x_admin_secret: str = Header("")):
+    """Debug: test full PDF parser pipeline. Protected by ADMIN_SECRET header."""
+    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
     import traceback
     import google.generativeai as genai
     from app.services.pdf_parser import extract_pdf_text
