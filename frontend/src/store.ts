@@ -93,6 +93,15 @@ export interface CVData {
   improvements: string[];
 }
 
+export interface CoverLetterData {
+  greeting: string;
+  opening: string;
+  body: string;
+  closing: string;
+  signature: string;
+  language: string;
+}
+
 export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";
 
 interface AppState {
@@ -109,9 +118,11 @@ interface AppState {
   projectId: number | null;
   user: { email: string; provider: string } | null;
   cvHistory: CVData[];
+  coverLetterData: CoverLetterData | null;
   brandColors: { primary: string; secondary: string } | null;
   useBrandColors: boolean;
   targetMarket: "france" | "europe" | "us" | "global";
+  setCoverLetterData: (cl: CoverLetterData) => void;
   setBrandColors: (colors: { primary: string; secondary: string } | null) => void;
   setUseBrandColors: (use: boolean) => void;
   setTargetMarket: (market: "france" | "europe" | "us" | "global") => void;
@@ -158,6 +169,7 @@ const initialState = {
   projectId: null,
   user: null,
   cvHistory: [] as CVData[],
+  coverLetterData: null,
   targetMarket: "france" as "france" | "europe" | "us" | "global",
   lastSaved: null,
   brandColors: null,
@@ -179,6 +191,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
   setLastSaved: (lastSaved) => set({ lastSaved }),
+  setCoverLetterData: (coverLetterData) => set({ coverLetterData }),
   setBrandColors: (brandColors) => set({ brandColors }),
   setUseBrandColors: (useBrandColors) => set({ useBrandColors }),
   setTargetMarket: (targetMarket) => set({ targetMarket }),

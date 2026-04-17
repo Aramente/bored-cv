@@ -1,4 +1,4 @@
-import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData } from "../store";
+import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData, CoverLetterData } from "../store";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
@@ -90,6 +90,13 @@ export async function getConsent(): Promise<{ consented: boolean; asked: boolean
 
 export async function giveConsent(): Promise<void> {
   await post("/api/auth/consent", {});
+}
+
+export async function generateCoverLetter(profile: Profile, offer: Offer, cvData: CVData, messages: ChatMessage[], captchaToken: string, lang?: string, tone?: string, market?: string): Promise<CoverLetterData> {
+  return post("/api/generate-cover-letter", {
+    profile, offer, cv_data: cvData, messages,
+    ui_language: lang || "en", tone: tone || "startup", target_market: market || "france",
+  }, captchaToken);
 }
 
 export async function extractColors(url: string): Promise<{ primary: string; secondary: string; colors: string[] }> {

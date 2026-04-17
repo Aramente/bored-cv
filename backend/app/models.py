@@ -152,6 +152,25 @@ class ProjectDetail(BaseModel):
     updated_at: str = ""
 
 
+class CoverLetterData(BaseModel):
+    greeting: str = ""
+    opening: str = ""  # hook paragraph
+    body: str = ""     # 2-3 paragraphs linking experience to role
+    closing: str = ""  # call to action
+    signature: str = ""
+    language: str = "en"
+
+
+class CoverLetterRequest(BaseModel):
+    profile: Profile
+    offer: Offer
+    cv_data: CVData
+    messages: list[ChatMessage] = []
+    ui_language: str = "en"
+    tone: str = "startup"
+    target_market: str = "france"
+
+
 class KnowledgeEntry(BaseModel):
     id: int = 0
     company: str

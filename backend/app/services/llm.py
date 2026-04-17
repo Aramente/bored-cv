@@ -4,8 +4,8 @@ import os
 import google.generativeai as genai
 
 from app.models import (
-    CVData, ChatMessage, ChatResponse, Education, GapAnalysis,
-    Offer, Profile, RewrittenExperience,
+    CoverLetterData, CVData, ChatMessage, ChatResponse, Education,
+    GapAnalysis, Offer, Profile, RewrittenExperience,
 )
 
 MAX_TOKENS_PER_CALL = 16000  # Gemini 2.5 Flash shares budget between thinking + output
@@ -450,6 +450,92 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
         )
         data = self._parse_json(response.text)
         return CVData(**data)
+
+    def generate_cover_letter(self, profile: Profile, offer: Offer, cv_data: CVData, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CoverLetterData:
+        # Summarize conversation for context
+        if len(messages) > 6:
+            early = messages[:-4]
+            recent = messages[-4:]
+            summary_parts = []
+            for m in early:
+                if m.role == "user":
+                    summary_parts.append(f"- User said: {m.content[:150]}")
+            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
+        else:
+            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+
+        # Format CV experiences for the prompt
+        cv_experiences = []
+        for exp in cv_data.experiences:
+            bullets = "\n".join(f"  - {b}" for b in exp.bullets)
+            cv_experiences.append(f"- {exp.title} at {exp.company} ({exp.dates})\n{bullets}")
+        cv_exp_text = "\n".join(cv_experiences)
+
+        prompt = f"""You write cover letters the way someone would explain why they want the job to a friend who works there — direct, specific, with real reasons. Not a template. Not corporate. Just how a competent professional talks about what excites them about THIS role, without posturing.
+
+CANDIDATE:
+Name: {profile.name}
+Title: {profile.title}
+
+CV (already tailored to this role):
+Summary: {cv_data.summary}
+Experiences:
+{cv_exp_text}
+Skills: {", ".join(cv_data.skills)}
+
+TARGET ROLE: {offer.title} at {offer.company}
+Key requirements: {self._format_requirements(offer)}
+Offer description: {offer.description[:2000]}
+
+WHAT THE CANDIDATE SAID IN CONVERSATION:
+{conversation}
+
+TONE OF VOICE: {self._get_tone_instruction(tone)}
+
+{self._get_market_instruction(target_market)}
+
+COVER LETTER MARKET NORMS:
+{"French cover letters (lettre de motivation) are slightly more formal. Use 'vous' form. Start with 'Madame, Monsieur,' unless you know the hiring manager. Close with a formal politesse formula but keep it SHORT — not the 3-line dinosaur version. The body should still be direct and specific." if target_market == "france" else "US/international cover letters are direct. First name basis if you know it. No formal closing formulas — just a clear call to action."}
+
+VOICE — THE JUNIOR COLLEAGUE TEST:
+Read every sentence out loud. If you can't imagine someone saying it to a junior colleague at the startup — someone who gets the work but doesn't need posturing — rewrite it.
+   ❌ "I am writing to express my keen interest in the position of Head of People Ops at your esteemed organization"
+   ✅ "I built HR from scratch at three startups — Mindflow, Germinal, Figures — scaling teams from 5 to 80 people. Your job posting for Head of People Ops at Ami reads like a list of problems I've already solved."
+The second version is MORE compelling because it's SPECIFIC. Generic enthusiasm is noise.
+
+BANNED WORDS AND PHRASES — if ANY of these appear, you have FAILED:
+"highly motivated", "passionate about", "eager to leverage", "proven track record",
+"I believe I would be a great fit", "I am confident that", "your esteemed",
+"dynamic", "innovative", "cutting-edge", "synergies", "spearheaded",
+"I am writing to express", "please find enclosed", "I look forward to the opportunity",
+"strong background in", "extensive experience", "dedicated professional",
+"fast-paced environment", "team player", "results-driven", "detail-oriented"
+
+STRUCTURE:
+1. **greeting**: "Madame, Monsieur," (FR formal) or "Hi [name]," / "Dear [team]," (informal) — adapt to market
+2. **opening**: 2-3 sentences. Hook with a SPECIFIC achievement from the CV that directly connects to the role. Name the company. Make them stop scrolling. This is NOT "I saw your job posting and I'm interested." This IS "I built X at Y, and your posting for Z reads like what I do."
+3. **body**: 2-3 SHORT paragraphs. Each one connects a SPECIFIC experience/achievement from the CV to a SPECIFIC requirement from the offer. Use real numbers, real company names, real outcomes. Don't repeat the CV — ADD context: why you made those choices, what you learned, why it matters for THIS role.
+4. **closing**: 2-3 sentences. Clear call to action. What you'd bring in the first 90 days, or what you'd love to discuss. Not "I look forward to hearing from you" — something specific.
+5. **signature**: "{profile.name}"
+
+RULES:
+- MAX 350 words total across all sections
+- Reference SPECIFIC achievements from the CV — with numbers
+- Address SPECIFIC requirements from the job offer — by name
+- The opening must mention the target company ({offer.company}) and role ({offer.title})
+- Every paragraph must connect YOUR experience to THEIR needs
+- Use the candidate's actual company names and numbers from the CV
+- Write in {"French" if ui_language == "fr" else "English"}
+
+Respond in valid JSON only:
+{{"greeting": "...", "opening": "...", "body": "...", "closing": "...", "signature": "{profile.name}", "language": "{"fr" if ui_language == "fr" else "en"}"}}"""
+
+        response = self.model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.5, response_mime_type="application/json"),
+        )
+        data = self._parse_json(response.text)
+        return CoverLetterData(**data)
 
     def _get_market_instruction(self, market: str) -> str:
         markets = {
