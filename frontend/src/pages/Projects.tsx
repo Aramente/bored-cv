@@ -67,7 +67,11 @@ export default function Projects() {
 
   const loadCurrentProject = () => {
     // Data is already in the store from localStorage persist — just navigate
-    navigate("/chat");
+    if (useStore.getState().cvData) {
+      navigate("/editor");
+    } else {
+      navigate("/chat");
+    }
   };
 
   return (
@@ -113,7 +117,11 @@ export default function Projects() {
                     store.setMessages(project.messages || []);
                     if (project.template) store.setSelectedTemplate(project.template);
                     if (project.tone) store.setTone(project.tone);
-                    navigate("/chat");
+                    if (store.cvData) {
+                      navigate("/editor");
+                    } else {
+                      navigate("/chat");
+                    }
                   } catch {
                     navigate("/upload");
                   }

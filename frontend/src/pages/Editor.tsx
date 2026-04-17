@@ -68,6 +68,7 @@ export default function Editor() {
       try {
         const lang = cvData?.language || "en";
         const cv = await generateCV(profile, offer, gapAnalysis, messages, "", lang, newTone, targetMarket);
+        useStore.getState().pushCvHistory();
         useStore.getState().setCvData(cv);
       } catch (e) {
         console.warn("Regeneration failed:", e);

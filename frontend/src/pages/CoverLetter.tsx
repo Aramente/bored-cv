@@ -80,6 +80,9 @@ export default function CoverLetter() {
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button className="btn-secondary" onClick={() => navigate("/templates")} style={{ padding: "6px 12px", fontSize: 12 }}>
+            {t("common.back")}
+          </button>
           <AuthButton />
           <LanguageToggle />
         </div>
