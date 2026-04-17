@@ -66,6 +66,7 @@ export interface ChatResponse {
   message: string;
   is_complete: boolean;
   cv_actions: CvAction[];
+  progress: number;  // 0-100
 }
 
 export interface RewrittenExperience {

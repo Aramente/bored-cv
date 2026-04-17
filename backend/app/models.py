@@ -76,6 +76,7 @@ class ChatResponse(BaseModel):
     message: str
     is_complete: bool = False
     cv_actions: list[CvAction] = []
+    progress: int = 0  # 0-100, percentage of key points covered
 
 
 class RewrittenExperience(BaseModel):

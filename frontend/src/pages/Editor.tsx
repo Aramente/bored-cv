@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFViewer } from "@react-pdf/renderer";
 import { useStore } from "../store";
+import { generateCV } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
@@ -55,7 +57,25 @@ function EditableField({ label, value, onChange }: { label: string; value: strin
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, selectedTemplate, updateCvField } = useStore();
+  const { cvData, selectedTemplate, updateCvField, tone, setTone } = useStore();
+  const [regenerating, setRegenerating] = useState(false);
+
+  const handleToneChange = async (newTone: string) => {
+    setTone(newTone);
+    const { profile, offer, gapAnalysis, messages, targetMarket } = useStore.getState();
+    if (profile && offer && gapAnalysis) {
+      setRegenerating(true);
+      try {
+        const lang = cvData?.language || "en";
+        const cv = await generateCV(profile, offer, gapAnalysis, messages, "", lang, newTone, targetMarket);
+        useStore.getState().setCvData(cv);
+      } catch (e) {
+        console.warn("Regeneration failed:", e);
+      } finally {
+        setRegenerating(false);
+      }
+    }
+  };
 
   if (!cvData) {
     return (
@@ -76,7 +96,7 @@ export default function Editor() {
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <StepIndicator current="editor" />
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn-secondary" onClick={() => navigate("/templates")}>{t("common.back")}</button>
+          <button className="btn-secondary" onClick={() => navigate("/chat")}>{t("common.back")}</button>
           <AuthButton />
           <LanguageToggle />
         </div>
@@ -95,6 +115,30 @@ export default function Editor() {
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_summary")}</label>
             <textarea className="input" value={cvData.summary} onChange={(e) => updateCvField("summary", e.target.value)} style={{ marginTop: 4, minHeight: 80 }} />
+          </div>
+
+          {/* Tone selector */}
+          <div style={{ marginBottom: 20 }}>
+            <label className="label">{t("editor.tone_label")}</label>
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+              {[
+                { id: "startup", label: t("tone.startup"), desc: t("tone.startup_desc") },
+                { id: "corporate", label: t("tone.corporate"), desc: t("tone.corporate_desc") },
+                { id: "creative", label: t("tone.creative"), desc: t("tone.creative_desc") },
+                { id: "minimal", label: t("tone.minimal"), desc: t("tone.minimal_desc") },
+              ].map((tn) => (
+                <button
+                  key={tn.id}
+                  className={tone === tn.id ? "btn-primary" : "btn-secondary"}
+                  style={{ padding: "8px 16px", fontSize: 13 }}
+                  onClick={() => handleToneChange(tn.id)}
+                  disabled={regenerating}
+                >
+                  {tn.label}
+                </button>
+              ))}
+            </div>
+            {regenerating && <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 6 }}>{t("editor.regenerating")}</p>}
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -125,20 +169,16 @@ export default function Editor() {
                 <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>{t("editor.validation_title")}</p>
                 {issues.map((issue, i) => (
                   <p key={i} style={{ fontSize: 12, color: issue.type === "error" ? "var(--error, #d32f2f)" : "var(--text-muted)", marginBottom: 4 }}>
-                    {issue.type === "error" ? "✗" : "○"} {issue.text}
+                    {issue.type === "error" ? "\u2717" : "\u25cb"} {issue.text}
                   </p>
                 ))}
               </div>
             );
           })()}
 
-          <PDFDownloadLink document={<TemplateComponent data={cvData} />} fileName={`${cvData.name.replace(/\s+/g, "_")}_CV.pdf`}>
-            {({ loading: pdfLoading }) => (
-              <button className="btn-primary" style={{ width: "100%" }} disabled={pdfLoading}>
-                {pdfLoading ? <span className="spinner" /> : t("editor.download")}
-              </button>
-            )}
-          </PDFDownloadLink>
+          <button className="btn-primary" style={{ width: "100%" }} onClick={() => navigate("/templates")}>
+            {t("editor.continue")}
+          </button>
         </div>
 
         <div className="editor-right" style={{ flex: 1, borderLeft: "1px solid var(--border)", background: "var(--surface)" }}>

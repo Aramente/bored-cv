@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
@@ -7,7 +7,6 @@ import ChatMessage from "../components/ChatMessage";
 import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
-import CVPreviewPanel from "../components/CVPreviewPanel";
 import StepIndicator from "../components/StepIndicator";
 
 export default function Chat() {
@@ -27,18 +26,9 @@ export default function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const [knownFacts, setKnownFacts] = useState<string[]>([]);
   const [contradictions, setContradictions] = useState<string[]>([]);
-  const [showMobileCv, setShowMobileCv] = useState(false);
+  const [progress, setProgress] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const sendingRef = useRef(false);
-
-  const handleCvEdit = useCallback((field: string, oldVal: string, newVal: string) => {
-    if (oldVal === newVal || !newVal.trim()) return;
-    const fieldName = field.replace(/experiences\.(\d+)\./, (_, i) => `experience ${parseInt(i) + 1} → `).replace(/bullets\.(\d+)/, (_, i) => `bullet ${parseInt(i) + 1}`);
-    addMessage({
-      role: "user",
-      content: `✏️ I edited ${fieldName}: "${newVal}"`,
-    });
-  }, [addMessage]);
 
 
   useEffect(() => {
@@ -114,6 +104,11 @@ export default function Chat() {
       const response = await chatNext(profile, offer, gapAnalysis, allMessages, captcha, lang, knownFacts, contradictions, currentCv);
 
       addMessage({ role: "assistant", content: response.message });
+
+      // Update progress
+      if (response.progress !== undefined) {
+        setProgress(response.progress);
+      }
 
       // Process CV actions from the chat
       if (response.cv_actions && response.cv_actions.length > 0) {
@@ -259,11 +254,11 @@ export default function Chat() {
             }
           }).catch(() => {});
         }
-        navigate("/templates");
+        navigate("/editor");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("chat.error_generic");
-      addMessage({ role: "assistant", content: `⚠️ ${msg}` });
+      addMessage({ role: "assistant", content: `\u26a0\ufe0f ${msg}` });
     } finally {
       setLoading(false);
       sendingRef.current = false;
@@ -300,7 +295,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="page chat-split">
+    <div className="page">
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <StepIndicator current="chat" />
@@ -322,78 +317,71 @@ export default function Chat() {
         </div>
       </nav>
 
-      <div className="chat-split-body">
-        {/* Left: chat */}
-        <div className="chat-side">
-          <div className="chat-header">
-            <h1 style={{ fontSize: 20 }}>{t("chat.title")}</h1>
-            <p className="subtitle" style={{ fontSize: 14, marginBottom: 0 }}>{t("chat.subtitle")}</p>
+      <div className="chat-container-centered">
+        {/* Progress bar */}
+        <div className="chat-progress">
+          <div className="chat-progress-bar">
+            <div className="chat-progress-fill" style={{ width: `${progress}%` }} />
           </div>
+          <span className="chat-progress-text">{progress}%</span>
+        </div>
 
-          <div className="chat-messages">
-            {!gapAnalysis && messages.length === 0 && (
-              <div className="chat-msg assistant">
-                <div className="chat-bubble chat-skeleton">
-                  <div className="skeleton-line" style={{ width: "90%" }} />
-                  <div className="skeleton-line" style={{ width: "70%", animationDelay: "0.1s" }} />
-                  <div className="skeleton-line" style={{ width: "80%", animationDelay: "0.2s" }} />
-                  <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 8 }}>
-                    {t("chat.analyzing")}
-                  </p>
-                </div>
-              </div>
-            )}
-            {messages.map((msg, i) => (
-              <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
-            ))}
-            {loading && (
-              <div className="chat-msg assistant">
-                <div className="chat-bubble"><span className="spinner" /></div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
+        <div className="chat-header">
+          <h1 style={{ fontSize: 20 }}>{t("chat.title")}</h1>
+          <p className="subtitle" style={{ fontSize: 14, marginBottom: 0 }}>{t("chat.subtitle")}</p>
+        </div>
 
-          <button
-            className="cv-mobile-toggle"
-            onClick={() => setShowMobileCv(!showMobileCv)}
-          >
-            {showMobileCv ? t("chat.hide_preview") : t("chat.show_preview")}
-          </button>
-          {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
-          {isRecording && (
-            <div className="recording-banner">
-              🎤 {t("chat.recording_hint")}
+        <div className="chat-messages">
+          {!gapAnalysis && messages.length === 0 && (
+            <div className="chat-msg assistant">
+              <div className="chat-bubble chat-skeleton">
+                <div className="skeleton-line" style={{ width: "90%" }} />
+                <div className="skeleton-line" style={{ width: "70%", animationDelay: "0.1s" }} />
+                <div className="skeleton-line" style={{ width: "80%", animationDelay: "0.2s" }} />
+                <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 8 }}>
+                  {t("chat.analyzing")}
+                </p>
+              </div>
             </div>
           )}
-          <form className="chat-input-bar" onSubmit={handleSubmit}>
-            <input
-              className={`input ${isRecording ? "input-recording" : ""}`}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={isRecording ? t("chat.speaking") : t("chat.placeholder")}
-              disabled={loading}
-              readOnly={isRecording}
-            />
-            <VoiceInput
-              onResult={(text) => { setVoiceError(""); setInput(""); sendMessage(text); }}
-              onInterim={(text) => setInput(text)}
-              onError={(msg) => setVoiceError(msg)}
-              onListeningChange={(l) => { setIsRecording(l); if (l) setInput(""); }}
-              lang={i18n.language}
-            />
-            <button className="btn-primary" type="submit" disabled={!input.trim() || loading}
-              style={{ padding: "10px 20px" }}>
-              {t("chat.send")}
-            </button>
-          </form>
+          {messages.map((msg, i) => (
+            <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
+          ))}
+          {loading && (
+            <div className="chat-msg assistant">
+              <div className="chat-bubble"><span className="spinner" /></div>
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
 
-        {/* Right: live CV preview */}
-        <div className={`cv-side ${showMobileCv ? "mobile-visible" : ""}`}>
-          <button className="cv-mobile-close" onClick={() => setShowMobileCv(false)}>✕</button>
-          <CVPreviewPanel onEdit={handleCvEdit} />
-        </div>
+        {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
+        {isRecording && (
+          <div className="recording-banner">
+            🎤 {t("chat.recording_hint")}
+          </div>
+        )}
+        <form className="chat-input-bar" onSubmit={handleSubmit}>
+          <input
+            className={`input ${isRecording ? "input-recording" : ""}`}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={isRecording ? t("chat.speaking") : t("chat.placeholder")}
+            disabled={loading}
+            readOnly={isRecording}
+          />
+          <VoiceInput
+            onResult={(text) => { setVoiceError(""); setInput(""); sendMessage(text); }}
+            onInterim={(text) => setInput(text)}
+            onError={(msg) => setVoiceError(msg)}
+            onListeningChange={(l) => { setIsRecording(l); if (l) setInput(""); }}
+            lang={i18n.language}
+          />
+          <button className="btn-primary" type="submit" disabled={!input.trim() || loading}
+            style={{ padding: "10px 20px" }}>
+            {t("chat.send")}
+          </button>
+        </form>
       </div>
     </div>
   );

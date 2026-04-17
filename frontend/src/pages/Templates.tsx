@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { PDFViewer } from "@react-pdf/renderer";
+import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
@@ -17,16 +17,9 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "co
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone, brandColors, useBrandColors, setUseBrandColors, offer } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer } = useStore();
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
-
-  const tones = [
-    { id: "startup", label: "Startup", desc: "direct, punchy, ownership vibes" },
-    { id: "corporate", label: "Corporate", desc: "polished but not generic" },
-    { id: "creative", label: "Creative", desc: "bold, shows personality" },
-    { id: "minimal", label: "Minimal", desc: "ultra-concise, pure signal" },
-  ];
 
   if (!cvData) {
     return (
@@ -48,6 +41,7 @@ export default function Templates() {
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
         <StepIndicator current="templates" />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button className="btn-secondary" onClick={() => navigate("/editor")}>{t("common.back")}</button>
           <AuthButton />
           <LanguageToggle />
         </div>
@@ -97,23 +91,6 @@ export default function Templates() {
             </button>
           </div>
         )}
-
-        <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("templates.tone_label")}</p>
-          <div className="tone-selector">
-            {tones.map((t) => (
-              <div
-                key={t.id}
-                className={`card ${tone === t.id ? "selected" : ""}`}
-                onClick={() => setTone(t.id)}
-                style={{ flex: "0 0 auto", padding: "8px 14px", cursor: "pointer" }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 600 }}>{t.label}</span>
-                <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 6 }}>{t.desc}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("templates.lang_label")}</p>
@@ -172,9 +149,13 @@ export default function Templates() {
           </PDFViewer>
         </div>
 
-        <button className="btn-primary" style={{ width: "100%" }} onClick={() => navigate("/editor")}>
-          {t("templates.select")}
-        </button>
+        <PDFDownloadLink document={<PreviewComponent data={displayCv} brandColors={useBrandColors ? brandColors : null} />} fileName={`${displayCv.name.replace(/\s+/g, "_")}_CV.pdf`}>
+          {({ loading: pdfLoading }) => (
+            <button className="btn-primary" style={{ width: "100%" }} disabled={pdfLoading}>
+              {pdfLoading ? <span className="spinner" /> : t("editor.download")}
+            </button>
+          )}
+        </PDFDownloadLink>
         <button className="btn-secondary" style={{ width: "100%", marginTop: 8 }} onClick={() => navigate("/cover-letter")}>
           {t("templates.cover_letter")}
         </button>

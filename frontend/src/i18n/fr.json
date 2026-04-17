@@ -2,8 +2,8 @@
   "steps": {
     "upload": "Upload",
     "chat": "Chat",
-    "templates": "Templates",
-    "editor": "Éditeur"
+    "editor": "\u00c9dition",
+    "templates": "Design"
   },
   "landing": {
     "hero": "ton CV est ennuyeux. on va régler ça.",
@@ -121,17 +121,20 @@
   },
   "editor": {
     "title": "peaufine le truc",
-    "subtitle": "clique sur n'importe quel texte pour le modifier. les changements s'affichent en temps réel à droite.",
-    "regenerate": "refais ça",
-    "download": "télécharger le PDF",
-    "section_summary": "À propos de toi",
-    "section_experience": "Expérience",
+    "subtitle": "clique sur n'importe quel texte pour le modifier. les changements s'affichent en temps r\u00e9el \u00e0 droite.",
+    "regenerate": "refais \u00e7a",
+    "download": "t\u00e9l\u00e9charger le PDF",
+    "section_summary": "\u00c0 propos de toi",
+    "section_experience": "Exp\u00e9rience",
     "section_education": "Formation",
-    "section_skills": "Compétences",
+    "section_skills": "Comp\u00e9tences",
     "name_label": "Nom",
     "title_label": "Titre",
-    "comma_hint": "Séparés par des virgules",
-    "validation_title": "Check avant export"
+    "comma_hint": "S\u00e9par\u00e9s par des virgules",
+    "validation_title": "Check avant export",
+    "tone_label": "Ton de voix",
+    "regenerating": "R\u00e9g\u00e9n\u00e9ration en cours...",
+    "continue": "Choisir le design \u2192"
   },
   "projects": {
     "title": "tes projets",

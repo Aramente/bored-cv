@@ -2,8 +2,8 @@
   "steps": {
     "upload": "Upload",
     "chat": "Chat",
-    "templates": "Templates",
-    "editor": "Editor"
+    "editor": "Edit",
+    "templates": "Design"
   },
   "landing": {
     "hero": "your CV is boring. let's fix that.",
@@ -131,7 +131,10 @@
     "name_label": "Name",
     "title_label": "Title",
     "comma_hint": "Comma-separated",
-    "validation_title": "Pre-export check"
+    "validation_title": "Pre-export check",
+    "tone_label": "Tone of voice",
+    "regenerating": "Regenerating with new tone...",
+    "continue": "Choose design \u2192"
   },
   "projects": {
     "title": "your projects",

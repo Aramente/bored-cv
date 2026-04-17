@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 const steps = [
   { key: "upload", path: "/upload" },
   { key: "chat", path: "/chat" },
-  { key: "templates", path: "/templates" },
   { key: "editor", path: "/editor" },
+  { key: "templates", path: "/templates" },
 ];
 
 export default function StepIndicator({ current }: { current: string }) {

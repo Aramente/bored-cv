@@ -206,7 +206,9 @@ Set is_complete=true when you have:
 Before completing, write the CV bullet summary in ONE sentence: "Je lance la génération — j'ai tout ce qu'il faut."
 
 Respond in valid JSON only:
-{{"message": "1-3 sentences max", "is_complete": false or true, "cv_actions": [...]}}
+{{"message": "1-3 sentences max", "is_complete": false or true, "cv_actions": [...], "progress": 0-100}}
+
+"progress": 0-100 (estimate what % of the 6-7 key offer points you've already covered based on the conversation. 0 = just started, 50 = half the points have concrete answers, 100 = ready to generate)
 
 Write in {lang_instruction}. Short. Direct. No fluff."""
 
