@@ -87,7 +87,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.3, response_mime_type="application/json"),
+            generation_config=genai.types.GenerationConfig(max_output_tokens=2000, temperature=0.3, response_mime_type="application/json"),
         )
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
