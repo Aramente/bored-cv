@@ -21,7 +21,8 @@
     "ba_after_title": "Responsable People Operations",
     "ba_after_company": "Mindflow (automatisation IA, seed→Série A, 12→45 employés)",
     "ba_after_bullet": "Création des People ops from scratch pour une équipe distribuée dans 3 pays. Gestion de la paie FR/US/UK avec zéro erreur sur 14 mois. Réduction de l'onboarding de 3 semaines à 5 jours.",
-    "footer": "ton CV méritait mieux. de rien."
+    "footer": "ton CV méritait mieux. de rien.",
+    "stats_cvs": "CVs générés"
   },
   "upload": {
     "title": "ok, montre-moi ce que t'as",
@@ -97,11 +98,26 @@
     "consultant": "Consultant",
     "consultant_desc": "structure McKinsey. formation en premier.",
     "select": "celui-là →",
+    "cover_letter": "Générer une lettre de motivation →",
     "tone_label": "Ton de voix",
     "lang_label": "Langue du CV",
     "translating": "traduction en cours...",
     "lang_fr": "Français",
-    "lang_en": "English"
+    "lang_en": "English",
+    "share_score": "Partager ton score",
+    "shared": "Copié !"
+  },
+  "cover_letter": {
+    "title": "Lettre de motivation",
+    "subtitle": "Adaptée à l'offre, basée sur ton CV",
+    "generating": "J'écris ta lettre...",
+    "greeting_label": "Salutation",
+    "opening_label": "Accroche",
+    "body_label": "Corps",
+    "closing_label": "Conclusion",
+    "signature_label": "Signature",
+    "download": "Télécharger PDF",
+    "back": "← Retour aux templates"
   },
   "editor": {
     "title": "peaufine le truc",

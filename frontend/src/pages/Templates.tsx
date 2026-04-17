@@ -17,7 +17,7 @@ const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "co
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone, brandColors, useBrandColors, setUseBrandColors } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, tone, setTone, brandColors, useBrandColors, setUseBrandColors, offer } = useStore();
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
@@ -79,6 +79,22 @@ export default function Templates() {
                 </div>
               )}
             </div>
+            <button
+              className="btn-secondary share-score-btn"
+              onClick={() => {
+                const text = `My CV scored ${displayCv.match_score}% match for ${offer?.title || "this role"} at ${offer?.company || "the company"} — built with Bored CV \u{1F3AF}\nhttps://aramente.github.io/bored-cv/`;
+                navigator.clipboard.writeText(text).then(() => {
+                  const btn = document.querySelector('.share-score-btn');
+                  if (btn) {
+                    btn.textContent = t("templates.shared");
+                    setTimeout(() => { btn.textContent = t("templates.share_score"); }, 2000);
+                  }
+                });
+              }}
+              style={{ marginTop: 12, fontSize: 12 }}
+            >
+              {t("templates.share_score")}
+            </button>
           </div>
         )}
 
@@ -158,6 +174,9 @@ export default function Templates() {
 
         <button className="btn-primary" style={{ width: "100%" }} onClick={() => navigate("/editor")}>
           {t("templates.select")}
+        </button>
+        <button className="btn-secondary" style={{ width: "100%", marginTop: 8 }} onClick={() => navigate("/cover-letter")}>
+          {t("templates.cover_letter")}
         </button>
       </div>
     </div>

@@ -109,6 +109,7 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
 
         <View style={styles.bottomRuleThin} />
         <View style={[styles.bottomRule, { borderTopColor: accentColor }]} />
+        <Text style={{ position: "absolute", bottom: 12, right: 24, fontSize: 7, color: "#c0c0c0", fontFamily: "Helvetica" }}>made with bored cv</Text>
       </Page>
     </Document>
   );

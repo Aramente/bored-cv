@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
+import { API_URL } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 
@@ -8,6 +10,14 @@ export default function Landing() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useStore((s) => s.user);
+  const [statsCount, setStatsCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/stats`)
+      .then(r => r.json())
+      .then(d => setStatsCount(d.cvs_generated || 0))
+      .catch(() => {});
+  }, []);
 
   const steps = [
     { num: "01", text: t("landing.step1") },
@@ -30,6 +40,9 @@ export default function Landing() {
         <img src="/bored-cv/logo-hero.webp" alt="Bored CV character" className="logo-hero" />
         <h1>{t("landing.hero")}</h1>
         <p className="subtitle">{t("landing.subtitle")}</p>
+        {statsCount !== null && statsCount > 0 && (
+          <p className="stats-counter">{statsCount.toLocaleString()} {t("landing.stats_cvs")}</p>
+        )}
         <button className="btn-primary btn-lg" onClick={() => navigate("/upload")}>
           {t("landing.cta")}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginLeft: 8}}>

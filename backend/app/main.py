@@ -4,7 +4,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge
+from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge, cover_letter
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
 DEV_MODE = os.environ.get("DEV_MODE", "").lower() in ("1", "true", "yes")
@@ -36,6 +36,19 @@ app.include_router(auth.router)
 app.include_router(draft.router)
 app.include_router(projects.router)
 app.include_router(knowledge.router)
+app.include_router(cover_letter.router)
+
+
+@app.get("/api/stats")
+async def get_stats():
+    from app.db import get_db
+    try:
+        with get_db() as conn:
+            row = conn.execute("SELECT COUNT(*) as cnt FROM projects").fetchone()
+            count = row["cnt"] if row else 0
+    except Exception:
+        count = 0
+    return {"cvs_generated": count}
 
 
 @app.get("/api/health")

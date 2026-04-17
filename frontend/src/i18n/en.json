@@ -21,7 +21,8 @@
     "ba_after_title": "Head of People Operations",
     "ba_after_company": "Mindflow (AI automation, seed→Series A, 12→45 employees)",
     "ba_after_bullet": "Built People ops from scratch for a distributed team across 3 countries. Ran payroll in FR/US/UK with zero errors over 14 months. Cut onboarding time from 3 weeks to 5 days.",
-    "footer": "your CV deserved better. you're welcome."
+    "footer": "your CV deserved better. you're welcome.",
+    "stats_cvs": "CVs generated"
   },
   "upload": {
     "title": "ok, show me what you got",
@@ -97,11 +98,26 @@
     "consultant": "Consultant",
     "consultant_desc": "McKinsey-grade structure. education first.",
     "select": "this one →",
+    "cover_letter": "Generate Cover Letter →",
     "tone_label": "Tone of voice",
     "lang_label": "CV Language",
     "translating": "translating...",
     "lang_fr": "Français",
-    "lang_en": "English"
+    "lang_en": "English",
+    "share_score": "Share your score",
+    "shared": "Copied!"
+  },
+  "cover_letter": {
+    "title": "Cover Letter",
+    "subtitle": "Tailored to the offer, based on your CV",
+    "generating": "Writing your cover letter...",
+    "greeting_label": "Greeting",
+    "opening_label": "Opening",
+    "body_label": "Body",
+    "closing_label": "Closing",
+    "signature_label": "Signature",
+    "download": "Download PDF",
+    "back": "← Back to Templates"
   },
   "editor": {
     "title": "fine-tune it",
