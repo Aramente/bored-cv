@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
+import { Document, Page, Text, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type CoverLetterData } from "../store";
 import { generateCoverLetter } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
