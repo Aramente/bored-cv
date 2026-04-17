@@ -4,6 +4,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
+import StepIndicator from "../components/StepIndicator";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
@@ -45,6 +46,7 @@ export default function Templates() {
     <div className="page">
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+        <StepIndicator current="templates" />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />

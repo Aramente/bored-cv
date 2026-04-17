@@ -34,7 +34,7 @@ export default function Retro({ data, brandColors }: TemplateProps) {
         <View style={[styles.header, { borderColor: accentColor }]}>
           <Text style={styles.name}>{data.name}</Text>
           <Text style={styles.titleLine}>_{data.title}_</Text>
-          <Text style={styles.contact}>{[data.email, data.location].filter(Boolean).join("  //  ")}</Text>
+          <Text style={styles.contact}>{[data.email, data.phone, data.linkedin, data.location].filter(Boolean).join("  //  ")}</Text>
         </View>
 
         {data.summary && (

@@ -35,7 +35,7 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
         <View style={[styles.header, { backgroundColor: headerBg }]}>
           <Text style={styles.headerName}>{data.name}</Text>
           <Text style={[styles.headerTitle, { color: accentColor }]}>{data.title}</Text>
-          <Text style={styles.headerContact}>{[data.location, data.email].filter(Boolean).join("  ·  ")}</Text>
+          <Text style={styles.headerContact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
         </View>
         <View style={styles.skillsBar}>
           {data.skills.map((s, i) => <Text key={i} style={[styles.skillPill, { backgroundColor: accentColor }]}>{s}</Text>)}

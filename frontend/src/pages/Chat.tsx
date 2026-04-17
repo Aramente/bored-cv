@@ -8,6 +8,7 @@ import VoiceInput from "../components/VoiceInput";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import CVPreviewPanel from "../components/CVPreviewPanel";
+import StepIndicator from "../components/StepIndicator";
 
 export default function Chat() {
   const { t, i18n } = useTranslation();
@@ -26,6 +27,7 @@ export default function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const [knownFacts, setKnownFacts] = useState<string[]>([]);
   const [contradictions, setContradictions] = useState<string[]>([]);
+  const [showMobileCv, setShowMobileCv] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const handleCvEdit = useCallback((field: string, oldVal: string, newVal: string) => {
@@ -290,7 +292,20 @@ export default function Chat() {
     <div className="page chat-split">
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+        <StepIndicator current="chat" />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            className="btn-secondary"
+            onClick={() => {
+              if (window.confirm(t("chat.start_over_confirm"))) {
+                useStore.getState().reset();
+                navigate("/upload");
+              }
+            }}
+            style={{ padding: "6px 12px", fontSize: 12 }}
+          >
+            {t("chat.start_over")}
+          </button>
           <AuthButton />
           <LanguageToggle />
         </div>
@@ -307,9 +322,13 @@ export default function Chat() {
           <div className="chat-messages">
             {!gapAnalysis && messages.length === 0 && (
               <div className="chat-msg assistant">
-                <div className="chat-bubble">
-                  <span className="spinner" style={{ marginRight: 8 }} />
-                  {t("upload.step_analyzing")}
+                <div className="chat-bubble chat-skeleton">
+                  <div className="skeleton-line" style={{ width: "90%" }} />
+                  <div className="skeleton-line" style={{ width: "70%", animationDelay: "0.1s" }} />
+                  <div className="skeleton-line" style={{ width: "80%", animationDelay: "0.2s" }} />
+                  <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 8 }}>
+                    {t("chat.analyzing")}
+                  </p>
                 </div>
               </div>
             )}
@@ -324,6 +343,12 @@ export default function Chat() {
             <div ref={bottomRef} />
           </div>
 
+          <button
+            className="cv-mobile-toggle"
+            onClick={() => setShowMobileCv(!showMobileCv)}
+          >
+            {showMobileCv ? t("chat.hide_preview") : t("chat.show_preview")}
+          </button>
           {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
           {isRecording && (
             <div className="recording-banner">
@@ -354,7 +379,8 @@ export default function Chat() {
         </div>
 
         {/* Right: live CV preview */}
-        <div className="cv-side">
+        <div className={`cv-side ${showMobileCv ? "mobile-visible" : ""}`}>
+          <button className="cv-mobile-close" onClick={() => setShowMobileCv(false)}>✕</button>
           <CVPreviewPanel onEdit={handleCvEdit} />
         </div>
       </div>

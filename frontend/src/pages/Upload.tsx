@@ -6,11 +6,12 @@ import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV, translateCV, extra
 import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
+import StepIndicator from "../components/StepIndicator";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket, tone, setTone } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -151,6 +152,7 @@ export default function Upload() {
     <div className="page">
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+        <StepIndicator current="upload" />
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <AuthButton />
           <LanguageToggle />
@@ -270,6 +272,28 @@ export default function Upload() {
             ))}
           </div>
           <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 6 }}>{t("upload.market_hint")}</p>
+        </section>
+
+        <section style={{ marginBottom: 32 }}>
+          <label className="label">{t("upload.tone_label")}</label>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            {[
+              { id: "startup", label: t("tone.startup"), desc: t("tone.startup_desc") },
+              { id: "corporate", label: t("tone.corporate"), desc: t("tone.corporate_desc") },
+              { id: "creative", label: t("tone.creative"), desc: t("tone.creative_desc") },
+              { id: "minimal", label: t("tone.minimal"), desc: t("tone.minimal_desc") },
+            ].map((tn) => (
+              <button
+                key={tn.id}
+                className={tone === tn.id ? "btn-primary" : "btn-secondary"}
+                style={{ padding: "8px 16px", fontSize: 13 }}
+                onClick={() => setTone(tn.id)}
+              >
+                {tn.label}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 6 }}>{t("upload.tone_hint")}</p>
         </section>
 
         <button

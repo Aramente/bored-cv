@@ -79,7 +79,7 @@ export default function Landing() {
       </section>
 
       <footer className="landing-footer">
-        <p>made with caffeine & Gemini Flash ⚡</p>
+        <p>{t("landing.footer")}</p>
       </footer>
     </div>
   );

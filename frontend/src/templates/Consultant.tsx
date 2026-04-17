@@ -57,7 +57,7 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
         <View style={styles.nameBlock}>
           <Text style={styles.name}>{data.name}</Text>
           <Text style={styles.titleLine}>{data.title.toUpperCase()}</Text>
-          <Text style={styles.contact}>{[data.email, data.location].filter(Boolean).join("  ·  ")}</Text>
+          <Text style={styles.contact}>{[data.email, data.phone, data.linkedin, data.location].filter(Boolean).join("  ·  ")}</Text>
         </View>
 
         {/* Education first — consultant convention */}

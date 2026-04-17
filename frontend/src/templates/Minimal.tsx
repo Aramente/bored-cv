@@ -36,7 +36,7 @@ export default function Minimal({ data, brandColors }: TemplateProps) {
       <Page size="A4" style={styles.page}>
         <Text style={styles.name}>{data.name}</Text>
         <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.contact}>{[data.location, data.email].filter(Boolean).join("  ·  ")}</Text>
+        <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
         <View style={styles.divider} />
         {data.summary && (
           <>

@@ -38,6 +38,8 @@ export default function Clean({ data, brandColors }: TemplateProps) {
             <View style={styles.sidebarSection}>
               <Text style={styles.sidebarSectionTitle}>Contact</Text>
               {data.email && <Text style={styles.contactItem}>{data.email}</Text>}
+              {data.phone && <Text style={styles.contactItem}>{data.phone}</Text>}
+              {data.linkedin && <Text style={styles.contactItem}>{data.linkedin}</Text>}
               {data.location && <Text style={styles.contactItem}>{data.location}</Text>}
             </View>
           )}

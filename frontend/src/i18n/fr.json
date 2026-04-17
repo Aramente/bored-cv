@@ -1,4 +1,10 @@
 {
+  "steps": {
+    "upload": "Upload",
+    "chat": "Chat",
+    "templates": "Templates",
+    "editor": "Éditeur"
+  },
   "landing": {
     "hero": "ton CV est ennuyeux. on va régler ça.",
     "subtitle": "Dépose ton LinkedIn, colle une offre, et je réécris tout ton CV pour qu'il matche vraiment ce qu'ils cherchent. De rien.",
@@ -14,7 +20,8 @@
     "ba_before_bullet": "Mon objectif est d'offrir la meilleure expérience aux candidats et aux collaborateurs. Nous sommes en full remote. Nous développons un outil d'automatisation pour les entreprises.",
     "ba_after_title": "Responsable People Operations",
     "ba_after_company": "Mindflow (automatisation IA, seed→Série A, 12→45 employés)",
-    "ba_after_bullet": "Création des People ops from scratch pour une équipe distribuée dans 3 pays. Gestion de la paie FR/US/UK avec zéro erreur sur 14 mois. Réduction de l'onboarding de 3 semaines à 5 jours."
+    "ba_after_bullet": "Création des People ops from scratch pour une équipe distribuée dans 3 pays. Gestion de la paie FR/US/UK avec zéro erreur sur 14 mois. Réduction de l'onboarding de 3 semaines à 5 jours.",
+    "footer": "ton CV méritait mieux. de rien."
   },
   "upload": {
     "title": "ok, montre-moi ce que t'as",
@@ -40,7 +47,19 @@
     "market_europe": "Europe",
     "market_us": "US",
     "market_global": "Global",
-    "market_hint": "adapte les normes du CV : poids de la formation, format des langues, photo par défaut"
+    "market_hint": "adapte les normes du CV : poids de la formation, format des langues, photo par défaut",
+    "tone_label": "Ton de voix",
+    "tone_hint": "Comment ton CV doit sonner ?"
+  },
+  "tone": {
+    "startup": "Startup",
+    "startup_desc": "direct, punchy",
+    "corporate": "Corporate",
+    "corporate_desc": "pro, structuré",
+    "creative": "Créatif",
+    "creative_desc": "audacieux, perso",
+    "minimal": "Minimal",
+    "minimal_desc": "ultra-concis"
   },
   "chat": {
     "title": "on va leur prouver qu'il leur faut toi",
@@ -57,7 +76,12 @@
     "send": "Envoyer",
     "error_generic": "Un truc a planté. Réessaie ou lance un nouveau CV.",
     "recording_hint": "enregistrement... clique stop quand t'as fini",
-    "speaking": "je t'écoute..."
+    "speaking": "je t'écoute...",
+    "start_over": "Recommencer",
+    "start_over_confirm": "Recommencer un nouveau CV ? Ta progression sera perdue.",
+    "analyzing": "Je lis ton profil et l'offre...",
+    "show_preview": "Voir le CV",
+    "hide_preview": "Masquer le CV"
   },
   "templates": {
     "title": "choisis ton style",

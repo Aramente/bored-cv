@@ -4,6 +4,7 @@ import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
+import StepIndicator from "../components/StepIndicator";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
@@ -73,6 +74,7 @@ export default function Editor() {
     <div className="page">
       <nav className="nav">
         <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+        <StepIndicator current="editor" />
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="btn-secondary" onClick={() => navigate("/templates")}>{t("common.back")}</button>
           <AuthButton />
