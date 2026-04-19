@@ -84,7 +84,7 @@ export default function Projects() {
         </div>
       </nav>
       <div className="page-content">
-        <div className="projects-header">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h1>{t("projects.title")}</h1>
           <button className="btn-primary" onClick={() => { useStore.getState().reset(); navigate("/upload"); }}>
             {t("projects.new")}
@@ -94,9 +94,9 @@ export default function Projects() {
         {loading ? (
           <div style={{ textAlign: "center", padding: 40 }}><span className="spinner" /></div>
         ) : projects.length === 0 ? (
-          <div className="projects-empty">
-            <p>{t("projects.empty")}</p>
-            <p>{t("projects.empty_hint")}</p>
+          <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>
+            <p style={{ fontSize: 18, marginBottom: 8 }}>{t("projects.empty")}</p>
+            <p style={{ fontSize: 14 }}>{t("projects.empty_hint")}</p>
           </div>
         ) : (
           <div className="projects-grid">

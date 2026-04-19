@@ -177,6 +177,7 @@ export default function Upload() {
               textAlign: "center",
               cursor: "pointer",
               background: file ? "var(--accent-subtle)" : "var(--surface)",
+              marginTop: 8,
             }}
           >
             {file ? (
@@ -221,7 +222,7 @@ export default function Upload() {
 
         <section style={{ marginBottom: 32 }}>
           <label className="label">{t("upload.offer_label")}</label>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, marginBottom: 12 }}>
             <button
               className={offerTab === "url" ? "btn-primary" : "btn-secondary"}
               style={{ padding: "8px 16px", fontSize: 13 }}
@@ -258,7 +259,7 @@ export default function Upload() {
 
         <section style={{ marginBottom: 32 }}>
           <label className="label">{t("upload.market_label")}</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
             {(["france", "europe", "us", "global"] as const).map((m) => (
               <button
                 key={m}

@@ -59,19 +59,10 @@ export default function CoverLetter() {
 
   if (!cvData) {
     return (
-      <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <AuthButton />
-            <LanguageToggle />
-          </div>
-        </nav>
-        <div className="guard-state">
-          <div>
-            <p>{t("guards.no_generated")}</p>
-            <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
-          </div>
+      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_generated")}</p>
+          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
         </div>
       </div>
     );
