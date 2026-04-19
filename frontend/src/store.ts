@@ -209,7 +209,12 @@ export const useStore = create<AppState>()(persist((set) => ({
       let obj: Record<string, unknown> = cv as unknown as Record<string, unknown>;
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
-        const next = obj[key];
+        let next = obj[key];
+        // Coerce string to array when path expects an array index
+        if (typeof next === "string" && /^\d+$/.test(keys[i + 1])) {
+          next = next ? [next] : [];
+          obj[key] = next;
+        }
         if (Array.isArray(next) && /^\d+$/.test(keys[i + 1])) {
           obj = next[parseInt(keys[i + 1])] as Record<string, unknown>;
           i++;
