@@ -177,6 +177,27 @@ const initialState = {
   useBrandColors: true,
 };
 
+function asArray(v: unknown): string[] {
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string" && v) return [v];
+  return [];
+}
+
+function sanitizeCv(cv: CVData): CVData {
+  return {
+    ...cv,
+    skills: asArray(cv.skills),
+    languages: asArray(cv.languages),
+    strengths: asArray(cv.strengths),
+    improvements: asArray(cv.improvements),
+    experiences: (Array.isArray(cv.experiences) ? cv.experiences : []).map((e) => ({
+      ...e,
+      bullets: asArray(e.bullets),
+    })),
+    education: Array.isArray(cv.education) ? cv.education : [],
+  };
+}
+
 export const useStore = create<AppState>()(persist((set) => ({
   ...initialState,
   setProfile: (profile) => set({ profile }),
@@ -185,9 +206,9 @@ export const useStore = create<AppState>()(persist((set) => ({
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setMessages: (messages) => set({ messages }),
   setProjectId: (projectId) => set({ projectId }),
-  setCvData: (cvData) => set({ cvData }),
-  setCvOriginal: (cvOriginal) => set({ cvOriginal }),
-  setCvDataAlt: (cvDataAlt) => set({ cvDataAlt }),
+  setCvData: (cvData) => set({ cvData: sanitizeCv(cvData) }),
+  setCvOriginal: (cvOriginal) => set({ cvOriginal: sanitizeCv(cvOriginal) }),
+  setCvDataAlt: (cvDataAlt) => set({ cvDataAlt: sanitizeCv(cvDataAlt) }),
   setCvLang: (cvLang) => set({ cvLang }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
@@ -209,12 +230,7 @@ export const useStore = create<AppState>()(persist((set) => ({
       let obj: Record<string, unknown> = cv as unknown as Record<string, unknown>;
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
-        let next = obj[key];
-        // Coerce string to array when path expects an array index
-        if (typeof next === "string" && /^\d+$/.test(keys[i + 1])) {
-          next = next ? [next] : [];
-          obj[key] = next;
-        }
+        const next = obj[key];
         if (Array.isArray(next) && /^\d+$/.test(keys[i + 1])) {
           obj = next[parseInt(keys[i + 1])] as Record<string, unknown>;
           i++;
