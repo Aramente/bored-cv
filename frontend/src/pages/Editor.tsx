@@ -47,8 +47,8 @@ function validateCV(cv: { summary: string; experiences: { bullets: string[]; com
 
 function EditableField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div style={{ marginBottom: 6 }}>
-      <label style={{ fontSize: 11, color: "var(--text-dim)" }}>{label}</label>
+    <div style={{ marginBottom: 8 }}>
+      <label style={{ fontSize: 11, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 2 }}>{label}</label>
       <input className="input" value={value} onChange={(e) => onChange(e.target.value)} style={{ padding: "6px 10px", fontSize: 13 }} />
     </div>
   );
@@ -80,10 +80,19 @@ export default function Editor() {
 
   if (!cvData) {
     return (
-      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_generated")}</p>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
+      <div className="page">
+        <nav className="nav">
+          <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <AuthButton />
+            <LanguageToggle />
+          </div>
+        </nav>
+        <div className="guard-state">
+          <div>
+            <p>{t("guards.no_generated")}</p>
+            <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
+          </div>
         </div>
       </div>
     );
@@ -115,13 +124,13 @@ export default function Editor() {
 
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_summary")}</label>
-            <textarea className="input" value={cvData.summary} onChange={(e) => updateCvField("summary", e.target.value)} style={{ marginTop: 4, minHeight: 80 }} />
+            <textarea className="input" value={cvData.summary} onChange={(e) => updateCvField("summary", e.target.value)} style={{ minHeight: 80 }} />
           </div>
 
           {/* Tone selector */}
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.tone_label")}</label>
-            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {[
                 { id: "startup", label: t("tone.startup"), desc: t("tone.startup_desc") },
                 { id: "corporate", label: t("tone.corporate"), desc: t("tone.corporate_desc") },
@@ -158,7 +167,7 @@ export default function Editor() {
 
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_skills")}</label>
-            <input className="input" value={cvData.skills.join(", ")} onChange={(e) => updateCvField("skills", e.target.value)} style={{ marginTop: 4 }} />
+            <input className="input" value={cvData.skills.join(", ")} onChange={(e) => updateCvField("skills", e.target.value)} />
             <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>{t("editor.comma_hint")}</p>
           </div>
 

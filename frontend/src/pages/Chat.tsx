@@ -280,10 +280,19 @@ export default function Chat() {
   // Route guard: need at least profile + offer
   if (!profile || !offer) {
     return (
-      <div className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 18, marginBottom: 12, color: "var(--text)" }}>{t("guards.no_cv")}</p>
-          <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
+      <div className="page">
+        <nav className="nav">
+          <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <AuthButton />
+            <LanguageToggle />
+          </div>
+        </nav>
+        <div className="guard-state">
+          <div>
+            <p>{t("guards.no_cv")}</p>
+            <button className="btn-primary" onClick={() => navigate("/upload")}>{t("guards.start")}</button>
+          </div>
         </div>
       </div>
     );
@@ -334,8 +343,8 @@ export default function Chat() {
         </div>
 
         <div className="chat-header">
-          <h1 style={{ fontSize: 20 }}>{t("chat.title")}</h1>
-          <p className="subtitle" style={{ fontSize: 14, marginBottom: 0 }}>{t("chat.subtitle")}</p>
+          <h1>{t("chat.title")}</h1>
+          <p className="subtitle">{t("chat.subtitle")}</p>
         </div>
 
         <div className="chat-messages">
