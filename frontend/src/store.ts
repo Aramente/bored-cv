@@ -221,7 +221,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   updateCvField: (path, value) =>
     set((s) => {
       if (!s.cvData) return s;
-      const cv = structuredClone(s.cvData);
+      const cv = sanitizeCv(structuredClone(s.cvData));
       if (path === "skills") {
         cv.skills = value.split(",").map((s: string) => s.trim()).filter(Boolean);
         return { cvData: cv };
@@ -243,55 +243,55 @@ export const useStore = create<AppState>()(persist((set) => ({
     }),
   addCvExperience: () => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.experiences.push({ title: "", company: "", dates: "", bullets: [""] });
     return { cvData: cv };
   }),
   removeCvExperience: (index) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.experiences.splice(index, 1);
     return { cvData: cv };
   }),
   addCvBullet: (expIndex) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.experiences[expIndex]?.bullets.push("");
     return { cvData: cv };
   }),
   removeCvBullet: (expIndex, bulletIndex) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.experiences[expIndex]?.bullets.splice(bulletIndex, 1);
     return { cvData: cv };
   }),
   addCvEducation: () => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.education.push({ degree: "", school: "", year: "" });
     return { cvData: cv };
   }),
   removeCvEducation: (index) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.education.splice(index, 1);
     return { cvData: cv };
   }),
   addCvLanguage: (lang) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.languages.push(lang);
     return { cvData: cv };
   }),
   removeCvLanguage: (index) => set((s) => {
     if (!s.cvData) return s;
-    const cv = structuredClone(s.cvData);
+    const cv = sanitizeCv(structuredClone(s.cvData));
     cv.languages.splice(index, 1);
     return { cvData: cv };
   }),
   pushCvHistory: () => set((s) => {
     if (!s.cvData) return s;
-    const history = [...s.cvHistory, structuredClone(s.cvData)].slice(-20);
+    const history = [...s.cvHistory, sanitizeCv(structuredClone(s.cvData))].slice(-20);
     return { cvHistory: history };
   }),
   undo: () => set((s) => {
