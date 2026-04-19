@@ -298,7 +298,7 @@ export const useStore = create<AppState>()(persist((set) => ({
     if (s.cvHistory.length === 0) return s;
     const prev = s.cvHistory[s.cvHistory.length - 1];
     return {
-      cvData: structuredClone(prev),
+      cvData: sanitizeCv(structuredClone(prev)),
       cvHistory: s.cvHistory.slice(0, -1),
     };
   }),
@@ -316,4 +316,10 @@ export const useStore = create<AppState>()(persist((set) => ({
     // user is intentionally excluded — session is server-side
     // cvHistory is intentionally excluded — too large for localStorage
   }),
+  merge: (persisted, current) => {
+    const p = persisted as Partial<AppState> | undefined;
+    const merged = { ...current, ...p };
+    if (merged.cvData) merged.cvData = sanitizeCv(merged.cvData);
+    return merged;
+  },
 }));
