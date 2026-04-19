@@ -20,10 +20,7 @@ class LLMService:
     def model(self):
         if self._model is None:
             genai.configure(api_key=self._api_key)
-            self._model = genai.GenerativeModel(
-                "gemini-2.5-flash",
-                request_options={"timeout": 60},
-            )
+            self._model = genai.GenerativeModel("gemini-2.5-flash")
         return self._model
 
     def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
@@ -88,6 +85,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(max_output_tokens=2000, temperature=0.3, response_mime_type="application/json"),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return GapAnalysis(**data)
@@ -215,6 +213,7 @@ Write in {lang_instruction}. Short. Direct. No fluff."""
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(max_output_tokens=1500, temperature=0.7, response_mime_type="application/json"),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return ChatResponse(**data)
@@ -359,6 +358,7 @@ Respond in valid JSON only:
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.4, response_mime_type="application/json"),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return CVData(**data)
@@ -411,6 +411,7 @@ Respond in valid JSON:
                 temperature=0.3,
                 response_mime_type="application/json",
             ),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return CVData(**data)
@@ -430,6 +431,7 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.2, response_mime_type="application/json"),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return CVData(**data)
@@ -516,6 +518,7 @@ Respond in valid JSON only:
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.5, response_mime_type="application/json"),
+            request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
         return CoverLetterData(**data)
