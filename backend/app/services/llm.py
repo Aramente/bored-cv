@@ -142,38 +142,46 @@ MERGE FORMAT:
 MERGE RULES: "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVER two "remove_experience". "value" MUST include "bullets" from BOTH experiences. "target" = company name only.
 """
 
-        prompt = f"""You're a sharp friend helping {first_name} tailor their CV for {offer.title} at {offer.company}.
+        # Build the list of experiences with relevance to the offer
+        exp_summary = []
+        for exp in profile.experiences:
+            exp_summary.append(f"- {exp.title} at {exp.company} ({exp.dates})")
 
-CANDIDATE: {profile.name} — {profile.title}
-GAPS TO FILL: {", ".join(gap_analysis.gaps)}
-QUESTIONS TO ASK (skip already covered): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
+        prompt = f"""You're helping {first_name} build a killer CV for: {offer.title} at {offer.company}.
 
-CONVERSATION:
+THE OFFER NEEDS: {", ".join(gap_analysis.gaps)}
+
+{first_name}'S EXPERIENCES:
+{chr(10).join(exp_summary)}
+{knowledge_context}{cv_draft_context}
+
+CONVERSATION SO FAR:
 {conversation}
 
-YOUR JOB: Ask ONE short question (1-2 sentences) to get a specific fact, number, or context that will make the CV stronger for this role. Update the CV via cv_actions when you learn something.
+YOUR GOAL: The CV already has their LinkedIn info. Your job is to FILL THE GAPS between what's on the CV and what the offer needs. Ask questions that extract:
+- Concrete numbers and metrics (team size, budget, results, %)
+- Context that shows scale (company stage, headcount, growth)
+- Achievements that match what the offer is looking for
+- Their personal approach to their work (what they do differently)
 
-CONVERSATION FLOW — follow this order:
-1. First: headcounts for ALL companies (one question, list them all)
-2. Then: dig into the 2-3 most RELEVANT experiences for the target role. Stay on one company until you have what you need (metrics, context, achievements), then move to the next.
-3. Then: a question about their approach/philosophy (what makes them different)
-4. Finish.
-Do NOT jump randomly between companies. Treat each relevant experience as a mini-conversation: ask, get the answer, update the CV, then move to the next one.
+HOW TO HAVE THE CONVERSATION:
+- Ask ONE question at a time, 1-2 sentences max
+- Pick the experience MOST relevant to the offer, ask about it, get the answer, use it to update the CV via cv_actions, then move to the next most relevant one
+- If the user already answered something in a previous message, DON'T re-ask — use the info and move forward
+- When the user gives you info, IMMEDIATELY write a strong CV bullet via cv_actions (add_bullet or replace_bullet)
+- 5-7 questions total is enough. Quality over quantity
+- Accept "I don't know" or approximate numbers — write the bullet anyway with what you have
 
-STYLE: Direct, warm, no fluff. Like a friend prepping you before an interview. Use first name only. Match the user's language. Never repeat a topic already discussed. Accept approximate answers. 6-8 questions total, then finish.
-
-CV ACTIONS (use when you learn something):
-{{"action": "add_bullet", "target": "Company", "value": "new bullet text", "index": -1}}
-{{"action": "replace_bullet", "target": "Company", "value": "better bullet", "index": 0}}
-{{"action": "edit_field", "target": "summary", "value": "new summary"}}
-{{"action": "remove_experience", "target": "Company", "value": "", "index": -1}} — only if user asks
+CV ACTIONS — use these to update the CV in real time:
+{{"action": "add_bullet", "target": "Company Name", "value": "Scaled team from 5 to 25 in 12 months, hiring across 3 countries", "index": -1}}
+{{"action": "replace_bullet", "target": "Company Name", "value": "better version of existing bullet", "index": 0}}
+{{"action": "edit_field", "target": "summary", "value": "new 2-sentence summary"}}
 {merge_section}
-FINISH: when you have enough (headcounts, key metrics, their approach), set is_complete=true and say "Je lance la génération."
+WHEN DONE: set is_complete=true. You're done when you've covered the 2-3 most relevant experiences with concrete details that match the offer.
 
-JSON response:
-{{"message": "your question", "is_complete": false, "cv_actions": [], "progress": 0-100}}
+Respond in JSON: {{"message": "your question", "is_complete": false, "cv_actions": [], "progress": 0-100}}
 
-Write in {lang_instruction}."""
+Write in {lang_instruction}. Use first name only. Be warm and direct."""
 
         text = self._call(prompt, model="mistral-large-latest", max_tokens=3000, temperature=0.7)
         data = self._parse_json(text)
