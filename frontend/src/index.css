@@ -436,6 +436,19 @@ textarea.input { resize: vertical; min-height: 100px; }
   color: var(--red);
   animation: pulse 1s infinite;
 }
+.voice-btn.transcribing {
+  background: var(--accent-subtle);
+  border-color: var(--gold);
+  color: var(--gold);
+  cursor: wait;
+}
+.voice-btn .spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

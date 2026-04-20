@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { transcribeAudio } from "../services/api";
 
 interface Props {
   onResult: (text: string) => void;
@@ -9,118 +10,117 @@ interface Props {
 }
 
 export default function VoiceInput({ onResult, onInterim, onError, onListeningChange, lang }: Props) {
-  const [listening, setListening] = useState(false);
-  const listeningRef = useRef(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
-  const fullTranscriptRef = useRef("");
-  const interimRef = useRef("");
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const secondsRef = useRef(0);
 
-  const supported = typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
+  const supported = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
 
   const stop = useCallback(() => {
-    recognitionRef.current?.stop();
-    setListening(false);
-    listeningRef.current = false;
-    onListeningChange?.(false);
-    // Send final transcript, falling back to interim if no final results yet
-    const final = (fullTranscriptRef.current + interimRef.current).trim();
-    if (final) {
-      onResult(final);
-      fullTranscriptRef.current = "";
-      interimRef.current = "";
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
     }
-  }, [onResult, onListeningChange]);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setRecording(false);
+    onListeningChange?.(false);
+  }, [onListeningChange]);
 
-  const start = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang.startsWith("fr") ? "fr-FR" : "en-US";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+  const start = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    fullTranscriptRef.current = "";
-    interimRef.current = "";
-    // Track which results we've already captured (resets on auto-restart)
-    const processedUpTo = { current: 0 };
+      // Find best supported mime type
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "audio/mp4";
 
-    recognition.onresult = (event: any) => {
-      let interim = "";
-      let sessionFinal = "";
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          sessionFinal += result[0].transcript + " ";
-        } else {
-          interim += result[0].transcript;
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach((t) => t.stop());
+
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        if (blob.size < 100) {
+          onError?.("No audio recorded");
+          return;
         }
-      }
-      // Accumulate final text across auto-restarts instead of overwriting
-      if (sessionFinal && processedUpTo.current === 0) {
-        // First final result in this session — might be continuation of previous
-        fullTranscriptRef.current += sessionFinal;
-      } else if (sessionFinal) {
-        // Update: replace session's contribution with latest
-        fullTranscriptRef.current = fullTranscriptRef.current.substring(0, processedUpTo.current) + sessionFinal;
-      }
-      processedUpTo.current = fullTranscriptRef.current.length;
-      interimRef.current = interim;
-      // Show live preview: accumulated final + current interim
-      onInterim?.((fullTranscriptRef.current + interim).trim());
-    };
 
-    recognition.onerror = (event: any) => {
-      const err = event.error;
-      if (err === "not-allowed") {
-        onError?.("Microphone access denied. Check browser permissions.");
-      } else if (err === "no-speech") {
-        // Don't stop — user might just be pausing
-        return;
-      } else if (err === "network") {
-        onError?.("Network error. Voice requires an internet connection.");
-      } else if (err !== "aborted") {
-        onError?.(`Voice error: ${err || "unknown"}`);
-      }
-      setListening(false);
-      listeningRef.current = false;
-      onListeningChange?.(false);
-    };
+        // Show transcribing state
+        setTranscribing(true);
+        onInterim?.("...");
 
-    recognition.onend = () => {
-      // Use ref to avoid stale closure — state var would capture the value at start() time
-      if (recognitionRef.current && listeningRef.current) {
-        // Reset session counter — new recognition session will have fresh results list
-        processedUpTo.current = 0;
-        try { recognition.start(); } catch { /* already stopped */ }
-      }
-    };
+        try {
+          const text = await transcribeAudio(blob, lang);
+          if (text) {
+            onResult(text);
+          } else {
+            onError?.("No speech detected");
+          }
+        } catch (e) {
+          onError?.((e as Error).message || "Transcription failed");
+        } finally {
+          setTranscribing(false);
+          onInterim?.("");
+        }
+      };
 
-    recognitionRef.current = recognition;
-    recognition.start();
-    setListening(true);
-    listeningRef.current = true;
-    onListeningChange?.(true);
-  }, [lang, onInterim, onError, onListeningChange]);
+      recorderRef.current = recorder;
+      recorder.start(1000); // Collect data every second
+
+      // Live duration counter
+      secondsRef.current = 0;
+      timerRef.current = setInterval(() => {
+        secondsRef.current += 1;
+        const mins = Math.floor(secondsRef.current / 60);
+        const secs = secondsRef.current % 60;
+        const time = mins > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${secs}s`;
+        onInterim?.(`🎙️ ${time}`);
+      }, 1000);
+
+      setRecording(true);
+      onListeningChange?.(true);
+    } catch {
+      onError?.("Microphone access denied. Check browser permissions.");
+    }
+  }, [lang, onResult, onInterim, onError, onListeningChange]);
 
   const toggle = useCallback(() => {
-    if (listening) {
+    if (recording) {
       stop();
     } else {
       start();
     }
-  }, [listening, stop, start]);
+  }, [recording, stop, start]);
 
   if (!supported) return null;
 
   return (
     <button
-      className={`voice-btn ${listening ? "recording" : ""}`}
+      className={`voice-btn ${recording ? "recording" : ""} ${transcribing ? "transcribing" : ""}`}
       onClick={toggle}
       type="button"
-      title={listening ? "Click to stop & send" : "Click to speak"}
+      disabled={transcribing}
+      title={recording ? "Click to stop & transcribe" : transcribing ? "Transcribing..." : "Click to speak"}
     >
-      {listening ? (
+      {transcribing ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spin">
+          <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" />
+        </svg>
+      ) : recording ? (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <rect x="6" y="6" width="12" height="12" rx="2" />
         </svg>
@@ -134,13 +134,4 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       )}
     </button>
   );
-}
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webkitSpeechRecognition: any;
-  }
 }

@@ -44,6 +44,25 @@ export async function parseLinkedIn(file: File, captchaToken: string): Promise<P
   return res.json();
 }
 
+export async function transcribeAudio(blob: Blob, lang: string): Promise<string> {
+  const form = new FormData();
+  form.append("file", blob, "recording.webm");
+
+  const res = await fetch(`${API_URL}/api/transcribe`, {
+    method: "POST",
+    headers: { "x-lang": lang, ...getAuthHeaders() },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Transcription failed" }));
+    throw new Error(err.detail);
+  }
+
+  const data = await res.json();
+  return data.text || "";
+}
+
 export async function scrapeOffer(url: string, rawText: string, captchaToken: string): Promise<Offer> {
   return post("/api/scrape-offer", { url, raw_text: rawText }, captchaToken);
 }
