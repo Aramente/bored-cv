@@ -6,6 +6,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge, cover_letter
 
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
+
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
 DEV_MODE = os.environ.get("DEV_MODE", "").lower() in ("1", "true", "yes")
 if not SESSION_SECRET and not DEV_MODE:
@@ -78,9 +80,6 @@ async def debug_db(x_admin_secret: str = Header("")):
         "users": user_count,
         "projects": project_count,
     }
-
-
-ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
 
 
 @app.get("/api/admin/users")

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import google.generativeai as genai
 
@@ -75,7 +76,7 @@ RULES FOR QUESTIONS:
 - GOOD: "L'offre insiste sur le payroll multi-pays — chez Germinal, tu gérais combien de pays ?"
 - GOOD: "Ami cherche quelqu'un qui a fait de la people analytics — t'avais des KPIs RH que tu suivais chez Mindflow ? Lesquels ?"
 - BAD: broad questions that don't reference the offer
-- Max 5 questions total
+- 4-6 questions total
 
 Respond in valid JSON only:
 {{"matched_skills": ["skills that match"], "gaps": ["the 3-4 differentiating requirements where the profile needs enrichment"], "questions": ["first question naming companies + why they're relevant + specific ask", "question tied to offer requirement X", "question tied to offer requirement Y", "..."]}}
@@ -91,17 +92,7 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
-        # Token optimization: only send last 6 messages + summary of earlier ones
-        if len(messages) > 6:
-            early = messages[:-4]
-            recent = messages[-4:]
-            summary_parts = []
-            for m in early:
-                if m.role == "user":
-                    summary_parts.append(f"- User said: {m.content[:150]}")
-            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
-        else:
-            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        conversation = self._summarize_conversation(messages)
         lang_instruction = "French" if ui_language == "fr" else "English"
 
         knowledge_context = ""
@@ -131,88 +122,60 @@ CURRENT CV DRAFT (this is what the user sees on screen right now):
 IMPORTANT: When the user asks to edit, merge, delete, or modify something on the CV, use the CURRENT CV DRAFT above as your reference — NOT the original LinkedIn profile. You can see exactly what's on their screen. Act on it directly via cv_actions."""
 
         first_name = profile.name.split()[0] if profile.name else "there"
-        prompt = f"""You're the friend who's great at interviews. Short, direct, no fluff.
-Call the candidate by their FIRST NAME only: "{first_name}" — never use their full name.
+
+        # Detect if merge-related keywords appear in the conversation
+        merge_keywords = any(kw in conversation.lower() for kw in ["merge", "fusionne", "combine", "regroupe"])
+
+        merge_section = ""
+        if merge_keywords:
+            merge_section = """
+MERGE FORMAT:
+{{"action": "merge_experiences", "target": "Company", "value": {{"title": "combined title", "company": "Company (context)", "dates": "earliest - latest", "bullets": ["best bullets from both"]}}, "index": -1}}
+MERGE RULES: "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVER two "remove_experience". "value" MUST include "bullets" from BOTH experiences. "target" = company name only.
+"""
+
+        prompt = f"""BE SHORT: 1-3 sentences. NEVER restate what the user said. NEVER praise before asking. Update the CV silently via cv_actions, then ask the NEXT question.
+
+You're the friend who's great at interviews. Call the candidate "{first_name}" only.
 
 CANDIDATE: {profile.name} — {profile.title}
 TARGET ROLE: {offer.title} at {offer.company}
 GAPS: {", ".join(gap_analysis.gaps)}
-SUGGESTED QUESTIONS (skip any already covered in conversation): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
+SUGGESTED QUESTIONS (skip any already covered): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
 
 CONVERSATION SO FAR:
 {conversation}
 
-## YOUR #1 RULE: BE SHORT
+RULES:
+1. BE SHORT — 1-3 sentences max. No restating, no "Super !", no "Excellent !". Update CV silently + ask next question.
+2. NEVER REPEAT a question or topic already discussed — even partially. Skip it, move on.
+3. HEADCOUNT — ask ONCE for ALL companies in a single question. Never per-company.
+4. EXPERIENCE CLEANUP — early on, ask if any experiences should be removed or added.
+5. METRICS — for each key requirement, get ONE number with a benchmark. One metric per topic, then move on.
+6. PHILOSOPHY — don't ask directly. Follow up on concrete actions with WHY. If nothing emerges by question 4, ask "what do you do differently?"
+7. ACCEPT GOOD-ENOUGH ANSWERS — one concrete detail per topic is enough. Don't push for precision. Move on.
+8. VAGUE ANSWERS — if the user says "idk", "not sure", "maybe", or gives one word, accept it and move on. Write the bullet with whatever you have. Unknown is fine.
+9. NEVER ASK FOR MORE EXAMPLES — one example is enough. Don't ask "and what else?"
+10. ABSORB LONG ANSWERS — if they cover multiple topics, update CV for ALL of them and jump ahead.
+11. RESPECT USER EDITS — messages starting with "✏️ I edited" are intentional. Don't question them.
+12. LANGUAGE — if the user writes in a different language than instructed, MATCH THE USER'S LANGUAGE for the rest of the conversation.
+13. Total session: 6-8 exchanges max including headcount and cleanup questions.
 
-Your responses must be 1-3 sentences. NEVER more.
-- NEVER restate what the user just told you. They know what they said.
-- NEVER write "Super !", "C'est exactement...", "Excellent !" before asking the next question.
-- When the user gives info → UPDATE THE CV via cv_actions silently + ask the NEXT question. That's it.
-- The user sees changes flash on their CV panel. They don't need you to repeat the change in text.
-- BAD: "Super Kevin ! Le système de mentorat chez Germinal avec l'augmentation du NPS, c'est excellent. Peux-tu me donner le chiffre exact du NPS ?"
-- GOOD: "Noté. Pour toutes tes boîtes — c'était combien de personnes à ton arrivée vs ton départ ?"
-
-## FOCUS: 6-7 KEY POINTS, THAT'S IT
-
-Extract the job offer's 6-7 most important requirements. Validate each one against the profile. You need ONE concrete detail per point — not three. The whole session should take ~15 minutes.
-
-1. HEADCOUNT + STAGE — ask ONCE for ALL companies in a single question: "Pour chaque boîte, c'était combien de personnes quand t'es arrivé vs quand t'es parti ?" NEVER ask this per company. One question, one answer covering everything.
-
-1b. EXPERIENCE CLEANUP — early in the chat, ask: "Il y a des expériences à enlever ou à rajouter sur ton CV ?" — some LinkedIn profiles have irrelevant jobs or missing freelance/side projects. Use remove_experience or add cv_actions based on the answer.
-
-2. METRICS THAT MATCH THE OFFER. For each key requirement, get ONE number or concrete fact. Give a benchmark so they know it's good:
-   - HR: "time-to-hire ? (sous 30j en startup c'est bon)"
-   - Sales: "% d'objectif ? (au-dessus de 120% ça se voit)"
-   - Engineering: "quelle échelle ? (requêtes/jour, taille équipe)"
-   Adapt to the role. One metric per topic. Move on once you have it.
-
-3. PHILOSOPHY — WOVEN IN, NOT ASKED DIRECTLY. Nobody knows what their "philosophy" is if you ask like that. Instead, when someone describes a concrete action, follow up with WHY:
-   - User: "J'ai créé un système de mentorat" → "Pourquoi le mentorat spécifiquement ? C'était quoi le problème de fond ?"
-   - User: "J'ai repris l'équipe BDR" → "Qu'est-ce qui marchait pas selon toi ? C'était quoi ton diagnostic ?"
-   The WHY reveals their thinking. "I believe recruitment is R&D" comes out naturally when you ask "why did you redesign the process?" — not when you ask "what's your philosophy?"
-   If the conversation hasn't revealed a personal take by the 4th question, then ask: "C'est quoi ton approche sur [their field] — le truc que toi tu fais différemment ?"
-
-4. ACCEPT GOOD-ENOUGH ANSWERS. "Created a mentoring system, NPS went up" = good enough. Don't ask for the exact NPS number, don't ask how founders reacted, don't ask three follow-ups. One concrete detail per topic. Move on.
-
-5. NEVER REPEAT A QUESTION OR TOPIC. Read the FULL conversation above. If a company, role, metric, or topic was ALREADY discussed — even partially — SKIP IT and move to the next uncovered point. The PLANNED QUESTIONS are suggestions, NOT a checklist — skip any that the conversation already covers. Repeating questions is the #1 way to lose the user.
-
-6. NEVER ASK FOR MORE EXAMPLES. If the user gave one example, that's enough. Don't ask "and what else?" or "any other examples?" — move to the next topic.
-
-7. ABSORB LONG ANSWERS. If they cover multiple topics in one message, silently update the CV for ALL of them and jump ahead to the next uncovered topic.
-
-8. RESPECT USER EDITS. Messages starting with "✏️ I edited" = intentional. Don't question it.
-
-## CV ACTIONS — UPDATE THE CV AS YOU GO
-
-When the user gives you info, update the CV immediately via cv_actions. Don't just note it — write the bullet.
-When the user asks to delete, merge, edit — do it via cv_actions.
-
-FORMAT:
-{{"action": "remove_experience", "target": "Techfugees", "value": "", "index": -1}}
-{{"action": "add_bullet", "target": "Mindflow", "value": "Built recruitment pipeline from scratch — 30 hires in 8 months", "index": -1}}
+CV ACTIONS FORMAT:
+{{"action": "remove_experience", "target": "Company", "value": "", "index": -1}}
+{{"action": "add_bullet", "target": "Company", "value": "Built recruitment pipeline from scratch — 30 hires in 8 months", "index": -1}}
+{{"action": "replace_bullet", "target": "Company", "value": "new bullet text", "index": 2}}
 {{"action": "edit_field", "target": "summary", "value": "new summary text"}}
-{{"action": "merge_experiences", "target": "Toucan Toco", "value": {{"title": "combined title", "company": "Toucan Toco (context)", "dates": "earliest - latest", "bullets": ["best bullets from both"]}}, "index": -1}}
-
-MERGE RULES:
-- "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVER two "remove_experience"
-- "value" MUST include "bullets" combining the best from BOTH experiences
-- "target" = company name only (e.g., "Toucan Toco", not the full string with context)
-
-## WHEN TO FINISH
-
-Set is_complete=true when you have:
-- Stage/headcount for each relevant company
-- One concrete metric per key offer requirement (6-7 total)
-- A sense of their approach/thinking (the philosophy)
-
-Before completing, write the CV bullet summary in ONE sentence: "Je lance la génération — j'ai tout ce qu'il faut."
+Use replace_bullet to upgrade a generic LinkedIn bullet with a concrete, metrics-driven one.
+{merge_section}
+WHEN TO FINISH: set is_complete=true when you have stage/headcount, one metric per key requirement (6-7 total), and a sense of their thinking. Say: "Je lance la génération — j'ai tout ce qu'il faut."
 
 Respond in valid JSON only:
 {{"message": "1-3 sentences max", "is_complete": false or true, "cv_actions": [...], "progress": 0-100}}
 
-"progress": 0-100 (estimate what % of the 6-7 key offer points you've already covered based on the conversation. 0 = just started, 50 = half the points have concrete answers, 100 = ready to generate)
+"progress": 0-100 (% of the 6-7 key offer points covered. 0 = started, 50 = half done, 100 = ready)
 
-Write in {lang_instruction}. Short. Direct. No fluff."""
+Write in {lang_instruction}. NEVER REPEAT A QUESTION. BE SHORT."""
 
         response = self.model.generate_content(
             prompt,
@@ -223,17 +186,7 @@ Write in {lang_instruction}. Short. Direct. No fluff."""
         return ChatResponse(**data)
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
-        # Token optimization: summarize long conversations to avoid blowing context window
-        if len(messages) > 6:
-            early = messages[:-4]
-            recent = messages[-4:]
-            summary_parts = []
-            for m in early:
-                if m.role == "user":
-                    summary_parts.append(f"- User said: {m.content[:150]}")
-            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
-        else:
-            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        conversation = self._summarize_conversation(messages)
 
         prompt = f"""You write CVs the way someone would explain their work to a junior colleague at the startup — direct, specific, with energy and professional depth. Not dumbed down. Not corporate. Just how a competent professional talks about what they actually did, without posturing. That honesty IS what impresses recruiters — because 200 other CVs sound like ChatGPT wrote them.
 
@@ -332,7 +285,7 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
    ❌ "Dynamic and entrepreneurial People Operations leader with a strong background in talent acquisition"
    The test: would a real person say this sentence out loud? If it sounds like a template, rewrite it.
 
-7. SKILLS: This is the MOST ABUSED section on CVs. Follow these rules strictly:
+9. SKILLS: This is the MOST ABUSED section on CVs. Follow these rules strictly:
    a) NO generic soft skills: "Communication", "Leadership", "Problem-solving", "Teamwork" are BANNED. They say nothing.
    b) ONLY concrete, verifiable skills that appeared in the experience bullets above.
    c) Format each skill as "Skill (proof)" — e.g., "Multi-country payroll (FR/US/UK/DE)" not just "Payroll"
@@ -341,17 +294,17 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
    ✅ ["Multi-country payroll (4 countries)", "HRIS: Deel, BambooHR", "Onboarding design (5-day ramp)", "Team scaling (2→8)", "Hypergrowth ops (seed to Series B)"]
    ❌ ["Leadership", "Communication", "Strategic thinking", "Problem-solving", "HR Management"]
 
-8. INCLUDE ALL EXPERIENCES — but calibrate depth. Relevant roles get 3-4 rich bullets. Less relevant roles get 1 line that finds an angle connecting to the target job.
+10. INCLUDE ALL EXPERIENCES — but calibrate depth. Relevant roles get 3-4 rich bullets. Less relevant roles get 1 line that finds an angle connecting to the target job.
    For example, if someone was a Growth founder and is applying for HR Ops: "Founded Wagmi Family — recruited 30+ growth/sales profiles for startups, developed a deep understanding of what makes teams work from the hiring side."
    NEVER skip an experience entirely — unexplained gaps look worse than a brief mention.
 
-9. DETECT GAPS in the timeline. If there's a gap > 6 months between roles, address it naturally (sabbatical, entrepreneurship, travel, etc.) — the chat should have uncovered this.
+11. DETECT GAPS in the timeline. If there's a gap > 6 months between roles, address it naturally (sabbatical, entrepreneurship, travel, etc.) — the chat should have uncovered this.
 
-10. HIGHLIGHT YEARS OF EXPERIENCE. Include total years in the summary. "8+ years in HR/People ops across 4 startups" is more powerful than listing dates.
+12. HIGHLIGHT YEARS OF EXPERIENCE. Include total years in the summary. "8+ years in HR/People ops across 4 startups" is more powerful than listing dates.
 
-11. Write in the language of the job offer.
+13. Write in the language of the job offer.
 
-12. ATS & MATCH ANALYSIS:
+14. ATS & MATCH ANALYSIS:
    - match_score (0-100): how well this CV would pass an ATS filter for this specific offer. Check: are the exact keywords from the offer present? Are job titles aligned? Are required skills explicitly mentioned?
    - strengths: 2-3 things that make this CV strong for THIS role (be specific, reference the offer)
    - improvements: 1-2 concrete things the candidate could still add or change to score higher
@@ -441,17 +394,7 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
         return CVData(**data)
 
     def generate_cover_letter(self, profile: Profile, offer: Offer, cv_data: CVData, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CoverLetterData:
-        # Summarize conversation for context
-        if len(messages) > 6:
-            early = messages[:-4]
-            recent = messages[-4:]
-            summary_parts = []
-            for m in early:
-                if m.role == "user":
-                    summary_parts.append(f"- User said: {m.content[:150]}")
-            conversation = "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
-        else:
-            conversation = "\n".join(f"{m.role}: {m.content}" for m in messages)
+        conversation = self._summarize_conversation(messages)
 
         # Format CV experiences for the prompt
         cv_experiences = []
@@ -527,6 +470,15 @@ Respond in valid JSON only:
         data = self._parse_json(response.text)
         return CoverLetterData(**data)
 
+    def _summarize_conversation(self, messages: list[ChatMessage], recent_count: int = 4) -> str:
+        """Summarize a conversation, keeping the last `recent_count` messages verbatim."""
+        if len(messages) > recent_count + 2:
+            early = messages[:-recent_count]
+            recent = messages[-recent_count:]
+            summary_parts = [f"- User said: {m.content[:150]}" for m in early if m.role == "user"]
+            return "EARLIER (summary):\n" + "\n".join(summary_parts) + "\n\nRECENT:\n" + "\n".join(f"{m.role}: {m.content}" for m in recent)
+        return "\n".join(f"{m.role}: {m.content}" for m in messages)
+
     def _get_market_instruction(self, market: str) -> str:
         markets = {
             "france": """FRANCE MARKET NORMS:
@@ -559,10 +511,26 @@ Respond in valid JSON only:
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {
-            "startup": "Direct, confident, action-oriented. Short punchy sentences. Use first-person implied (no 'I'). Show scrappiness and ownership. Think: YC founder describing what they built.",
-            "corporate": "Polished and structured but NOT generic. Still use specific numbers and stories. Think: McKinsey associate who actually did the work, not just made the slides.",
-            "creative": "Bold, slightly unconventional. Can break format rules. Show personality. Think: senior designer's portfolio — the work speaks, but with flair.",
-            "minimal": "Ultra-concise. One line per bullet, max 10 words. Pure signal, zero fluff. Think: senior engineer's resume — code speaks louder than words.",
+            "startup": """Direct, confident, action-oriented. Short punchy dashes, implied first-person, informal. Show scrappiness and ownership.
+Examples:
+- "Built recruitment pipeline from scratch — 30 hires in 8 months"
+- "Payroll in 4 countries, set up from zero while company tripled"
+- "Shipped v1 in 6 weeks with 2 engineers, 10k users month one" """,
+            "corporate": """Polished and structured but NOT generic. Full sentences, formal action verbs — "Led" not "Built". Still use specific numbers and stories.
+Examples:
+- "Led the development of a recruitment pipeline, resulting in 30 successful hires within 8 months"
+- "Managed multi-country payroll operations across 4 jurisdictions during a period of 3x headcount growth"
+- "Directed the end-to-end delivery of the platform's first release, achieving 10,000 users within 30 days" """,
+            "creative": """Bold, slightly unconventional. Allow personality, unconventional framing. Can break format rules. Show personality.
+Examples:
+- "Turns out recruiting 30 people in 8 months is mostly about knowing what questions NOT to ask"
+- "Set up payroll in 4 countries — the spreadsheet phase was scarier than the actual compliance"
+- "Shipped v1 with a team so small we didn't need a Slack channel" """,
+            "minimal": """Ultra-concise. Max 8 words per bullet, telegraphic. Pure signal, zero fluff.
+Examples:
+- "Recruitment pipeline: 30 hires, 8 months"
+- "Multi-country payroll: FR/US/UK/DE"
+- "v1 shipped: 6 weeks, 10k users" """,
         }
         return tones.get(tone, tones["startup"])
 
@@ -593,6 +561,5 @@ Respond in valid JSON only:
         if start >= 0 and end > start:
             cleaned = cleaned[start:end]
         # Fix trailing commas
-        import re
         cleaned = re.sub(r",\s*([}\]])", r"\1", cleaned)
         return json.loads(cleaned)

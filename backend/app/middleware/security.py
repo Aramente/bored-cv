@@ -7,7 +7,6 @@ from fastapi import Request, HTTPException
 from app.db import get_db
 
 TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRET", "")
-DAILY_TOKEN_BUDGET = int(os.environ.get("DAILY_TOKEN_BUDGET", "500000"))
 
 
 def _get_client_ip(request: Request) -> str:
@@ -48,27 +47,3 @@ def check_rate_limit(request: Request, is_authenticated: bool = False) -> None:
                 else "Daily limit reached. Try again tomorrow.",
             )
         conn.execute("INSERT INTO rate_limits (ip, timestamp) VALUES (?, ?)", (ip, now))
-
-
-def check_daily_budget() -> dict:
-    now = time.time()
-    today = time.strftime("%Y-%m-%d")
-
-    with get_db() as conn:
-        row = conn.execute("SELECT tokens_used FROM daily_budget WHERE day = ?", (today,)).fetchone()
-        used = row["tokens_used"] if row else 0
-
-    remaining = DAILY_TOKEN_BUDGET - used
-    if remaining <= 0:
-        raise HTTPException(status_code=429, detail="Service at capacity. Please try again tomorrow.")
-    return {"remaining": remaining, "used": used}
-
-
-def record_token_usage(tokens: int) -> None:
-    today = time.strftime("%Y-%m-%d")
-    with get_db() as conn:
-        conn.execute(
-            "INSERT INTO daily_budget (day, tokens_used) VALUES (?, ?) "
-            "ON CONFLICT(day) DO UPDATE SET tokens_used = tokens_used + ?",
-            (today, tokens, tokens),
-        )

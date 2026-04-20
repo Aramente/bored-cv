@@ -2,10 +2,12 @@ import json
 import os
 import traceback
 
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, Header, UploadFile, HTTPException
 
 from app.models import Profile
 from app.services.pdf_parser import parse_linkedin_pdf, extract_pdf_text
+
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
 
 router = APIRouter(prefix="/api", tags=["linkedin"])
 
@@ -37,8 +39,10 @@ async def parse_linkedin(file: UploadFile = File(...)):
 
 
 @router.post("/debug-parse-pdf")
-async def debug_parse_pdf(file: UploadFile = File(...)):
-    """Debug: show exactly what happens when parsing a PDF."""
+async def debug_parse_pdf(file: UploadFile = File(...), x_admin_secret: str = Header("")):
+    """Debug: show exactly what happens when parsing a PDF. Protected by ADMIN_SECRET header."""
+    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
     contents = await file.read()
     raw_text = extract_pdf_text(contents)
 
