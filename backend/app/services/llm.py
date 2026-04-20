@@ -85,7 +85,12 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=2000, temperature=0.3, response_mime_type="application/json"),
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=2000,
+                temperature=0.3,
+                response_mime_type="application/json",
+                thinking_config=genai.types.ThinkingConfig(thinking_budget=0),
+            ),
             request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
@@ -179,7 +184,12 @@ Write in {lang_instruction}. NEVER REPEAT A QUESTION. BE SHORT."""
 
         response = self.model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=3000, temperature=0.7, response_mime_type="application/json"),
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=3000,
+                temperature=0.7,
+                response_mime_type="application/json",
+                thinking_config=genai.types.ThinkingConfig(thinking_budget=0),
+            ),
             request_options={"timeout": 60},
         )
         data = self._parse_json(response.text)
