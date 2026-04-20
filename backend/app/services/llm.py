@@ -135,7 +135,7 @@ IMPORTANT: When the user asks to edit, merge, delete, or modify something on the
 CANDIDATE: {profile.name} — {profile.title}
 TARGET ROLE: {offer.title} at {offer.company}
 GAPS: {", ".join(gap_analysis.gaps)}
-PLANNED QUESTIONS: {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
+SUGGESTED QUESTIONS (skip any already covered in conversation): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
 
 CONVERSATION SO FAR:
 {conversation}
@@ -172,7 +172,7 @@ Extract the job offer's 6-7 most important requirements. Validate each one again
 
 4. ACCEPT GOOD-ENOUGH ANSWERS. "Created a mentoring system, NPS went up" = good enough. Don't ask for the exact NPS number, don't ask how founders reacted, don't ask three follow-ups. One concrete detail per topic. Move on.
 
-5. NEVER REPEAT A QUESTION. Read the full conversation. If something was already answered — even partially — skip it. Repeating questions is the #1 way to lose the user.
+5. NEVER REPEAT A QUESTION OR TOPIC. Read the FULL conversation above. If a company, role, metric, or topic was ALREADY discussed — even partially — SKIP IT and move to the next uncovered point. The PLANNED QUESTIONS are suggestions, NOT a checklist — skip any that the conversation already covers. Repeating questions is the #1 way to lose the user.
 
 6. NEVER ASK FOR MORE EXAMPLES. If the user gave one example, that's enough. Don't ask "and what else?" or "any other examples?" — move to the next topic.
 
