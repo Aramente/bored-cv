@@ -446,32 +446,13 @@ export default function Chat() {
           <div ref={bottomRef} />
         </div>
 
-        {voiceError && <div className="error" style={{ margin: "0 0 8px" }}>{voiceError}</div>}
-        {isRecording && (
-          <div className="recording-banner">
-            🎤 {t("chat.recording_hint")}
-          </div>
-        )}
         <form className="chat-input-bar" onSubmit={handleSubmit}>
           <input
-            className={`input ${isRecording ? "input-recording" : ""}`}
+            className="input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isRecording ? t("chat.speaking") : t("chat.placeholder")}
+            placeholder={t("chat.placeholder")}
             disabled={loading}
-            readOnly={isRecording}
-          />
-          <VoiceInput
-            onResult={useCallback((text: string) => {
-              setVoiceError("");
-              // Fix misheard company names using profile data
-              const companies = profile?.experiences.map(e => e.company).filter(Boolean) || [];
-              setInput(fixCompanyNames(text, companies));
-            }, [profile])}
-            onInterim={useCallback((text: string) => setInput(text), [])}
-            onError={useCallback((msg: string) => setVoiceError(msg), [])}
-            onListeningChange={useCallback((l: boolean) => { setIsRecording(l); if (l) setInput(""); }, [])}
-            lang={i18n.language}
           />
           <button className="btn-primary" type="submit" disabled={!input.trim() || loading}
             style={{ padding: "10px 20px" }}>
