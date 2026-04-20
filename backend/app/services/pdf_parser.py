@@ -2,7 +2,7 @@ import io
 import json
 import os
 
-from mistralai import Mistral
+from mistralai.client import Mistral
 import pdfplumber
 
 from app.models import Education, Experience, Profile

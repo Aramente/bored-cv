@@ -50,7 +50,7 @@ async def debug_parse_pdf(file: UploadFile = File(...), x_admin_secret: str = He
     if not api_key:
         return {"error": "no MISTRAL_API_KEY", "text_length": len(raw_text)}
 
-    from mistralai import Mistral
+    from mistralai.client import Mistral
     client = Mistral(api_key=api_key)
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export.

@@ -2,7 +2,7 @@ import json
 import os
 import re
 
-from mistralai import Mistral
+from mistralai.client import Mistral
 
 from app.models import (
     CoverLetterData, CVData, ChatMessage, ChatResponse, Education,

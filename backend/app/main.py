@@ -103,7 +103,7 @@ async def debug_parse(x_admin_secret: str = Header("")):
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
     import traceback
-    from mistralai import Mistral
+    from mistralai.client import Mistral
     from app.services.pdf_parser import extract_pdf_text
     key = os.environ.get("MISTRAL_API_KEY", "")
     client = Mistral(api_key=key)
