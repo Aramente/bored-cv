@@ -157,7 +157,17 @@ MERGE RULES: "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVE
         for exp in profile.experiences:
             exp_summary.append(f"- {exp.title} at {exp.company} ({exp.dates})")
 
+        # Count how many questions have been asked (assistant messages)
+        question_count = sum(1 for m in messages if m.role == "assistant")
+        remaining = max(0, 6 - question_count)
+        urgency = ""
+        if remaining <= 0:
+            urgency = "\n\n⚠️ YOU MUST FINISH NOW. Set is_complete=true in your response. Say 'Je lance la génération.' You have asked enough questions."
+        elif remaining <= 2:
+            urgency = f"\n\n⚠️ Only {remaining} question(s) left. Wrap up soon — ask only what's critical."
+
         prompt = f"""You're helping {first_name} build a killer CV for: {offer.title} at {offer.company}.
+QUESTIONS ASKED SO FAR: {question_count}/6. {f"Remaining: {remaining}." if remaining > 0 else "TIME TO FINISH."}{urgency}
 
 THE OFFER NEEDS: {", ".join(gap_analysis.gaps)}
 

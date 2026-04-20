@@ -253,6 +253,12 @@ export default function Chat() {
         }
       }
 
+      // Force completion after 8 user messages if LLM won't stop
+      const userMsgCount = allMessages.filter(m => m.role === "user").length;
+      if (userMsgCount >= 8 && !response.is_complete) {
+        response.is_complete = true;
+      }
+
       if (!response.is_complete) {
         // R1: Only fire background draft if none is in-flight
         const hadActions = response.cv_actions && response.cv_actions.length > 0;
