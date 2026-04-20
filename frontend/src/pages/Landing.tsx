@@ -51,7 +51,7 @@ export default function Landing() {
         </button>
         {user && (
           <button className="btn-secondary" onClick={() => navigate("/projects")} style={{ marginLeft: 12 }}>
-            my projects →
+            {t("landing.my_projects")}
           </button>
         )}
       </section>

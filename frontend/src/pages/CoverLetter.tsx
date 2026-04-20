@@ -110,7 +110,7 @@ export default function CoverLetter() {
         {error && (
           <div style={{ padding: 16, background: "var(--danger-bg, #fef2f2)", borderRadius: "var(--radius)", marginBottom: 16 }}>
             <p style={{ color: "var(--danger, #dc2626)", fontSize: 14 }}>{error}</p>
-            <button className="btn-secondary" style={{ marginTop: 8 }} onClick={generate}>Retry</button>
+            <button className="btn-secondary" style={{ marginTop: 8 }} onClick={generate}>{t("cover_letter.retry")}</button>
           </div>
         )}
 

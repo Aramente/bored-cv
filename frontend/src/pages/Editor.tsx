@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { PDFViewer } from "@react-pdf/renderer";
@@ -12,44 +12,58 @@ import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
 import Retro from "../templates/Retro";
 import Consultant from "../templates/Consultant";
+import type { TFunction } from "i18next";
 
 const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant } as const;
 
 const RESPONSIBILITY_PATTERNS = /^(responsible for|helped with|worked on|assisted in|participated in|involved in|contributed to|supported the|managed the|in charge of)/i;
 const BUZZWORDS = /\b(dynamic|innovative|passionate|leveraged|synergies|spearheaded|orchestrated|cutting-edge|best-in-class|world-class|thought leader|proven track record|results-driven|detail-oriented|team player|strong background|eager to leverage)\b/i;
 
-function validateCV(cv: { summary: string; experiences: { bullets: string[]; company: string }[]; skills: string[] }) {
+function validateCV(cv: { summary: string; experiences: { bullets: string[]; company: string }[]; skills: string[] }, t: TFunction) {
   const issues: { type: "warn" | "error"; text: string }[] = [];
   const allBullets = cv.experiences.flatMap((e) => e.bullets);
   const bulletsWithNumbers = allBullets.filter((b) => /\d/.test(b));
   const pctWithNumbers = allBullets.length > 0 ? Math.round((bulletsWithNumbers.length / allBullets.length) * 100) : 0;
 
-  if (pctWithNumbers < 50) issues.push({ type: "warn", text: `Only ${pctWithNumbers}% of bullets have numbers — aim for 60%+` });
-  if (pctWithNumbers >= 60) issues.push({ type: "warn", text: `${pctWithNumbers}% of bullets have numbers — solid` });
+  if (pctWithNumbers < 50) issues.push({ type: "warn", text: t("editor.bullets_no_numbers", { pct: pctWithNumbers }) });
+  if (pctWithNumbers >= 60) issues.push({ type: "warn", text: t("editor.bullets_good", { pct: pctWithNumbers }) });
 
   const responsibilityBullets = allBullets.filter((b) => RESPONSIBILITY_PATTERNS.test(b.trim()));
-  if (responsibilityBullets.length > 0) issues.push({ type: "error", text: `${responsibilityBullets.length} bullet(s) start with responsibility-voice ("Responsible for...", "Managed the...")` });
+  if (responsibilityBullets.length > 0) issues.push({ type: "error", text: t("editor.responsibility_voice") });
 
   const buzzwordBullets = allBullets.filter((b) => BUZZWORDS.test(b));
-  if (buzzwordBullets.length > 0) issues.push({ type: "error", text: `${buzzwordBullets.length} bullet(s) contain banned buzzwords` });
+  if (buzzwordBullets.length > 0) {
+    const found = allBullets.flatMap((b) => {
+      const m = b.match(BUZZWORDS);
+      return m ? [m[0]] : [];
+    });
+    issues.push({ type: "error", text: t("editor.buzzwords_found", { words: [...new Set(found)].join(", ") }) });
+  }
 
-  if (cv.summary.length > 300) issues.push({ type: "warn", text: "Summary is long — keep it under 2 sentences" });
-  if (cv.summary.length === 0) issues.push({ type: "warn", text: "No summary — consider adding 2 sentences" });
+  if (cv.summary.length > 300) issues.push({ type: "warn", text: t("editor.summary_long") });
+  if (cv.summary.length === 0) issues.push({ type: "warn", text: t("editor.summary_missing") });
 
   const noContextCompanies = cv.experiences.filter((e) => !e.company.includes("("));
-  if (noContextCompanies.length > 0) issues.push({ type: "warn", text: `${noContextCompanies.length} company name(s) missing context "(sector, stage, headcount)"` });
+  if (noContextCompanies.length > 0) issues.push({ type: "warn", text: t("editor.no_company_context") });
 
   const softSkills = cv.skills.filter((s) => /^(leadership|communication|teamwork|problem.solving|strategic thinking|creativity|adaptability)$/i.test(s.trim()));
-  if (softSkills.length > 0) issues.push({ type: "error", text: `${softSkills.length} generic soft skill(s) in skills list — remove them` });
+  if (softSkills.length > 0) issues.push({ type: "error", text: t("editor.soft_skills_found", { count: softSkills.length }) });
 
   return issues;
 }
 
-function EditableField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function getBulletWarning(bullet: string, t: TFunction): string | null {
+  if (BUZZWORDS.test(bullet)) return t("editor.inline_buzzword");
+  if (RESPONSIBILITY_PATTERNS.test(bullet.trim())) return t("editor.inline_responsibility");
+  return null;
+}
+
+function EditableField({ label, value, onChange, warning }: { label: string; value: string; onChange: (v: string) => void; warning?: string | null }) {
   return (
     <div style={{ marginBottom: 8 }}>
       <label style={{ fontSize: 11, fontWeight: 600, color: "var(--text-dim)", display: "block", marginBottom: 2 }}>{label}</label>
       <input className="input" value={value} onChange={(e) => onChange(e.target.value)} style={{ padding: "6px 10px", fontSize: 13 }} />
+      {warning && <p style={{ fontSize: 11, color: "var(--red, #d93025)", marginTop: 2 }}>{warning}</p>}
     </div>
   );
 }
@@ -57,8 +71,15 @@ function EditableField({ label, value, onChange }: { label: string; value: strin
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, selectedTemplate, updateCvField, tone, setTone } = useStore();
+  const { cvData, selectedTemplate, updateCvField, tone, setTone, addCvExperience, removeCvExperience, addCvBullet, removeCvBullet } = useStore();
   const [regenerating, setRegenerating] = useState(false);
+
+  // R2 — debounce cvData for PDFViewer
+  const [debouncedCv, setDebouncedCv] = useState(cvData);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedCv(cvData), 500);
+    return () => clearTimeout(timer);
+  }, [cvData]);
 
   const handleToneChange = async (newTone: string) => {
     setTone(newTone);
@@ -154,15 +175,54 @@ export default function Editor() {
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_experience")}</label>
             {cvData.experiences.map((exp, i) => (
-              <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 12, marginTop: 8 }}>
-                <EditableField label="Title" value={exp.title} onChange={(v) => updateCvField(`experiences.${i}.title`, v)} />
-                <EditableField label="Company" value={exp.company} onChange={(v) => updateCvField(`experiences.${i}.company`, v)} />
-                <EditableField label="Dates" value={exp.dates} onChange={(v) => updateCvField(`experiences.${i}.dates`, v)} />
+              <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 12, marginTop: 8, position: "relative" }}>
+                <button
+                  className="btn-secondary"
+                  style={{ position: "absolute", top: 8, right: 8, fontSize: 12, padding: "4px 10px", lineHeight: 1 }}
+                  onClick={() => { useStore.getState().pushCvHistory(); removeCvExperience(i); }}
+                  title={t("editor.remove_experience")}
+                >
+                  ✕
+                </button>
+                <EditableField label={t("editor.field_title")} value={exp.title} onChange={(v) => updateCvField(`experiences.${i}.title`, v)} />
+                <EditableField label={t("editor.field_company")} value={exp.company} onChange={(v) => updateCvField(`experiences.${i}.company`, v)} />
+                <EditableField label={t("editor.field_dates")} value={exp.dates} onChange={(v) => updateCvField(`experiences.${i}.dates`, v)} />
                 {exp.bullets.map((bullet, j) => (
-                  <EditableField key={j} label={`Bullet ${j + 1}`} value={bullet} onChange={(v) => updateCvField(`experiences.${i}.bullets.${j}`, v)} />
+                  <div key={j} style={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <EditableField
+                        label={t("editor.field_bullet", { n: j + 1 })}
+                        value={bullet}
+                        onChange={(v) => updateCvField(`experiences.${i}.bullets.${j}`, v)}
+                        warning={getBulletWarning(bullet, t)}
+                      />
+                    </div>
+                    <button
+                      className="btn-secondary"
+                      style={{ fontSize: 12, padding: "4px 10px", marginTop: 16, lineHeight: 1, flexShrink: 0 }}
+                      onClick={() => { useStore.getState().pushCvHistory(); removeCvBullet(i, j); }}
+                      title={t("editor.remove_bullet")}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ))}
+                <button
+                  className="btn-secondary"
+                  style={{ fontSize: 12, padding: "4px 10px", marginTop: 8 }}
+                  onClick={() => addCvBullet(i)}
+                >
+                  {t("editor.add_bullet")}
+                </button>
               </div>
             ))}
+            <button
+              className="btn-secondary"
+              style={{ fontSize: 12, padding: "4px 10px", marginTop: 12 }}
+              onClick={() => addCvExperience()}
+            >
+              {t("editor.add_experience")}
+            </button>
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -172,7 +232,7 @@ export default function Editor() {
           </div>
 
           {(() => {
-            const issues = validateCV(cvData);
+            const issues = validateCV(cvData, t);
             if (issues.length === 0) return null;
             return (
               <div style={{ marginBottom: 16, padding: 12, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
@@ -193,7 +253,7 @@ export default function Editor() {
 
         <div className="editor-right" style={{ flex: 1, borderLeft: "1px solid var(--border)", background: "var(--surface)" }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
-            <TemplateComponent data={cvData} />
+            <TemplateComponent data={debouncedCv || cvData} />
           </PDFViewer>
         </div>
       </div>

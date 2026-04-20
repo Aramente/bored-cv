@@ -30,7 +30,7 @@ export default function ConsentBanner() {
   };
 
   return (
-    <div style={{
+    <div className="consent-banner" style={{
       position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
       background: "var(--surface)", border: "1px solid var(--border)",
       borderRadius: "var(--radius-lg)", padding: "12px 20px",

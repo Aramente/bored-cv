@@ -22,7 +22,8 @@
     "ba_after_company": "Mindflow (AI automation, seed→Series A, 12→45 employees)",
     "ba_after_bullet": "Built People ops from scratch for a distributed team across 3 countries. Ran payroll in FR/US/UK with zero errors over 14 months. Cut onboarding time from 3 weeks to 5 days.",
     "footer": "your CV deserved better. you're welcome.",
-    "stats_cvs": "CVs generated"
+    "stats_cvs": "CVs generated",
+    "my_projects": "my projects →"
   },
   "upload": {
     "title": "ok, show me what you got",
@@ -94,7 +95,14 @@
     "lang_fr": "Français",
     "lang_en": "English",
     "share_score": "Share your score",
-    "shared": "Copied!"
+    "shared": "Copied!",
+    "strengths_label": "strengths",
+    "to_improve_label": "to improve",
+    "use_company_colors": "Use company colors",
+    "fix": "→ Fix",
+    "before_after": "Before / After",
+    "linkedin_version": "LinkedIn",
+    "bored_cv_version": "Bored CV"
   },
   "cover_letter": {
     "title": "Cover Letter",
@@ -106,7 +114,8 @@
     "closing_label": "Closing",
     "signature_label": "Signature",
     "download": "Download PDF",
-    "back": "← Back to Templates"
+    "back": "← Back to Templates",
+    "retry": "Retry"
   },
   "editor": {
     "title": "fine-tune it",
@@ -123,7 +132,25 @@
     "validation_title": "Pre-export check",
     "tone_label": "Tone of voice",
     "regenerating": "Regenerating with new tone...",
-    "continue": "Choose design \u2192"
+    "continue": "Choose design \u2192",
+    "bullets_no_numbers": "Only {{pct}}% of bullets have numbers — aim for 70%+",
+    "bullets_good": "{{pct}}% of bullets have numbers — solid",
+    "responsibility_voice": "Avoid responsibility-voice ('Responsible for...', 'In charge of...')",
+    "buzzwords_found": "Buzzwords detected: {{words}}",
+    "no_company_context": "Add company context (sector, size, stage)",
+    "summary_long": "Summary too long — aim for 2 sentences max",
+    "summary_missing": "No summary — consider adding 2 sentences",
+    "soft_skills_found": "{{count}} generic soft skill(s) in skills list — remove them",
+    "field_title": "Title",
+    "field_company": "Company",
+    "field_dates": "Dates",
+    "field_bullet": "Bullet {{n}}",
+    "add_experience": "+ Add experience",
+    "add_bullet": "+ Add bullet",
+    "remove_experience": "Remove",
+    "remove_bullet": "Remove",
+    "inline_buzzword": "Buzzword detected — consider rephrasing",
+    "inline_responsibility": "Avoid starting with passive voice"
   },
   "projects": {
     "title": "your projects",

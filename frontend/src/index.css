@@ -731,6 +731,15 @@ textarea.input { resize: vertical; min-height: 100px; }
   margin-bottom: 24px;
 }
 
+/* Focus-visible (A2) */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.card:focus-visible,
+.voice-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* Editor split */
 @media (max-width: 768px) {
   .editor-split {
@@ -740,6 +749,10 @@ textarea.input { resize: vertical; min-height: 100px; }
     max-width: 100% !important;
     flex: none !important;
     height: auto !important;
+  }
+  .editor-left {
+    min-height: 50vh;
+    overflow-y: auto;
   }
   .editor-right {
     height: 50vh !important;
@@ -865,7 +878,8 @@ textarea.input { resize: vertical; min-height: 100px; }
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 8px 12px;
+  min-height: 36px;
   border-radius: 20px;
   font-size: 11px;
   color: var(--text-dim);
@@ -921,6 +935,12 @@ textarea.input { resize: vertical; min-height: 100px; }
   font-size: 18px;
   color: var(--text);
   margin-bottom: 12px;
+}
+
+/* Consent banner mobile fix (A3) */
+.consent-banner {
+  max-width: calc(100vw - 48px);
+  flex-wrap: wrap;
 }
 
 /* Chat skeleton */

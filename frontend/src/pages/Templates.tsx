@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
@@ -14,10 +15,19 @@ import Consultant from "../templates/Consultant";
 const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant };
 const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant"];
 
+const templateAccentStyles: Record<TemplateId, React.CSSProperties> = {
+  clean: { borderLeft: "4px solid var(--gold)" },
+  contrast: { borderLeft: "4px solid var(--text)" },
+  minimal: { borderLeft: "2px solid var(--border)" },
+  retro: { borderLeft: "4px dashed var(--text-dim)" },
+  consultant: { borderLeft: "4px double var(--text-muted)" },
+};
+
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal } = useStore();
+  const [beforeAfterOpen, setBeforeAfterOpen] = useState(false);
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
@@ -43,6 +53,12 @@ export default function Templates() {
 
   const displayCv = activeCv || cvData;
   const PreviewComponent = templateComponents[selectedTemplate];
+
+  // R2 — memoize PDF document for PDFDownloadLink
+  const pdfDocument = useMemo(
+    () => <PreviewComponent data={displayCv} brandColors={useBrandColors ? brandColors : null} />,
+    [displayCv, useBrandColors, brandColors, selectedTemplate]
+  );
 
   return (
     <div className="page">
@@ -71,14 +87,25 @@ export default function Templates() {
             <div className="match-score-details">
               {displayCv.strengths.length > 0 && (
                 <div className="match-strengths">
-                  <span className="match-section-label">strengths</span>
+                  <span className="match-section-label">{t("templates.strengths_label")}</span>
                   {displayCv.strengths.map((s, i) => <p key={i}>{s}</p>)}
                 </div>
               )}
               {displayCv.improvements.length > 0 && (
                 <div className="match-improvements">
-                  <span className="match-section-label">to improve</span>
-                  {displayCv.improvements.map((s, i) => <p key={i}>{s}</p>)}
+                  <span className="match-section-label">{t("templates.to_improve_label")}</span>
+                  {displayCv.improvements.map((s, i) => (
+                    <p key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>{s}</span>
+                      <a
+                        onClick={(e) => { e.preventDefault(); navigate("/editor"); }}
+                        href="/editor"
+                        style={{ fontSize: 11, color: "var(--accent)", cursor: "pointer", whiteSpace: "nowrap", marginLeft: 8, textDecoration: "none", fontWeight: 600 }}
+                      >
+                        {t("templates.fix")}
+                      </a>
+                    </p>
+                  ))}
                 </div>
               )}
             </div>
@@ -101,6 +128,39 @@ export default function Templates() {
           </div>
         )}
 
+        {/* V2 — Before / After comparison */}
+        {cvOriginal && cvOriginal.experiences.length > 0 && displayCv.experiences.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <button
+              className="btn-secondary"
+              style={{ fontSize: 13, marginBottom: 8 }}
+              onClick={() => setBeforeAfterOpen(!beforeAfterOpen)}
+            >
+              {beforeAfterOpen ? "▾" : "▸"} {t("templates.before_after")}
+            </button>
+            {beforeAfterOpen && (
+              <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                <div style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, opacity: 0.7 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)", display: "block", marginBottom: 8 }}>{t("templates.linkedin_version")}</span>
+                  <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{cvOriginal.experiences[0].title}</p>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>{cvOriginal.experiences[0].company}</p>
+                  {cvOriginal.experiences[0].bullets.slice(0, 2).map((b, i) => (
+                    <p key={i} style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4, lineHeight: 1.5 }}>{b}</p>
+                  ))}
+                </div>
+                <div style={{ flex: 1, background: "rgba(232, 168, 0, 0.04)", border: "2px solid var(--gold)", borderRadius: "var(--radius)", padding: 16 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--gold)", display: "block", marginBottom: 8 }}>{t("templates.bored_cv_version")}</span>
+                  <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{displayCv.experiences[0].title}</p>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>{displayCv.experiences[0].company}</p>
+                  {displayCv.experiences[0].bullets.slice(0, 2).map((b, i) => (
+                    <p key={i} style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4, lineHeight: 1.5 }}>{b}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("templates.lang_label")}</p>
           <div className="lang-selector">
@@ -109,14 +169,14 @@ export default function Templates() {
               onClick={() => setCvLang("fr")}
               style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "fr" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
             >
-              🇫🇷 {t("templates.lang_fr")}
+              {"\uD83C\uDDEB\uD83C\uDDF7"} {t("templates.lang_fr")}
             </button>
             <button
               className={`card ${cvLang === "en" ? "selected" : ""}`}
               onClick={() => setCvLang("en")}
               style={{ padding: "8px 20px", cursor: "pointer", border: cvLang === "en" ? "2px solid var(--accent)" : "2px solid var(--border)" }}
             >
-              🇬🇧 {t("templates.lang_en")}
+              {"\uD83C\uDDEC\uD83C\uDDE7"} {t("templates.lang_en")}
             </button>
             {!cvDataAlt && <span style={{ fontSize: 12, color: "var(--text-dim)", alignSelf: "center" }}>{t("templates.translating")}</span>}
           </div>
@@ -130,7 +190,7 @@ export default function Templates() {
                 checked={useBrandColors}
                 onChange={(e) => setUseBrandColors(e.target.checked)}
               />
-              <span>Use company colors</span>
+              <span>{t("templates.use_company_colors")}</span>
               <span style={{ display: "inline-flex", gap: 4, marginLeft: 4 }}>
                 <span style={{ width: 14, height: 14, borderRadius: 3, background: brandColors.primary, border: "1px solid var(--border)" }} />
                 <span style={{ width: 14, height: 14, borderRadius: 3, background: brandColors.secondary, border: "1px solid var(--border)" }} />
@@ -139,12 +199,14 @@ export default function Templates() {
           </div>
         )}
 
+        {/* G4 — Template cards with colored accent strips */}
         <div className="templates-grid">
           {templateKeys.map((key) => (
             <div
               key={key}
               className={`card ${selectedTemplate === key ? "selected" : ""}`}
               onClick={() => setSelectedTemplate(key)}
+              style={templateAccentStyles[key]}
             >
               <h3 style={{ fontSize: 16, marginBottom: 4 }}>{t(`templates.${key}`)}</h3>
               <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{t(`templates.${key}_desc`)}</p>
@@ -158,7 +220,7 @@ export default function Templates() {
           </PDFViewer>
         </div>
 
-        <PDFDownloadLink document={<PreviewComponent data={displayCv} brandColors={useBrandColors ? brandColors : null} />} fileName={`${displayCv.name.replace(/\s+/g, "_")}_CV.pdf`}>
+        <PDFDownloadLink document={pdfDocument} fileName={`${displayCv.name.replace(/\s+/g, "_")}_CV.pdf`}>
           {({ loading: pdfLoading }) => (
             <button className="btn-primary" style={{ width: "100%" }} disabled={pdfLoading}>
               {pdfLoading ? <span className="spinner" /> : t("editor.download")}

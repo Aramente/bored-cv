@@ -22,7 +22,8 @@
     "ba_after_company": "Mindflow (automatisation IA, seed→Série A, 12→45 employés)",
     "ba_after_bullet": "Création des People ops from scratch pour une équipe distribuée dans 3 pays. Gestion de la paie FR/US/UK avec zéro erreur sur 14 mois. Réduction de l'onboarding de 3 semaines à 5 jours.",
     "footer": "ton CV méritait mieux. de rien.",
-    "stats_cvs": "CVs générés"
+    "stats_cvs": "CVs générés",
+    "my_projects": "mes projets →"
   },
   "upload": {
     "title": "ok, montre-moi ce que t'as",
@@ -94,7 +95,14 @@
     "lang_fr": "Français",
     "lang_en": "English",
     "share_score": "Partager ton score",
-    "shared": "Copié !"
+    "shared": "Copié !",
+    "strengths_label": "points forts",
+    "to_improve_label": "à améliorer",
+    "use_company_colors": "Utiliser les couleurs de l'entreprise",
+    "fix": "→ Corriger",
+    "before_after": "Avant / Après",
+    "linkedin_version": "LinkedIn",
+    "bored_cv_version": "Bored CV"
   },
   "cover_letter": {
     "title": "Lettre de motivation",
@@ -106,7 +114,8 @@
     "closing_label": "Conclusion",
     "signature_label": "Signature",
     "download": "Télécharger PDF",
-    "back": "← Retour aux templates"
+    "back": "← Retour aux templates",
+    "retry": "Réessayer"
   },
   "editor": {
     "title": "peaufine le truc",
@@ -123,7 +132,25 @@
     "validation_title": "Check avant export",
     "tone_label": "Ton de voix",
     "regenerating": "R\u00e9g\u00e9n\u00e9ration en cours...",
-    "continue": "Choisir le design \u2192"
+    "continue": "Choisir le design \u2192",
+    "bullets_no_numbers": "Seulement {{pct}}% de tes bullets ont des chiffres — vise 70%+",
+    "bullets_good": "{{pct}}% de tes bullets ont des chiffres — solide",
+    "responsibility_voice": "Évite les formules passives ('Responsable de...', 'En charge de...')",
+    "buzzwords_found": "Buzzwords détectés : {{words}}",
+    "no_company_context": "Ajoute du contexte entreprise (secteur, taille, stage)",
+    "summary_long": "Résumé trop long — vise 2 phrases max",
+    "summary_missing": "Pas de résumé — ajoute 2 phrases",
+    "soft_skills_found": "{{count}} soft skill(s) générique(s) dans les compétences — supprime-les",
+    "field_title": "Poste",
+    "field_company": "Entreprise",
+    "field_dates": "Dates",
+    "field_bullet": "Bullet {{n}}",
+    "add_experience": "+ Ajouter une expérience",
+    "add_bullet": "+ Ajouter un bullet",
+    "remove_experience": "Supprimer",
+    "remove_bullet": "Supprimer",
+    "inline_buzzword": "Buzzword détecté — reformule",
+    "inline_responsibility": "Évite de commencer par une voix passive"
   },
   "projects": {
     "title": "tes projets",

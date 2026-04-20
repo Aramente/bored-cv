@@ -11,7 +11,7 @@ import StepIndicator from "../components/StepIndicator";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket, profile: storedProfile } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -167,9 +167,12 @@ export default function Upload() {
           <label className="label">{t("upload.linkedin_label")}</label>
           <div
             className="drop-zone"
+            role="button"
+            tabIndex={0}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
             style={{
               border: "2px dashed var(--border-light)",
               borderRadius: "var(--radius-lg)",
@@ -192,6 +195,10 @@ export default function Upload() {
               style={{ display: "none" }}
             />
           </div>
+
+          {storedProfile?.email && (
+            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>{"\uD83D\uDCE7"} {storedProfile.email}</p>
+          )}
 
           <button
             className="btn-secondary"
