@@ -388,7 +388,17 @@ textarea.input { resize: vertical; min-height: 100px; }
   line-height: 1.65;
   -webkit-user-select: text;
   user-select: text;
+  -webkit-touch-callout: default;
   cursor: text;
+  position: relative;
+  z-index: 1;
+}
+.copied-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 600;
 }
 .chat-msg.assistant .chat-bubble {
   background: var(--surface);
