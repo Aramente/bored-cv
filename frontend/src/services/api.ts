@@ -49,7 +49,7 @@ export async function transcribeAudio(blob: Blob, lang: string): Promise<string>
   form.append("file", blob, "recording.webm");
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // 30s client timeout
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2min client timeout
 
   try {
     const res = await fetch(`${API_URL}/api/transcribe`, {
