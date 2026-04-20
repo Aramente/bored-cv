@@ -85,7 +85,7 @@ export default function Chat() {
     const currentMessages = useStore.getState().messages;
     if (currentMessages.length === 0 && profile && offer) {
       const firstName = profile.name.split(" ")[0];
-      const companies = profile.experiences.slice(0, 5).map((e) => e.company).filter(Boolean);
+      const companies = profile.experiences.map((e) => e.company).filter(Boolean);
       const companyList = companies.join(" ? ") + (companies.length > 0 ? " ?" : "");
       const isFr = i18n.language.startsWith("fr");
       const firstQ = isFr
