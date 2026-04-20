@@ -20,12 +20,19 @@ def extract_pdf_text(pdf_bytes: bytes) -> str:
 
 
 def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
-    """Parse a LinkedIn PDF export using LLM for robust extraction."""
+    """Parse a LinkedIn PDF export. Tries fast heuristic first, falls back to LLM."""
     raw_text = extract_pdf_text(pdf_bytes)
 
     if len(raw_text.strip()) < 50:
         return Profile(name="", title="")
 
+    # Try instant heuristic parser first (0ms vs 5-20s for LLM)
+    from app.services.linkedin_parser import parse_linkedin_heuristic
+    result = parse_linkedin_heuristic(raw_text)
+    if result:
+        return result
+
+    # Fallback to LLM for non-LinkedIn PDFs or weird formats
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         return _fallback_parse(raw_text)
