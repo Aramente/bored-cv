@@ -2,7 +2,7 @@ import json
 import os
 import re
 
-import google.generativeai as genai
+from mistralai import Mistral
 
 from app.models import (
     CoverLetterData, CVData, ChatMessage, ChatResponse, Education,
@@ -14,15 +14,27 @@ MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking
 
 class LLMService:
     def __init__(self, api_key: str | None = None):
-        self._api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
-        self._model = None
+        self._api_key = api_key or os.environ.get("MISTRAL_API_KEY", "")
+        self._client = None
 
     @property
-    def model(self):
-        if self._model is None:
-            genai.configure(api_key=self._api_key)
-            self._model = genai.GenerativeModel("gemini-2.5-flash")
-        return self._model
+    def client(self):
+        if self._client is None:
+            self._client = Mistral(api_key=self._api_key)
+        return self._client
+
+    def _call(self, prompt: str, *, model: str = "mistral-small-latest", max_tokens: int = 3000, temperature: float = 0.7, json_mode: bool = True) -> str:
+        """Unified Mistral chat completion call."""
+        kwargs = dict(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        response = self.client.chat.complete(**kwargs)
+        return response.choices[0].message.content
 
     def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
         lang_instruction = "French" if ui_language == "fr" else "English"
@@ -83,17 +95,8 @@ Respond in valid JSON only:
 
 IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER placeholders. Tone: smart friend who read the offer carefully, not a generic career bot."""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=2000,
-                temperature=0.3,
-                response_mime_type="application/json",
-                thinking_config={"thinking_budget": 0},
-            ),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=2000, temperature=0.3)
+        data = self._parse_json(text)
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
@@ -182,17 +185,8 @@ Respond in valid JSON only:
 
 Write in {lang_instruction}. NEVER REPEAT A QUESTION. BE SHORT."""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=3000,
-                temperature=0.7,
-                response_mime_type="application/json",
-                thinking_config={"thinking_budget": 0},
-            ),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=3000, temperature=0.7)
+        data = self._parse_json(text)
         return ChatResponse(**data)
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
@@ -322,12 +316,8 @@ WRITING RULES — THIS IS WHAT MAKES THE CV EXCELLENT:
 Respond in valid JSON only:
 {{"name": "{profile.name}", "title": "specific title that matches the offer — not generic", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 punchy sentences — specific, not corporate", "experiences": [{{"title": "job title", "company": "company name", "dates": "dates", "bullets": ["micro-story bullet with real numbers", "another specific achievement"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["only relevant skills, no padding"], "language": "en or fr", "match_score": 78, "strengths": ["Strong HR ops experience across multiple startups", "Multi-country payroll expertise matches requirement"], "improvements": ["No explicit people analytics experience mentioned", "Could highlight more HRIS tool proficiency"]}}"""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.4, response_mime_type="application/json"),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-large-latest", max_tokens=MAX_TOKENS_PER_CALL, temperature=0.4)
+        data = self._parse_json(text)
         return CVData(**data)
 
     def draft_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", target_market: str = "france") -> CVData:
@@ -371,16 +361,8 @@ STRICT RULES — VIOLATING THESE IS A FAILURE:
 Respond in valid JSON:
 {{"name": "{profile.name}", "title": "operational title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 short operational sentences", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["concrete action + number"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["concrete skill (proof)"], "languages": [], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["specific strength"], "improvements": ["specific gap"]}}"""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=8000,
-                temperature=0.3,
-                response_mime_type="application/json",
-            ),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=8000, temperature=0.3)
+        data = self._parse_json(text)
         return CVData(**data)
 
     def translate_cv(self, cv_data: CVData, target_language: str) -> CVData:
@@ -395,12 +377,8 @@ CURRENT CV (JSON):
 
 Respond in valid JSON only, same structure, translated to {lang_name}. Set "language" to "{target_language}"."""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.2, response_mime_type="application/json"),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=MAX_TOKENS_PER_CALL, temperature=0.2)
+        data = self._parse_json(text)
         return CVData(**data)
 
     def generate_cover_letter(self, profile: Profile, offer: Offer, cv_data: CVData, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CoverLetterData:
@@ -472,12 +450,8 @@ RULES:
 Respond in valid JSON only:
 {{"greeting": "...", "opening": "...", "body": "...", "closing": "...", "signature": "{profile.name}", "language": "{"fr" if ui_language == "fr" else "en"}"}}"""
 
-        response = self.model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=MAX_TOKENS_PER_CALL, temperature=0.5, response_mime_type="application/json"),
-            request_options={"timeout": 60},
-        )
-        data = self._parse_json(response.text)
+        text = self._call(prompt, model="mistral-large-latest", max_tokens=MAX_TOKENS_PER_CALL, temperature=0.5)
+        data = self._parse_json(text)
         return CoverLetterData(**data)
 
     def _summarize_conversation(self, messages: list[ChatMessage], recent_count: int = 4) -> str:

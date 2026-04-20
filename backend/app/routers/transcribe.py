@@ -7,24 +7,24 @@ from app.middleware.security import verify_turnstile, check_rate_limit
 
 router = APIRouter(prefix="/api", tags=["transcribe"])
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY", "")
 
 
-async def _transcribe_groq(contents: bytes, content_type: str, lang: str) -> str:
-    """Transcribe via Groq Whisper API."""
+async def _transcribe_mistral(contents: bytes, content_type: str, lang: str) -> str:
+    """Transcribe via Mistral Voxtral (audio transcription endpoint)."""
     async with httpx.AsyncClient(timeout=90.0) as client:
         resp = await client.post(
-            "https://api.groq.com/openai/v1/audio/transcriptions",
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+            "https://api.mistral.ai/v1/audio/transcriptions",
+            headers={"Authorization": f"Bearer {MISTRAL_API_KEY}"},
             files={"file": ("recording.webm", contents, content_type)},
             data={
-                "model": "whisper-large-v3",
+                "model": "mistral-small-latest",
                 "language": lang,
                 "response_format": "text",
             },
         )
     if resp.status_code != 200:
-        raise Exception(f"Groq error {resp.status_code}: {resp.text[:200]}")
+        raise Exception(f"Mistral STT error {resp.status_code}: {resp.text[:200]}")
     return resp.text.strip()
 
 
@@ -62,15 +62,15 @@ async def transcribe_audio(
     lang = "fr" if x_lang.startswith("fr") else "en"
     content_type = file.content_type or "audio/webm"
 
-    # Try Groq first (fastest), fallback to HF Whisper (free, no key needed)
+    # Try Mistral Voxtral first, fallback to HF Whisper (free, no key needed)
     errors = []
-    if GROQ_API_KEY:
+    if MISTRAL_API_KEY:
         try:
-            text = await _transcribe_groq(contents, content_type, lang)
+            text = await _transcribe_mistral(contents, content_type, lang)
             if text:
                 return {"text": text}
         except Exception as e:
-            errors.append(f"Groq: {e}")
+            errors.append(f"Mistral: {e}")
 
     try:
         text = await _transcribe_hf_whisper(contents, content_type)

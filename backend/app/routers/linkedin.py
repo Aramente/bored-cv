@@ -46,13 +46,12 @@ async def debug_parse_pdf(file: UploadFile = File(...), x_admin_secret: str = He
     contents = await file.read()
     raw_text = extract_pdf_text(contents)
 
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("MISTRAL_API_KEY", "")
     if not api_key:
-        return {"error": "no GEMINI_API_KEY", "text_length": len(raw_text)}
+        return {"error": "no MISTRAL_API_KEY", "text_length": len(raw_text)}
 
-    import google.generativeai as genai
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    from mistralai import Mistral
+    client = Mistral(api_key=api_key)
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export.
 
@@ -62,26 +61,19 @@ RAW TEXT:
 Return valid JSON with: name, title, email, phone, linkedin, location, summary, experiences (array), education (array), skills (array), languages (array). Use empty string for missing fields."""
 
     try:
-        r = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=4000,
-                temperature=0.1,
-            ),
+        r = client.chat.complete(
+            model="mistral-small-latest",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=4000,
+            temperature=0.1,
         )
-        # Dump response structure for debugging
-        parts_info = []
-        if r.candidates and r.candidates[0].content.parts:
-            for p in r.candidates[0].content.parts:
-                parts_info.append({"text_len": len(p.text) if hasattr(p, 'text') and p.text else 0, "has_thought": hasattr(p, 'thought') and p.thought is not None})
-
-        raw_resp = r.text.strip() if r.text else ""
+        raw_resp = r.choices[0].message.content.strip() if r.choices[0].message.content else ""
         return {
             "ok": True,
             "text_len": len(raw_resp),
             "text_preview": raw_resp[:300],
-            "parts_count": len(parts_info),
-            "parts": parts_info,
+            "provider": "mistral",
         }
     except Exception as e:
         return {"ok": False, "error": str(e), "traceback": traceback.format_exc()[:1000], "text_length": len(raw_text)}

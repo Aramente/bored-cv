@@ -2,7 +2,7 @@ import io
 import json
 import os
 
-import google.generativeai as genai
+from mistralai import Mistral
 import pdfplumber
 
 from app.models import Education, Experience, Profile
@@ -33,12 +33,11 @@ def parse_linkedin_pdf(pdf_bytes: bytes) -> Profile:
         return result
 
     # Fallback to LLM for non-LinkedIn PDFs or weird formats
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("MISTRAL_API_KEY", "")
     if not api_key:
         return _fallback_parse(raw_text)
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    client = Mistral(api_key=api_key)
 
     prompt = f"""Extract structured profile data from this LinkedIn PDF export. The text is messy because LinkedIn PDFs use a two-column layout — sections are interleaved. Use your judgment to reconstruct the correct structure.
 
@@ -84,16 +83,14 @@ IMPORTANT:
 - Phone number: often near the top, may start with + or country code"""
 
     try:
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=4000,
-                temperature=0.1,
-            ),
-            request_options={"timeout": 60},
+        response = client.chat.complete(
+            model="mistral-small-latest",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=4000,
+            temperature=0.1,
         )
-        # Extract JSON from response — may have markdown blocks or thinking preamble
-        raw_resp = response.text.strip()
+        raw_resp = response.choices[0].message.content.strip()
         # Find the JSON object in the response
         start = raw_resp.find("{")
         end = raw_resp.rfind("}") + 1

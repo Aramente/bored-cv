@@ -42,52 +42,56 @@ def llm_service():
     return LLMService(api_key="test-key")
 
 
-def _mock_gemini_response(text: str):
+def _mock_mistral_response(text: str):
     mock_response = MagicMock()
-    mock_response.text = text
+    mock_response.choices = [MagicMock()]
+    mock_response.choices[0].message.content = text
     return mock_response
 
 
-@patch("app.services.llm.genai")
-def test_analyze_returns_gap_analysis(mock_genai, llm_service, sample_profile, sample_offer):
-    mock_model = MagicMock()
-    mock_genai.GenerativeModel.return_value = mock_model
-    mock_model.generate_content.return_value = _mock_gemini_response(
+@patch("app.services.llm.Mistral")
+def test_analyze_returns_gap_analysis(mock_mistral_cls, llm_service, sample_profile, sample_offer):
+    mock_client = MagicMock()
+    mock_mistral_cls.return_value = mock_client
+    mock_client.chat.complete.return_value = _mock_mistral_response(
         json.dumps({
             "matched_skills": ["Product Strategy"],
             "gaps": ["AI/ML experience"],
             "questions": ["Can you describe any experience with AI/ML products?"],
         })
     )
+    # Reset cached client so mock takes effect
+    llm_service._client = mock_client
     result = llm_service.analyze(sample_profile, sample_offer)
     assert len(result.matched_skills) > 0
     assert len(result.questions) > 0
-    mock_model.generate_content.assert_called_once()
+    mock_client.chat.complete.assert_called_once()
 
 
-@patch("app.services.llm.genai")
-def test_generate_question_returns_string(mock_genai, llm_service, sample_profile, sample_offer):
-    mock_model = MagicMock()
-    mock_genai.GenerativeModel.return_value = mock_model
+@patch("app.services.llm.Mistral")
+def test_generate_question_returns_string(mock_mistral_cls, llm_service, sample_profile, sample_offer):
+    mock_client = MagicMock()
+    mock_mistral_cls.return_value = mock_client
     gap = GapAnalysis(matched_skills=["Product Strategy"], gaps=["AI/ML experience"], questions=["Tell me about AI experience"])
     messages = [ChatMessage(role="assistant", content="Tell me about AI experience")]
-    mock_model.generate_content.return_value = _mock_gemini_response(
+    mock_client.chat.complete.return_value = _mock_mistral_response(
         json.dumps({"message": "Can you elaborate on your data analysis work?", "is_complete": False})
     )
+    llm_service._client = mock_client
     result = llm_service.generate_next_question(sample_profile, sample_offer, gap, messages)
     assert result.message != ""
 
 
-@patch("app.services.llm.genai")
-def test_generate_cv_returns_cv_data(mock_genai, llm_service, sample_profile, sample_offer):
-    mock_model = MagicMock()
-    mock_genai.GenerativeModel.return_value = mock_model
+@patch("app.services.llm.Mistral")
+def test_generate_cv_returns_cv_data(mock_mistral_cls, llm_service, sample_profile, sample_offer):
+    mock_client = MagicMock()
+    mock_mistral_cls.return_value = mock_client
     gap = GapAnalysis(matched_skills=["Product Strategy"], gaps=[], questions=[])
     messages = [
         ChatMessage(role="assistant", content="Tell me about leadership"),
         ChatMessage(role="user", content="I led a team of 12 engineers"),
     ]
-    mock_model.generate_content.return_value = _mock_gemini_response(
+    mock_client.chat.complete.return_value = _mock_mistral_response(
         json.dumps({
             "name": "Marie Dupont", "title": "Senior Product Manager",
             "email": "", "location": "Paris",
@@ -99,6 +103,7 @@ def test_generate_cv_returns_cv_data(mock_genai, llm_service, sample_profile, sa
             "language": "en",
         })
     )
+    llm_service._client = mock_client
     result = llm_service.generate_cv(sample_profile, sample_offer, gap, messages)
     assert result.name == "Marie Dupont"
     assert len(result.experiences) > 0

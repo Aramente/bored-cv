@@ -103,11 +103,10 @@ async def debug_parse(x_admin_secret: str = Header("")):
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
     import traceback
-    import google.generativeai as genai
+    from mistralai import Mistral
     from app.services.pdf_parser import extract_pdf_text
-    key = os.environ.get("GEMINI_API_KEY", "")
-    genai.configure(api_key=key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    key = os.environ.get("MISTRAL_API_KEY", "")
+    client = Mistral(api_key=key)
 
     # Test with a small fake PDF text
     test_text = "Coordonnées Kevin Duchier\n0033786626512\nkevin@gmail.com\nExpérience\nFounder\nSloow\nseptembre 2025 - Present\nBuilding stuff"
@@ -120,16 +119,15 @@ RAW TEXT:
 Return valid JSON with: name, title, email, phone, linkedin, location, summary, experiences, education, skills, languages."""
 
     try:
-        r = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=2000,
-                temperature=0.1,
-                response_mime_type="application/json",
-            ),
+        r = client.chat.complete(
+            model="mistral-small-latest",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            max_tokens=2000,
+            temperature=0.1,
         )
         import json
-        data = json.loads(r.text)
-        return {"ok": True, "name": data.get("name"), "experiences": len(data.get("experiences", [])), "sdk": genai.__version__}
+        data = json.loads(r.choices[0].message.content)
+        return {"ok": True, "name": data.get("name"), "experiences": len(data.get("experiences", [])), "provider": "mistral"}
     except Exception as e:
-        return {"ok": False, "error": str(e), "traceback": traceback.format_exc(), "sdk": genai.__version__}
+        return {"ok": False, "error": str(e), "traceback": traceback.format_exc(), "provider": "mistral"}
