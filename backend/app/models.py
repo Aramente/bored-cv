@@ -79,11 +79,20 @@ class ChatResponse(BaseModel):
     progress: int = 0  # 0-100, percentage of key points covered
 
 
+class CompanyContext(BaseModel):
+    sector: str = ""
+    stage: str = ""
+    headcount_start: str = ""
+    headcount_end: str = ""
+    team_size: str = ""
+
+
 class RewrittenExperience(BaseModel):
     title: str
     company: str
     dates: str
     bullets: list[str]
+    context: CompanyContext | None = None
 
 
 class CVData(BaseModel):

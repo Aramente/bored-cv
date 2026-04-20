@@ -187,6 +187,30 @@ export default function Editor() {
                 <EditableField label={t("editor.field_title")} value={exp.title} onChange={(v) => updateCvField(`experiences.${i}.title`, v)} />
                 <EditableField label={t("editor.field_company")} value={exp.company} onChange={(v) => updateCvField(`experiences.${i}.company`, v)} />
                 <EditableField label={t("editor.field_dates")} value={exp.dates} onChange={(v) => updateCvField(`experiences.${i}.dates`, v)} />
+                <div className="context-fields" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 6, marginTop: 4 }}>
+                  <div>
+                    <label style={{ fontSize: 10, color: "var(--text-dim)", display: "block" }}>{t("editor.ctx_sector")}</label>
+                    <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="SaaS, fintech..." value={exp.context?.sector || ""} onChange={(e) => updateCvField(`experiences.${i}.context.sector`, e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, color: "var(--text-dim)", display: "block" }}>{t("editor.ctx_stage")}</label>
+                    <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="Seed, Series A..." value={exp.context?.stage || ""} onChange={(e) => updateCvField(`experiences.${i}.context.stage`, e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, color: "var(--text-dim)", display: "block" }}>{t("editor.ctx_team")}</label>
+                    <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="5 → 25" value={exp.context?.team_size || ""} onChange={(e) => updateCvField(`experiences.${i}.context.team_size`, e.target.value)} />
+                  </div>
+                </div>
+                <div className="context-fields" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
+                  <div>
+                    <label style={{ fontSize: 10, color: "var(--text-dim)", display: "block" }}>{t("editor.ctx_hc_start")}</label>
+                    <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="5" value={exp.context?.headcount_start || ""} onChange={(e) => updateCvField(`experiences.${i}.context.headcount_start`, e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, color: "var(--text-dim)", display: "block" }}>{t("editor.ctx_hc_end")}</label>
+                    <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="80" value={exp.context?.headcount_end || ""} onChange={(e) => updateCvField(`experiences.${i}.context.headcount_end`, e.target.value)} />
+                  </div>
+                </div>
                 {exp.bullets.map((bullet, j) => (
                   <div key={j} style={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>

@@ -117,7 +117,17 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
             draft_lines = []
             for i, exp in enumerate(cv_draft.experiences):
                 bullets = "\n".join(f"      • {b}" for b in exp.bullets)
-                draft_lines.append(f"  [{i}] {exp.title} at {exp.company} ({exp.dates})\n{bullets}")
+                ctx = ""
+                if exp.context:
+                    ctx_parts = []
+                    if exp.context.sector: ctx_parts.append(f"sector: {exp.context.sector}")
+                    if exp.context.stage: ctx_parts.append(f"stage: {exp.context.stage}")
+                    if exp.context.headcount_start or exp.context.headcount_end:
+                        ctx_parts.append(f"headcount: {exp.context.headcount_start or '?'} → {exp.context.headcount_end or '?'}")
+                    if exp.context.team_size: ctx_parts.append(f"team: {exp.context.team_size}")
+                    if ctx_parts:
+                        ctx = f" [{', '.join(ctx_parts)}]"
+                draft_lines.append(f"  [{i}] {exp.title} at {exp.company}{ctx} ({exp.dates})\n{bullets}")
             cv_draft_context = f"""
 
 CURRENT CV DRAFT (this is what the user sees on screen right now):

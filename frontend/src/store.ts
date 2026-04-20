@@ -69,11 +69,20 @@ export interface ChatResponse {
   progress: number;  // 0-100
 }
 
+export interface CompanyContext {
+  sector: string;
+  stage: string;
+  headcount_start: string;
+  headcount_end: string;
+  team_size: string;
+}
+
 export interface RewrittenExperience {
   title: string;
   company: string;
   dates: string;
   bullets: string[];
+  context?: CompanyContext;
 }
 
 export interface CVData {
