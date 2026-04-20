@@ -268,70 +268,158 @@ def _parse_header(header_lines: list[str], summary_lines: list[str]) -> tuple:
     return name, email, phone, linkedin, location, summary
 
 
-def _parse_experiences(lines: list[str]) -> list[Experience]:
-    """Parse experience lines into structured experiences."""
-    experiences: list[Experience] = []
-    pending: list[str] = []  # Lines before current date (company/title candidates)
-    current: dict | None = None
+DUR_PATTERN = re.compile(r"^\d+\s+(an|mois|year|month)", re.IGNORECASE)
 
-    for line in lines:
-        stripped = line.strip()
-        if not stripped:
+
+def _find_title_company_before_date(lines: list[str], date_idx: int) -> tuple[str, str, bool]:
+    """Look backwards from a date line to find the title, company, and whether this is a multi-role group.
+
+    Returns (company, title, is_multi_role).
+    """
+    # Collect non-location, non-bullet lines going backwards from the date
+    candidates = []
+    for i in range(date_idx - 1, max(date_idx - 5, -1), -1):
+        line = lines[i].strip()
+        if not line:
             continue
+        if DATE_LINE.match(line):
+            break  # Hit previous date — stop
+        if _is_location_line(line):
+            continue
+        if line.startswith(("- ", "* ", "• ", "· ")):
+            continue  # Skip bullets — they belong to the previous experience
+        candidates.insert(0, line)
 
-        date_match = DATE_LINE.match(stripped)
-        if date_match:
-            # Save previous experience
-            if current:
-                experiences.append(_build_exp(current))
+    # Check for duration line (multi-role indicator)
+    dur_idx = None
+    for ci, c in enumerate(candidates):
+        if DUR_PATTERN.match(c):
+            dur_idx = ci
+            break
 
-            # Lines before date = company + title (last 2 non-location lines)
-            candidates = [p for p in pending if not _is_location_line(p) and len(p) > 1]
+    if dur_idx is not None and dur_idx > 0:
+        # Multi-role: Company / Duration / Title / Date
+        company = candidates[dur_idx - 1]
+        title_candidates = candidates[dur_idx + 1:]
+        title = title_candidates[0] if title_candidates else ""
+        return company, title, True
 
-            company = ""
-            exp_title = ""
-            if len(candidates) >= 2:
-                company = candidates[-2]
-                exp_title = candidates[-1]
-            elif len(candidates) == 1:
-                # Could be company or title — treat as company
-                company = candidates[0]
+    if len(candidates) >= 2:
+        return candidates[-2], candidates[-1], False
+    if len(candidates) == 1:
+        return candidates[0], "", False
+    return "", "", False
 
-            # Check if there's a duration-only line like "4 ans 3 mois" in candidates
-            # That indicates a multi-role company group
-            dur_pattern = re.compile(r"^\d+\s+(an|mois|year|month)", re.IGNORECASE)
-            if company and dur_pattern.match(company):
-                # Duration line — the company is the line before it
-                company = candidates[-3] if len(candidates) >= 3 else ""
-                exp_title = candidates[-1]
 
-            current = {
-                "title": exp_title,
+def _parse_experiences(lines: list[str]) -> list[Experience]:
+    """Two-pass parser: find dates first, then look backwards for metadata and forwards for bullets."""
+    # Pass 1: Find all date lines and extract company/title by looking backwards
+    entries: list[dict] = []
+    for i, line in enumerate(lines):
+        if DATE_LINE.match(line.strip()):
+            company, title, is_multi = _find_title_company_before_date(lines, i)
+            entries.append({
+                "idx": i,
                 "company": company,
-                "dates": re.sub(r"\s*\(.*?\)\s*$", "", stripped),
-                "bullets": [],
-            }
-            pending = []
-        elif current is not None:
-            # Check if this is a location line (skip it as description)
-            if _is_location_line(stripped):
-                pending.append(stripped)
-                continue
+                "title": title,
+                "is_multi": is_multi,
+                "dates": re.sub(r"\s*\(.*?\)\s*$", "", line.strip()),
+            })
 
-            if stripped.startswith(("- ", "* ", "• ", "· ")):
-                current["bullets"].append(stripped.lstrip("-*•· ").strip())
-            elif len(stripped) > 15:
-                current["bullets"].append(stripped)
-            else:
-                # Short line — buffer as potential next company/title
-                pending.append(stripped)
+    # Propagate group_company for multi-role entries
+    # When LinkedIn shows multiple roles at one company, only the first has
+    # Company + Duration. Subsequent roles only show Title + Date.
+    # The lookback will mistake the title for a company (single candidate).
+    group_company = None
+    for e in entries:
+        if e["is_multi"]:
+            group_company = e["company"]
+        elif group_company:
+            # The detected "company" is likely a job title (only 1 candidate in lookback)
+            # Swap: what we thought was company is actually the title
+            if e["company"] and not e["title"]:
+                e["title"] = e["company"]
+            e["company"] = group_company
         else:
-            pending.append(stripped)
+            group_company = None
 
-    if current:
-        experiences.append(_build_exp(current))
+    # Pass 2: Collect bullets between consecutive dates
+    # Build a set of "metadata lines" (company/title) to exclude from bullets
+    meta_lines = set()
+    for e in entries:
+        if e["company"]:
+            meta_lines.add(e["company"])
+        if e["title"]:
+            meta_lines.add(e["title"])
 
-    return experiences
+    experiences: list[Experience] = []
+    for di, e in enumerate(entries):
+        start = e["idx"] + 1
+        end = entries[di + 1]["idx"] if di + 1 < len(entries) else len(lines)
+
+        bullets = []
+        for i in range(start, end):
+            line = lines[i].strip()
+            if not line or _is_location_line(line) or DUR_PATTERN.match(line):
+                continue
+            if line in meta_lines:
+                continue
+            if line.startswith(("- ", "* ", "• ", "· ")):
+                bullets.append(line.lstrip("-*•· ").strip())
+            elif len(line) > 10:
+                bullets.append(line)
+
+        experiences.append(Experience(
+            title=e["title"],
+            company=e["company"],
+            dates=e["dates"],
+            description=" ".join(bullets[:3]),
+            bullets=bullets,
+        ))
+
+    return _merge_same_company(experiences)
+
+
+def _merge_same_company(experiences: list[Experience]) -> list[Experience]:
+    """Merge consecutive experiences at the same company into a single entry with combined bullets."""
+    if not experiences:
+        return experiences
+
+    merged: list[Experience] = []
+    for exp in experiences:
+        if (merged
+            and exp.company
+            and merged[-1].company
+            and exp.company.lower() == merged[-1].company.lower()):
+            # Same company — merge into previous
+            prev = merged[-1]
+            # Combine titles
+            if exp.title and exp.title.lower() != prev.title.lower():
+                combined_title = f"{prev.title} → {exp.title}"
+            else:
+                combined_title = prev.title
+            # Combine dates (earliest start - latest end)
+            combined_dates = f"{exp.dates} / {prev.dates}" if exp.dates != prev.dates else prev.dates
+            # Combine bullets, prefixed with role title
+            combined_bullets = []
+            if prev.bullets:
+                combined_bullets.append(f"[{prev.title}]")
+                combined_bullets.extend(prev.bullets)
+            if exp.bullets:
+                combined_bullets.append(f"[{exp.title}]")
+                combined_bullets.extend(exp.bullets)
+
+            merged[-1] = Experience(
+                title=combined_title,
+                company=prev.company,
+                dates=combined_dates,
+                description=prev.description,
+                bullets=combined_bullets if combined_bullets else prev.bullets + exp.bullets,
+            )
+        else:
+            merged.append(exp)
+
+    return merged
 
 
 def _build_exp(data: dict) -> Experience:
