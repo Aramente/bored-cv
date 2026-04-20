@@ -83,6 +83,7 @@ IMPORTANT:
                 max_output_tokens=16000,  # Gemini 2.5 Flash shares budget between thinking + output
                 temperature=0.1,
             ),
+            request_options={"timeout": 60},
         )
         # Extract JSON from response — may have markdown blocks or thinking preamble
         raw_resp = response.text.strip()
