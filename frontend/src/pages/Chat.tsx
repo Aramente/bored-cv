@@ -80,11 +80,13 @@ export default function Chat() {
     // Instant first question — no API wait
     const currentMessages = useStore.getState().messages;
     if (currentMessages.length === 0 && profile && offer) {
-      const recentExp = profile.experiences[0];
+      const firstName = profile.name.split(" ")[0];
+      const companies = profile.experiences.slice(0, 5).map((e) => e.company).filter(Boolean);
+      const companyList = companies.join(" ? ") + (companies.length > 0 ? " ?" : "");
       const isFr = i18n.language.startsWith("fr");
       const firstQ = isFr
-        ? `${profile.name}, j'ai lu l'offre de ${offer.title} chez ${offer.company}. Commençons par ${recentExp?.company || "ton dernier poste"} — c'était combien de personnes quand t'es arrivé, et quand t'es parti ?`
-        : `${profile.name}, I read the ${offer.title} role at ${offer.company}. Let's start with ${recentExp?.company || "your most recent role"} — how many people when you joined, and when you left?`;
+        ? `${firstName}, j'ai lu l'offre de ${offer.title} chez ${offer.company}. Pour les headcounts arrivée/départ — ${companyList || "tes boîtes"}`
+        : `${firstName}, I read the ${offer.title} role at ${offer.company}. Headcounts when you joined vs left — ${companyList || "your companies"}`;
       addMessage({ role: "assistant", content: firstQ });
     }
   }, []);

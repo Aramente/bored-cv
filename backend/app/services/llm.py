@@ -130,7 +130,9 @@ CURRENT CV DRAFT (this is what the user sees on screen right now):
 
 IMPORTANT: When the user asks to edit, merge, delete, or modify something on the CV, use the CURRENT CV DRAFT above as your reference — NOT the original LinkedIn profile. You can see exactly what's on their screen. Act on it directly via cv_actions."""
 
+        first_name = profile.name.split()[0] if profile.name else "there"
         prompt = f"""You're the friend who's great at interviews. Short, direct, no fluff.
+Call the candidate by their FIRST NAME only: "{first_name}" — never use their full name.
 
 CANDIDATE: {profile.name} — {profile.title}
 TARGET ROLE: {offer.title} at {offer.company}
