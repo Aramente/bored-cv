@@ -41,22 +41,33 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     recognition.maxAlternatives = 1;
 
     fullTranscriptRef.current = "";
+    interimRef.current = "";
+    // Track which results we've already captured (resets on auto-restart)
+    const processedUpTo = { current: 0 };
 
     recognition.onresult = (event: any) => {
       let interim = "";
-      let finalText = "";
+      let sessionFinal = "";
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalText += result[0].transcript + " ";
+          sessionFinal += result[0].transcript + " ";
         } else {
           interim += result[0].transcript;
         }
       }
-      fullTranscriptRef.current = finalText;
+      // Accumulate final text across auto-restarts instead of overwriting
+      if (sessionFinal && processedUpTo.current === 0) {
+        // First final result in this session — might be continuation of previous
+        fullTranscriptRef.current += sessionFinal;
+      } else if (sessionFinal) {
+        // Update: replace session's contribution with latest
+        fullTranscriptRef.current = fullTranscriptRef.current.substring(0, processedUpTo.current) + sessionFinal;
+      }
+      processedUpTo.current = fullTranscriptRef.current.length;
       interimRef.current = interim;
-      // Show live preview: final parts + current interim
-      onInterim?.((finalText + interim).trim());
+      // Show live preview: accumulated final + current interim
+      onInterim?.((fullTranscriptRef.current + interim).trim());
     };
 
     recognition.onerror = (event: any) => {
@@ -79,6 +90,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     recognition.onend = () => {
       // Use ref to avoid stale closure — state var would capture the value at start() time
       if (recognitionRef.current && listeningRef.current) {
+        // Reset session counter — new recognition session will have fresh results list
+        processedUpTo.current = 0;
         try { recognition.start(); } catch { /* already stopped */ }
       }
     };
