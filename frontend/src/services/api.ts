@@ -7,7 +7,7 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function post<T>(path: string, body: unknown, captchaToken?: string): Promise<T> {
+async function post<T>(path: string, body: unknown, captchaToken?: string, signal?: AbortSignal): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json", ...getAuthHeaders() };
   if (captchaToken) headers["x-captcha-token"] = captchaToken;
 
@@ -15,6 +15,7 @@ async function post<T>(path: string, body: unknown, captchaToken?: string): Prom
     method: "POST",
     headers,
     body: JSON.stringify(body),
+    signal,
   });
 
   if (!res.ok) {
@@ -51,12 +52,12 @@ export async function analyzeProfile(profile: Profile, offer: Offer, captchaToke
   return post("/api/analyze", { profile, offer, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[], cvDraft?: CVData | null): Promise<ChatResponse> {
+export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[], cvDraft?: CVData | null, signal?: AbortSignal): Promise<ChatResponse> {
   return post("/api/chat", {
     profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en",
     known_facts: knownFacts || [], contradictions: contradictions || [],
     cv_draft: cvDraft || null,
-  }, captchaToken);
+  }, captchaToken, signal);
 }
 
 export async function getKnowledge(): Promise<{ experiences: any[]; facts: any[]; contradictions: string[] }> {
@@ -69,8 +70,8 @@ export async function generateCV(profile: Profile, offer: Offer, gapAnalysis: Ga
   return post("/api/generate-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", tone: tone || "startup", target_market: market || "france" }, captchaToken);
 }
 
-export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, market?: string): Promise<CVData> {
-  return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", target_market: market || "france" }, captchaToken);
+export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, market?: string, signal?: AbortSignal): Promise<CVData> {
+  return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", target_market: market || "france" }, captchaToken, signal);
 }
 
 export async function translateCV(cvData: CVData, targetLanguage: string): Promise<CVData> {

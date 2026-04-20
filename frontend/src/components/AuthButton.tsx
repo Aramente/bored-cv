@@ -10,11 +10,12 @@ export default function AuthButton() {
   const location = useLocation();
 
   useEffect(() => {
-    // Check URL for token from OAuth callback
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const email = params.get("email");
-    const provider = params.get("provider");
+    // Check URL for token from OAuth callback (hash fragment or query string)
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = hashParams.get("token") || searchParams.get("token");
+    const email = hashParams.get("email") || searchParams.get("email");
+    const provider = hashParams.get("provider") || searchParams.get("provider");
 
     if (token && email && provider) {
       localStorage.setItem("bored-cv-token", token);

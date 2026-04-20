@@ -221,7 +221,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   updateCvField: (path, value) =>
     set((s) => {
       if (!s.cvData) return s;
-      const cv = sanitizeCv(structuredClone(s.cvData));
+      const cv = structuredClone(s.cvData);
       if (path === "skills") {
         cv.skills = value.split(",").map((s: string) => s.trim()).filter(Boolean);
         return { cvData: cv };
@@ -309,7 +309,7 @@ export const useStore = create<AppState>()(persist((set) => ({
     profile: state.profile,
     offer: state.offer,
     gapAnalysis: state.gapAnalysis,
-    messages: state.messages,
+    messages: state.messages.slice(-20),
     cvData: state.cvData,
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,

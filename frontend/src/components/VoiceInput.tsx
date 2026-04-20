@@ -10,6 +10,7 @@ interface Props {
 
 export default function VoiceInput({ onResult, onInterim, onError, onListeningChange, lang }: Props) {
   const [listening, setListening] = useState(false);
+  const listeningRef = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const fullTranscriptRef = useRef("");
@@ -19,6 +20,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
   const stop = useCallback(() => {
     recognitionRef.current?.stop();
     setListening(false);
+    listeningRef.current = false;
     onListeningChange?.(false);
     // Send the final accumulated transcript
     const final = fullTranscriptRef.current.trim();
@@ -67,13 +69,13 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
         onError?.(`Voice error: ${err || "unknown"}`);
       }
       setListening(false);
+      listeningRef.current = false;
       onListeningChange?.(false);
     };
 
     recognition.onend = () => {
-      // If still supposed to be listening (didn't click stop), restart
-      // This handles the browser auto-stopping after silence
-      if (recognitionRef.current && listening) {
+      // Use ref to avoid stale closure — state var would capture the value at start() time
+      if (recognitionRef.current && listeningRef.current) {
         try { recognition.start(); } catch { /* already stopped */ }
       }
     };
@@ -81,8 +83,9 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     recognitionRef.current = recognition;
     recognition.start();
     setListening(true);
+    listeningRef.current = true;
     onListeningChange?.(true);
-  }, [lang, onInterim, onError, onListeningChange, listening]);
+  }, [lang, onInterim, onError, onListeningChange]);
 
   const toggle = useCallback(() => {
     if (listening) {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
@@ -27,8 +27,12 @@ export default function Chat() {
   const [knownFacts, setKnownFacts] = useState<string[]>([]);
   const [contradictions, setContradictions] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const [showSkip, setShowSkip] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const sendingRef = useRef(false);
+  const draftInFlight = useRef(false);
+  const progressRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
 
 
   useEffect(() => {
@@ -94,37 +98,87 @@ export default function Chat() {
   // When gap analysis arrives, DON'T add another first message — it's already shown
   // Just let subsequent chatNext calls use the gap analysis data
 
+  const handleGenerateNow = useCallback(async () => {
+    if (!profile || !offer) return;
+    setGenerating(true);
+    try {
+      const captcha = "";
+      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
+      const allMessages = useStore.getState().messages;
+      const currentGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
+      const cv = await generateCV(profile, offer, currentGap, allMessages, captcha, lang, tone, targetMarket);
+      setCvData(cv);
+      const altLang = cv.language === "fr" ? "en" : "fr";
+      translateCV(cv, altLang)
+        .then((alt) => setCvDataAlt(alt))
+        .catch(() => {});
+      const token = localStorage.getItem("bored-cv-token");
+      if (token && offer) {
+        saveProject({
+          id: useStore.getState().projectId || undefined,
+          name: offer.company || offer.title || "Untitled",
+          offer_title: offer.title,
+          profile_data: profile,
+          offer_data: offer,
+          gap_analysis: gapAnalysis,
+          cv_data: cv,
+          messages: allMessages,
+          match_score: cv.match_score || 0,
+          template: tone,
+          tone: tone,
+        }).then((res) => {
+          if (res.id) {
+            useStore.getState().setProjectId(res.id);
+            useStore.getState().setLastSaved(new Date().toISOString());
+          }
+        }).catch(() => {});
+      }
+      navigate("/editor");
+    } catch {
+      setGenerating(false);
+    }
+  }, [profile, offer, gapAnalysis, tone, targetMarket, i18n.language, setCvData, setCvDataAlt, navigate]);
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || !profile || !offer) return;
     if (sendingRef.current) return; // prevent double-send
     sendingRef.current = true;
 
+    // B1: Read currentMessages BEFORE addMessage to avoid duplicate
+    const currentMessages = useStore.getState().messages;
     addMessage({ role: "user", content: text });
+    const allMessages = [...currentMessages, { role: "user" as const, content: text }];
     setInput("");
     setLoading(true);
+    setShowSkip(true);
+
+    // R7: Abort previous in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
-      const currentMessages = useStore.getState().messages;
-      const allMessages = [...currentMessages, { role: "user" as const, content: text }];
       const captcha = "";
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
       const currentCv = useStore.getState().cvData;
       const currentGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
-      const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv);
+      const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv, controller.signal);
 
       addMessage({ role: "assistant", content: response.message });
 
-      // Update progress
+      // R6: Clamp progress so it never goes backward
       if (response.progress !== undefined) {
-        setProgress(response.progress);
+        const clamped = Math.max(progressRef.current, response.progress);
+        progressRef.current = clamped;
+        setProgress(clamped);
       }
 
       // Process CV actions from the chat
       if (response.cv_actions && response.cv_actions.length > 0) {
-        console.log("[cv_actions]", JSON.stringify(response.cv_actions, null, 2));
         useStore.getState().pushCvHistory(); // Save state before changes
-        const store = useStore.getState();
+        // B3: Read store inside loop so each iteration gets fresh state
         for (const action of response.cv_actions) {
+          const store = useStore.getState();
           if (!action.target && action.action !== "edit_field") continue; // skip empty targets
           const target = (action.target || "").toLowerCase();
 
@@ -145,6 +199,13 @@ export default function Chat() {
                 const bulletIdx = newCv.experiences[idx].bullets.length - 1;
                 store.updateCvField(`experiences.${idx}.bullets.${bulletIdx}`, action.value as string);
               }
+            }
+          } else if (action.action === "replace_bullet" && store.cvData && target) {
+            const idx = store.cvData.experiences.findIndex(
+              (e) => e.company.toLowerCase().includes(target) || e.title.toLowerCase().includes(target)
+            );
+            if (idx >= 0 && typeof action.index === "number" && action.index >= 0) {
+              store.updateCvField(`experiences.${idx}.bullets.${action.index}`, action.value as string);
             }
           } else if (action.action === "remove_education" && store.cvData && target) {
             const idx = store.cvData.education.findIndex(
@@ -167,7 +228,6 @@ export default function Chat() {
                         e.company.toLowerCase().includes(target) || titleClean.includes(target)) ? i : -1;
               })
               .filter((i) => i >= 0);
-            console.log("[merge]", { target, targetClean, indices, companies: freshStore.cvData.experiences.map(e => e.company), totalExperiences: freshStore.cvData.experiences.length });
             if (indices.length >= 1) {
               let merged: Record<string, unknown> = {};
               try {
@@ -199,16 +259,14 @@ export default function Chat() {
       }
 
       if (!response.is_complete) {
-        // Background draft — only update if NO cv_actions were processed this turn
-        // (cv_actions = user edits that should not be overwritten by the draft)
+        // R1: Only fire background draft if none is in-flight
         const hadActions = response.cv_actions && response.cv_actions.length > 0;
-        if (!hadActions) {
+        if (!hadActions && !draftInFlight.current) {
+          draftInFlight.current = true;
           draftCV(profile, offer, currentGap, allMessages, captcha, lang, targetMarket)
             .then((draft) => {
               const current = useStore.getState().cvData;
               if (!current) { setCvData(draft); return; }
-              // Merge draft improvements into current, ALWAYS preserving user's experiences
-              // Experiences are never overwritten by draft — user edits, deletions, and merges take priority
               setCvData({
                 ...current,
                 summary: draft.summary || current.summary,
@@ -228,46 +286,21 @@ export default function Chat() {
                 language: current.language,
               });
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => { draftInFlight.current = false; });
         }
       }
 
       if (response.is_complete) {
-        setGenerating(true);
-        const cv = await generateCV(profile, offer, currentGap, allMessages, captcha, lang, tone, targetMarket);
-        setCvData(cv);
-        // Auto-translate to the other language
-        const altLang = cv.language === "fr" ? "en" : "fr";
-        translateCV(cv, altLang)
-          .then((alt) => setCvDataAlt(alt))
-          .catch(() => {}); // non-blocking
-        // Auto-save project
-        const token = localStorage.getItem("bored-cv-token");
-        if (token && offer) {
-          saveProject({
-            id: useStore.getState().projectId || undefined,
-            name: offer.company || offer.title || "Untitled",
-            offer_title: offer.title,
-            profile_data: profile,
-            offer_data: offer,
-            gap_analysis: gapAnalysis,
-            cv_data: cv,
-            messages: allMessages,
-            match_score: cv.match_score || 0,
-            template: tone,
-            tone: tone,
-          }).then((res) => {
-            if (res.id) {
-              useStore.getState().setProjectId(res.id);
-              useStore.getState().setLastSaved(new Date().toISOString());
-            }
-          }).catch(() => {});
-        }
-        navigate("/editor");
+        await handleGenerateNow();
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("chat.error_generic");
-      addMessage({ role: "assistant", content: `\u26a0\ufe0f ${msg}` });
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // Request was aborted by a newer send — ignore
+      } else {
+        const msg = err instanceof Error ? err.message : t("chat.error_generic");
+        addMessage({ role: "assistant", content: `\u26a0\ufe0f ${msg}` });
+      }
     } finally {
       setLoading(false);
       sendingRef.current = false;
@@ -349,19 +382,15 @@ export default function Chat() {
           <p className="subtitle">{t("chat.subtitle")}</p>
         </div>
 
+        {knownFacts.length > 0 && (
+          <div className="knowledge-banner" style={{ padding: "8px 12px", marginBottom: 8, background: "var(--bg-muted, #f5f5f5)", borderRadius: 8, fontSize: 13, color: "var(--text-muted)" }}>
+            {i18n.language.startsWith("fr")
+              ? `💡 Nous avons ${knownFacts.length} info${knownFacts.length > 1 ? "s" : ""} de vos précédents CVs`
+              : `💡 We remember ${knownFacts.length} fact${knownFacts.length > 1 ? "s" : ""} from your previous CVs`}
+          </div>
+        )}
+
         <div className="chat-messages">
-          {false && (
-            <div className="chat-msg assistant">
-              <div className="chat-bubble chat-skeleton">
-                <div className="skeleton-line" style={{ width: "90%" }} />
-                <div className="skeleton-line" style={{ width: "70%", animationDelay: "0.1s" }} />
-                <div className="skeleton-line" style={{ width: "80%", animationDelay: "0.2s" }} />
-                <p style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 8 }}>
-                  {t("chat.analyzing")}
-                </p>
-              </div>
-            </div>
-          )}
           {messages.map((msg, i) => (
             <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
           ))}
@@ -400,6 +429,16 @@ export default function Chat() {
             {t("chat.send")}
           </button>
         </form>
+        {showSkip && !generating && (
+          <button
+            className="btn-secondary"
+            onClick={handleGenerateNow}
+            disabled={loading || generating}
+            style={{ marginTop: 8, fontSize: 13, padding: "6px 16px", alignSelf: "center" }}
+          >
+            {i18n.language.startsWith("fr") ? "Générer le CV maintenant →" : "Generate CV now →"}
+          </button>
+        )}
       </div>
     </div>
   );
