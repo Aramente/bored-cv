@@ -14,6 +14,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const fullTranscriptRef = useRef("");
+  const interimRef = useRef("");
 
   const supported = typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
 
@@ -22,11 +23,12 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     setListening(false);
     listeningRef.current = false;
     onListeningChange?.(false);
-    // Send the final accumulated transcript
-    const final = fullTranscriptRef.current.trim();
+    // Send final transcript, falling back to interim if no final results yet
+    const final = (fullTranscriptRef.current + interimRef.current).trim();
     if (final) {
       onResult(final);
       fullTranscriptRef.current = "";
+      interimRef.current = "";
     }
   }, [onResult, onListeningChange]);
 
@@ -52,6 +54,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
         }
       }
       fullTranscriptRef.current = finalText;
+      interimRef.current = interim;
       // Show live preview: final parts + current interim
       onInterim?.((finalText + interim).trim());
     };
