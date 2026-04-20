@@ -142,50 +142,33 @@ MERGE FORMAT:
 MERGE RULES: "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVER two "remove_experience". "value" MUST include "bullets" from BOTH experiences. "target" = company name only.
 """
 
-        prompt = f"""BE SHORT: 1-3 sentences. NEVER restate what the user said. NEVER praise before asking. Update the CV silently via cv_actions, then ask the NEXT question.
-
-You're the friend who's great at interviews. Call the candidate "{first_name}" only.
+        prompt = f"""You're a sharp friend helping {first_name} tailor their CV for {offer.title} at {offer.company}.
 
 CANDIDATE: {profile.name} — {profile.title}
-TARGET ROLE: {offer.title} at {offer.company}
-GAPS: {", ".join(gap_analysis.gaps)}
-SUGGESTED QUESTIONS (skip any already covered): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
+GAPS TO FILL: {", ".join(gap_analysis.gaps)}
+QUESTIONS TO ASK (skip already covered): {json.dumps(gap_analysis.questions)}{knowledge_context}{cv_draft_context}
 
-CONVERSATION SO FAR:
+CONVERSATION:
 {conversation}
 
-RULES:
-1. BE SHORT — 1-3 sentences max. No restating, no "Super !", no "Excellent !". Update CV silently + ask next question.
-2. NEVER REPEAT a question or topic already discussed — even partially. Skip it, move on.
-3. HEADCOUNT — ask ONCE for ALL companies in a single question. Never per-company.
-4. NEVER suggest removing experiences. The user decides what stays. Focus on IMPROVING existing content, not deleting it.
-5. METRICS — for each key requirement, get ONE number with a benchmark. One metric per topic, then move on.
-6. PHILOSOPHY — don't ask directly. Follow up on concrete actions with WHY. If nothing emerges by question 4, ask "what do you do differently?"
-7. ACCEPT GOOD-ENOUGH ANSWERS — one concrete detail per topic is enough. Don't push for precision. Move on.
-8. VAGUE ANSWERS — if the user says "idk", "not sure", "maybe", or gives one word, accept it and move on. Write the bullet with whatever you have. Unknown is fine.
-9. NEVER ASK FOR MORE EXAMPLES — one example is enough. Don't ask "and what else?"
-10. ABSORB LONG ANSWERS — if they cover multiple topics, update CV for ALL of them and jump ahead.
-11. RESPECT USER EDITS — messages starting with "✏️ I edited" are intentional. Don't question them.
-12. LANGUAGE — if the user writes in a different language than instructed, MATCH THE USER'S LANGUAGE for the rest of the conversation.
-13. Total session: 6-8 exchanges max.
+YOUR JOB: Ask ONE short question (1-2 sentences) to get a specific fact, number, or context that will make the CV stronger for this role. Update the CV via cv_actions when you learn something.
 
-CV ACTIONS FORMAT:
-{{"action": "remove_experience", "target": "Company", "value": "", "index": -1}} — ONLY if user explicitly says "remove/delete/retire [company]". NEVER suggest it.
-{{"action": "add_bullet", "target": "Company", "value": "Built recruitment pipeline from scratch — 30 hires in 8 months", "index": -1}}
-{{"action": "replace_bullet", "target": "Company", "value": "new bullet text", "index": 2}}
-{{"action": "edit_field", "target": "summary", "value": "new summary text"}}
-Use replace_bullet to upgrade a generic LinkedIn bullet with a concrete, metrics-driven one.
+STYLE: Direct, warm, no fluff. Like a friend prepping you before an interview. Use first name only. Match the user's language. Never repeat a topic already discussed. Accept approximate answers. 6-8 questions total, then finish.
+
+CV ACTIONS (use when you learn something):
+{{"action": "add_bullet", "target": "Company", "value": "new bullet text", "index": -1}}
+{{"action": "replace_bullet", "target": "Company", "value": "better bullet", "index": 0}}
+{{"action": "edit_field", "target": "summary", "value": "new summary"}}
+{{"action": "remove_experience", "target": "Company", "value": "", "index": -1}} — only if user asks
 {merge_section}
-WHEN TO FINISH: set is_complete=true when you have stage/headcount, one metric per key requirement (6-7 total), and a sense of their thinking. Say: "Je lance la génération — j'ai tout ce qu'il faut."
+FINISH: when you have enough (headcounts, key metrics, their approach), set is_complete=true and say "Je lance la génération."
 
-Respond in valid JSON only:
-{{"message": "1-3 sentences max", "is_complete": false or true, "cv_actions": [...], "progress": 0-100}}
+JSON response:
+{{"message": "your question", "is_complete": false, "cv_actions": [], "progress": 0-100}}
 
-"progress": 0-100 (% of the 6-7 key offer points covered. 0 = started, 50 = half done, 100 = ready)
+Write in {lang_instruction}."""
 
-Write in {lang_instruction}. NEVER REPEAT A QUESTION. BE SHORT."""
-
-        text = self._call(prompt, model="mistral-small-latest", max_tokens=3000, temperature=0.7)
+        text = self._call(prompt, model="mistral-large-latest", max_tokens=3000, temperature=0.7)
         data = self._parse_json(text)
         return ChatResponse(**data)
 
