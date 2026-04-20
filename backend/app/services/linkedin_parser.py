@@ -187,9 +187,34 @@ def parse_linkedin_heuristic(raw_text: str) -> Profile | None:
         languages=languages,
     )
 
-    if profile.name and len(profile.experiences) > 0:
+    if profile.name and len(profile.experiences) > 0 and _is_coherent(profile, raw_text):
         return profile
     return None
+
+
+def _is_coherent(profile: Profile, raw_text: str) -> bool:
+    """Quick sanity check — if the parse looks off, return False to trigger LLM fallback."""
+    # Name should be 2+ words (not a section header or label)
+    if len(profile.name.split()) < 2:
+        return False
+
+    # At least 30% of experiences should have a company name
+    if profile.experiences:
+        with_company = sum(1 for e in profile.experiences if e.company)
+        if with_company / len(profile.experiences) < 0.3:
+            return False
+
+    # Experiences count should be plausible relative to PDF size
+    # A typical LinkedIn PDF has ~500 chars per experience
+    expected_min = max(1, len(raw_text) // 2000)
+    if len(profile.experiences) < expected_min // 2:
+        return False
+
+    # Name should appear somewhere in the raw text
+    if profile.name.lower() not in raw_text.lower():
+        return False
+
+    return True
 
 
 def _parse_header(header_lines: list[str], summary_lines: list[str]) -> tuple:
