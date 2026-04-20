@@ -418,7 +418,16 @@ export default function Chat() {
             readOnly={isRecording}
           />
           <VoiceInput
-            onResult={(text) => { setVoiceError(""); setInput(""); sendMessage(text); }}
+            onResult={(text) => {
+              setVoiceError("");
+              if (sendingRef.current) {
+                // API still responding — queue the voice input instead of dropping it
+                setInput(text);
+              } else {
+                setInput("");
+                sendMessage(text);
+              }
+            }}
             onInterim={(text) => setInput(text)}
             onError={(msg) => setVoiceError(msg)}
             onListeningChange={(l) => { setIsRecording(l); if (l) setInput(""); }}
