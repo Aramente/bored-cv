@@ -418,13 +418,10 @@ export default function Chat() {
             readOnly={isRecording}
           />
           <VoiceInput
-            onResult={(text) => {
-              setVoiceError("");
-              setInput(text);
-            }}
-            onInterim={(text) => setInput(text)}
-            onError={(msg) => setVoiceError(msg)}
-            onListeningChange={(l) => { setIsRecording(l); if (l) setInput(""); }}
+            onResult={useCallback((text: string) => { setVoiceError(""); setInput(text); }, [])}
+            onInterim={useCallback((text: string) => setInput(text), [])}
+            onError={useCallback((msg: string) => setVoiceError(msg), [])}
+            onListeningChange={useCallback((l: boolean) => { setIsRecording(l); if (l) setInput(""); }, [])}
             lang={i18n.language}
           />
           <button className="btn-primary" type="submit" disabled={!input.trim() || loading}

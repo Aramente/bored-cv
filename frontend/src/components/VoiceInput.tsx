@@ -20,18 +20,18 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
   const [active, setActive] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
 
-  // Shared refs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const activeRef = useRef(false);
+  const frozenTextRef = useRef("");
+  const sessionFinalRef = useRef("");
+  const restartCountRef = useRef(0);
+  const restartTimerRef = useRef(0);
+  const gotResultRef = useRef(false);
+
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Speech API: accumulated text from completed recognition sessions
-  const frozenTextRef = useRef("");
-  // Speech API: latest full text from current session (final + interim)
-  const sessionFinalRef = useRef("");
 
   const mode = hasSpeechAPI ? "speech" : hasMediaRecorder ? "recorder" : null;
 
@@ -47,6 +47,11 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
 
   const startSpeech = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      onError?.("Speech recognition not supported in this browser");
+      return;
+    }
+
     const rec = new SR();
     rec.lang = lang.startsWith("fr") ? "fr-FR" : "en-US";
     rec.continuous = true;
@@ -55,9 +60,14 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
 
     frozenTextRef.current = "";
     sessionFinalRef.current = "";
+    restartCountRef.current = 0;
+    restartTimerRef.current = Date.now();
+    gotResultRef.current = false;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (event: any) => {
+      gotResultRef.current = true;
+      restartCountRef.current = 0; // Reset restart counter on successful result
       let final = "";
       let interim = "";
       for (let i = 0; i < event.results.length; i++) {
@@ -67,30 +77,72 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
           interim += event.results[i][0].transcript;
         }
       }
-      // Save this session's final text so onend can freeze it
       sessionFinalRef.current = final;
-      // Live preview: frozen (previous sessions) + current session final + current interim
       onInterim?.((frozenTextRef.current + final + interim).trim());
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onerror = (event: any) => {
-      if (event.error === "no-speech" || event.error === "aborted") return;
-      onError?.(event.error === "not-allowed" ? "Microphone access denied" : `Voice: ${event.error}`);
+      console.warn("[voice] error:", event.error);
+      if (event.error === "aborted") return;
+      if (event.error === "no-speech") {
+        // Show feedback instead of silently ignoring
+        if (!gotResultRef.current) {
+          onInterim?.("🎙️ listening... (speak now)");
+        }
+        return;
+      }
+      if (event.error === "not-allowed") {
+        onError?.("Microphone access denied — check browser permissions");
+      } else if (event.error === "network") {
+        onError?.("Network error — voice requires internet (Chrome uses Google servers)");
+      } else {
+        onError?.(`Voice error: ${event.error}`);
+      }
       activeRef.current = false;
       setActive(false);
       onListeningChange?.(false);
     };
 
     rec.onend = () => {
+      console.warn("[voice] onend, active:", activeRef.current, "restarts:", restartCountRef.current);
       if (!activeRef.current) return;
-      // Chrome auto-restart: freeze this session's final text
-      frozenTextRef.current += sessionFinalRef.current;
-      sessionFinalRef.current = "";
-      try { rec.start(); } catch {
+
+      // Prevent infinite restart loop
+      restartCountRef.current++;
+      const elapsed = Date.now() - restartTimerRef.current;
+      if (restartCountRef.current > 5 && elapsed < 3000) {
+        console.warn("[voice] too many restarts, giving up");
+        onError?.("Voice keeps stopping — try refreshing the page or check mic permissions");
         activeRef.current = false;
         setActive(false);
         onListeningChange?.(false);
+        return;
+      }
+      if (elapsed > 3000) {
+        // Reset counter if enough time has passed (normal Chrome 60s restart)
+        restartCountRef.current = 1;
+        restartTimerRef.current = Date.now();
+      }
+
+      // Freeze current session's final text
+      frozenTextRef.current += sessionFinalRef.current;
+      sessionFinalRef.current = "";
+      gotResultRef.current = false;
+
+      try {
+        rec.start();
+        console.warn("[voice] restarted successfully");
+      } catch (e) {
+        console.warn("[voice] restart failed:", e);
+        activeRef.current = false;
+        setActive(false);
+        onListeningChange?.(false);
+        // Deliver whatever we have
+        const text = frozenTextRef.current.trim();
+        if (text) onResult(text);
+        frozenTextRef.current = "";
+        onInterim?.("");
       }
     };
 
@@ -101,21 +153,21 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       setActive(true);
       onListeningChange?.(true);
       onInterim?.("🎙️ listening...");
+      console.warn("[voice] started, lang:", rec.lang);
     } catch (e) {
-      onError?.(`Could not start: ${(e as Error).message}`);
+      console.warn("[voice] start failed:", e);
+      onError?.(`Could not start voice: ${(e as Error).message}`);
     }
-  }, [lang, onInterim, onError, onListeningChange]);
+  }, [lang, onResult, onInterim, onError, onListeningChange]);
 
   const stopSpeech = useCallback(() => {
+    console.warn("[voice] stopping");
     activeRef.current = false;
     try { recognitionRef.current?.stop(); } catch { /* */ }
     recognitionRef.current = null;
     setActive(false);
     onListeningChange?.(false);
 
-    // Final text = frozen (previous sessions) + current session final + any remaining interim
-    // onresult already accumulated sessionFinalRef, and the last onInterim call showed everything
-    // Just grab whatever was last displayed
     const text = (frozenTextRef.current + sessionFinalRef.current).trim();
     frozenTextRef.current = "";
     sessionFinalRef.current = "";
@@ -132,7 +184,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus" : "audio/webm";
+        ? "audio/webm;codecs=opus" : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm" : "audio/mp4";
       const rec = new MediaRecorder(stream, { mimeType: mime });
       chunksRef.current = [];
 
@@ -143,7 +196,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
         const blob = new Blob(chunksRef.current, { type: mime });
         if (blob.size < 100) return;
         setTranscribing(true);
-        onInterim?.("...");
+        onInterim?.("transcribing...");
         try {
           const text = await transcribeAudio(blob, lang);
           if (text) onResult(text); else onError?.("No speech detected");
@@ -165,7 +218,10 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       }, 1000);
       setActive(true);
       onListeningChange?.(true);
-    } catch { onError?.("Microphone access denied"); }
+    } catch (e) {
+      console.warn("[voice] recorder start failed:", e);
+      onError?.("Microphone access denied");
+    }
   }, [lang, onResult, onInterim, onError, onListeningChange]);
 
   const stopRecorder = useCallback(() => {
@@ -178,11 +234,18 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
   // ===================== TOGGLE =====================
 
   const toggle = useCallback(() => {
-    if (active) { mode === "speech" ? stopSpeech() : stopRecorder(); }
-    else { mode === "speech" ? startSpeech() : startRecorder(); }
+    console.warn("[voice] toggle, active:", active, "mode:", mode);
+    if (active) {
+      mode === "speech" ? stopSpeech() : stopRecorder();
+    } else {
+      mode === "speech" ? startSpeech() : startRecorder();
+    }
   }, [active, mode, startSpeech, stopSpeech, startRecorder, stopRecorder]);
 
-  if (!mode) return null;
+  if (!mode) {
+    console.warn("[voice] no mode available, not rendering");
+    return null;
+  }
 
   return (
     <button
