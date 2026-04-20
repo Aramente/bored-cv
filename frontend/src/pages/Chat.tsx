@@ -129,7 +129,10 @@ export default function Chat() {
         }).catch(() => {});
       }
       navigate("/editor");
-    } catch {
+    } catch (err) {
+      console.error("[generateCV]", err);
+      const msg = err instanceof Error ? err.message : "CV generation failed";
+      addMessage({ role: "assistant", content: `⚠️ ${msg}` });
       setGenerating(false);
     }
   }, [profile, offer, gapAnalysis, tone, targetMarket, i18n.language, setCvData, setCvDataAlt, navigate]);
