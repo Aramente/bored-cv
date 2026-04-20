@@ -170,6 +170,7 @@ RULES:
 13. Total session: 6-8 exchanges max including headcount and cleanup questions.
 
 CV ACTIONS FORMAT:
+NEVER use remove_experience on your own. Only remove if the user EXPLICITLY asks to delete an experience. Always ask first: "Tu veux que je retire [Company] du CV ?"
 {{"action": "remove_experience", "target": "Company", "value": "", "index": -1}}
 {{"action": "add_bullet", "target": "Company", "value": "Built recruitment pipeline from scratch — 30 hires in 8 months", "index": -1}}
 {{"action": "replace_bullet", "target": "Company", "value": "new bullet text", "index": 2}}

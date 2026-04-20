@@ -420,13 +420,7 @@ export default function Chat() {
           <VoiceInput
             onResult={(text) => {
               setVoiceError("");
-              if (sendingRef.current) {
-                // API still responding — queue the voice input instead of dropping it
-                setInput(text);
-              } else {
-                setInput("");
-                sendMessage(text);
-              }
+              setInput(text);
             }}
             onInterim={(text) => setInput(text)}
             onError={(msg) => setVoiceError(msg)}
