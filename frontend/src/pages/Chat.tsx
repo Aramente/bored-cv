@@ -9,6 +9,50 @@ import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
 
+/**
+ * Fix misheard company names in voice transcription.
+ * Uses simple edit distance to find words that sound like known company names.
+ */
+function fixCompanyNames(text: string, companies: string[]): string {
+  if (!companies.length) return text;
+  let result = text;
+  for (const company of companies) {
+    if (!company || company.length < 3) continue;
+    const companyLower = company.toLowerCase();
+    // Build regex: find words that are close to the company name
+    // Simple approach: case-insensitive exact match first
+    const exact = new RegExp(`\\b${company.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+    if (exact.test(result)) continue; // Already correct
+    // Fuzzy: split text into words, check each against company name
+    const words = result.split(/\s+/);
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i].replace(/[.,!?;:]/g, '');
+      if (word.length < 3) continue;
+      const dist = levenshtein(word.toLowerCase(), companyLower);
+      // Allow ~30% character difference
+      if (dist > 0 && dist <= Math.max(2, Math.floor(companyLower.length * 0.35))) {
+        words[i] = words[i].replace(word, company);
+      }
+    }
+    result = words.join(' ');
+  }
+  return result;
+}
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
 export default function Chat() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -418,7 +462,12 @@ export default function Chat() {
             readOnly={isRecording}
           />
           <VoiceInput
-            onResult={useCallback((text: string) => { setVoiceError(""); setInput(text); }, [])}
+            onResult={useCallback((text: string) => {
+              setVoiceError("");
+              // Fix misheard company names using profile data
+              const companies = profile?.experiences.map(e => e.company).filter(Boolean) || [];
+              setInput(fixCompanyNames(text, companies));
+            }, [profile])}
             onInterim={useCallback((text: string) => setInput(text), [])}
             onError={useCallback((msg: string) => setVoiceError(msg), [])}
             onListeningChange={useCallback((l: boolean) => { setIsRecording(l); if (l) setInput(""); }, [])}

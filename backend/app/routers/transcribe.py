@@ -13,20 +13,22 @@ MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY", "")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 
-async def _transcribe_mistral(contents: bytes, lang: str) -> str:
+async def _transcribe_mistral(contents: bytes, lang: str, context_bias: list[str] | None = None) -> str:
     """Transcribe via Mistral Voxtral SDK."""
-    # Write to temp file — SDK needs a file path
     with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
         tmp.write(contents)
         tmp_path = tmp.name
 
     try:
         client = Mistral(api_key=MISTRAL_API_KEY)
-        result = client.audio.transcriptions.complete(
-            model="voxtral-mini-latest",
-            file=open(tmp_path, "rb"),
-            language=lang,
-        )
+        kwargs = {
+            "model": "voxtral-mini-latest",
+            "file": open(tmp_path, "rb"),
+            "language": lang,
+        }
+        if context_bias:
+            kwargs["context_bias"] = context_bias
+        result = client.audio.transcriptions.complete(**kwargs)
         return result.text.strip() if result and result.text else ""
     finally:
         try:
@@ -64,6 +66,17 @@ async def transcribe_audio(
         raise HTTPException(status_code=403, detail="Captcha verification failed")
     check_rate_limit(request)
 
+    # Read form data for context_bias (company names, etc.)
+    form = await request.form()
+    context_bias_raw = form.get("context_bias", "")
+    context_bias: list[str] = []
+    if context_bias_raw:
+        try:
+            import json
+            context_bias = json.loads(str(context_bias_raw))
+        except Exception:
+            pass
+
     contents = await file.read()
     if len(contents) > 25 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Audio file too large (max 25MB)")
@@ -76,7 +89,7 @@ async def transcribe_audio(
     errors = []
     if MISTRAL_API_KEY:
         try:
-            text = await _transcribe_mistral(contents, lang)
+            text = await _transcribe_mistral(contents, lang, context_bias or None)
             if text:
                 return {"text": text}
         except Exception as e:

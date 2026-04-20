@@ -44,9 +44,12 @@ export async function parseLinkedIn(file: File, captchaToken: string): Promise<P
   return res.json();
 }
 
-export async function transcribeAudio(blob: Blob, lang: string): Promise<string> {
+export async function transcribeAudio(blob: Blob, lang: string, contextWords?: string[]): Promise<string> {
   const form = new FormData();
   form.append("file", blob, "recording.webm");
+  if (contextWords?.length) {
+    form.append("context_bias", JSON.stringify(contextWords));
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000); // 2min client timeout
