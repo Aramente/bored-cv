@@ -95,10 +95,15 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     };
 
     recognitionRef.current = rec;
-    rec.start();
-    activeRef.current = true;
-    setActive(true);
-    onListeningChange?.(true);
+    try {
+      rec.start();
+      activeRef.current = true;
+      setActive(true);
+      onListeningChange?.(true);
+      onInterim?.("🎙️ listening...");
+    } catch (e) {
+      onError?.(`Could not start: ${(e as Error).message}`);
+    }
   }, [lang, onInterim, onError, onListeningChange]);
 
   const stopSpeech = useCallback(() => {
