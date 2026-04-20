@@ -562,4 +562,19 @@ Examples:
             cleaned = cleaned[start:end]
         # Fix trailing commas
         cleaned = re.sub(r",\s*([}\]])", r"\1", cleaned)
-        return json.loads(cleaned)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            # Fix truncated JSON: close unterminated strings and brackets
+            fixed = cleaned
+            # Close unterminated strings
+            if fixed.count('"') % 2 == 1:
+                fixed += '"'
+            # Close open brackets/braces
+            open_braces = fixed.count("{") - fixed.count("}")
+            open_brackets = fixed.count("[") - fixed.count("]")
+            fixed += "]" * max(0, open_brackets)
+            fixed += "}" * max(0, open_braces)
+            # Remove trailing commas again after fixing
+            fixed = re.sub(r",\s*([}\]])", r"\1", fixed)
+            return json.loads(fixed)
