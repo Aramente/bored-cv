@@ -9,7 +9,7 @@ from app.models import (
     GapAnalysis, Offer, Profile, RewrittenExperience,
 )
 
-MAX_TOKENS_PER_CALL = 16000  # Gemini 2.5 Flash shares budget between thinking + output
+MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking, not output
 
 
 class LLMService:
@@ -364,7 +364,7 @@ Respond in valid JSON:
         response = self.model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=16000,  # Gemini 2.5 Flash thinking eats output budget
+                max_output_tokens=8000,
                 temperature=0.3,
                 response_mime_type="application/json",
             ),
