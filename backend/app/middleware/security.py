@@ -31,7 +31,7 @@ def check_rate_limit(request: Request, is_authenticated: bool = False) -> None:
     auth_header = request.headers.get("authorization", "")
     if auth_header.startswith("Bearer ") and len(auth_header) > 20:
         is_authenticated = True
-    limit = 200 if is_authenticated else 30
+    limit = 500 if is_authenticated else 50
     now = time.time()
     day_ago = now - 86400
 

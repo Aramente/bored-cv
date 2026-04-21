@@ -34,7 +34,10 @@ class LLMService:
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
         response = self.client.chat.complete(**kwargs)
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError(f"Mistral returned empty response for model={model}")
+        return content
 
     def analyze(self, profile: Profile, offer: Offer, ui_language: str = "en") -> GapAnalysis:
         lang_instruction = "French" if ui_language == "fr" else "English"
