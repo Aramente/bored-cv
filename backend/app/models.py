@@ -1,4 +1,24 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+def _coerce_languages(v):
+    """Normalize language entries: accept strings or {language, level} dicts."""
+    if not isinstance(v, list):
+        return v
+    out = []
+    for item in v:
+        if isinstance(item, str):
+            out.append(item)
+        elif isinstance(item, dict):
+            name = item.get("language") or item.get("name") or ""
+            level = item.get("level") or item.get("proficiency") or ""
+            if name and level:
+                out.append(f"{name} ({level})")
+            elif name:
+                out.append(name)
+        else:
+            out.append(str(item))
+    return out
 
 
 class Experience(BaseModel):
@@ -27,6 +47,11 @@ class Profile(BaseModel):
     education: list[Education] = []
     skills: list[str] = []
     languages: list[str] = []
+
+    @field_validator("languages", mode="before")
+    @classmethod
+    def _normalize_languages(cls, v):
+        return _coerce_languages(v)
 
 
 class OfferRequirement(BaseModel):
@@ -111,6 +136,11 @@ class CVData(BaseModel):
     match_score: int = 0
     strengths: list[str] = []
     improvements: list[str] = []
+
+    @field_validator("languages", mode="before")
+    @classmethod
+    def _normalize_languages(cls, v):
+        return _coerce_languages(v)
 
 
 class GenerateRequest(BaseModel):
