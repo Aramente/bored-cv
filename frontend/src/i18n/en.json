@@ -51,6 +51,14 @@
     "market_global": "Global",
     "market_hint": "adapts CV norms: education weight, language proficiency format, photo defaults"
   },
+  "remembered": {
+    "title": "we remember you",
+    "subtitle": "{{companies}} companies · {{facts}} facts from past CVs",
+    "hint": "we'll reuse this so you don't repeat yourself. new answers override old ones.",
+    "show_more": "show all",
+    "show_less": "show less",
+    "dismiss": "dismiss"
+  },
   "tone": {
     "startup": "Startup",
     "startup_desc": "direct, punchy",

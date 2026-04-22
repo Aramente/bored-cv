@@ -7,6 +7,7 @@ import type { CVData } from "../store";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
+import RememberedCard from "../components/RememberedCard";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
@@ -162,6 +163,8 @@ export default function Upload() {
         <h1>{t("upload.title")}</h1>
 
         {error && <div className="error">{error}</div>}
+
+        <RememberedCard />
 
         <section style={{ marginBottom: 32 }}>
           <label className="label">{t("upload.linkedin_label")}</label>
