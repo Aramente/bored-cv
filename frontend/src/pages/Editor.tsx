@@ -58,6 +58,18 @@ function getBulletWarning(bullet: string, t: TFunction): string | null {
   return null;
 }
 
+// Parses GAP placeholder tokens emitted by the LLM: {GAP: question — e.g. example}
+// The LLM inserts these instead of fabricating numbers/details. The editor
+// highlights them in amber so the user knows exactly what to fill in.
+const GAP_PATTERN = /\{GAP:\s*([^}]+)\}/g;
+function extractGaps(text: string): string[] {
+  const out: string[] = [];
+  let m: RegExpExecArray | null;
+  GAP_PATTERN.lastIndex = 0;
+  while ((m = GAP_PATTERN.exec(text)) !== null) out.push(m[1].trim());
+  return out;
+}
+
 function EditableField({ label, value, onChange, warning }: { label: string; value: string; onChange: (v: string) => void; warning?: string | null }) {
   return (
     <div style={{ marginBottom: 8 }}>
@@ -146,6 +158,18 @@ export default function Editor() {
           <div style={{ marginBottom: 20 }}>
             <label className="label">{t("editor.section_summary")}</label>
             <textarea className="input" value={cvData.summary} onChange={(e) => updateCvField("summary", e.target.value)} style={{ minHeight: 80 }} />
+            {(() => {
+              const gaps = extractGaps(cvData.summary);
+              if (gaps.length === 0) return null;
+              return (
+                <div style={{ marginTop: 4, padding: "6px 8px", background: "#FEF3C7", border: "1px solid #FCD34D", borderRadius: 4, fontSize: 11, color: "#92400E" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 2 }}>{gaps.length === 1 ? "Fill this in:" : `Fill these in (${gaps.length}):`}</div>
+                  {gaps.map((g, k) => (
+                    <div key={k} style={{ lineHeight: 1.35 }}>• {g}</div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Tone selector */}
@@ -211,26 +235,37 @@ export default function Editor() {
                     <input className="input" style={{ padding: "4px 8px", fontSize: 12 }} placeholder="80" value={exp.context?.headcount_end || ""} onChange={(e) => updateCvField(`experiences.${i}.context.headcount_end`, e.target.value)} />
                   </div>
                 </div>
-                {exp.bullets.map((bullet, j) => (
-                  <div key={j} style={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <EditableField
-                        label={t("editor.field_bullet", { n: j + 1 })}
-                        value={bullet}
-                        onChange={(v) => updateCvField(`experiences.${i}.bullets.${j}`, v)}
-                        warning={getBulletWarning(bullet, t)}
-                      />
+                {exp.bullets.map((bullet, j) => {
+                  const gaps = extractGaps(bullet);
+                  return (
+                    <div key={j} style={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
+                      <div style={{ flex: 1 }}>
+                        <EditableField
+                          label={t("editor.field_bullet", { n: j + 1 })}
+                          value={bullet}
+                          onChange={(v) => updateCvField(`experiences.${i}.bullets.${j}`, v)}
+                          warning={getBulletWarning(bullet, t)}
+                        />
+                        {gaps.length > 0 && (
+                          <div style={{ marginTop: 2, marginBottom: 8, padding: "6px 8px", background: "#FEF3C7", border: "1px solid #FCD34D", borderRadius: 4, fontSize: 11, color: "#92400E" }}>
+                            <div style={{ fontWeight: 600, marginBottom: 2 }}>{gaps.length === 1 ? "Fill this in:" : `Fill these in (${gaps.length}):`}</div>
+                            {gaps.map((g, k) => (
+                              <div key={k} style={{ lineHeight: 1.35 }}>• {g}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        className="btn-secondary"
+                        style={{ fontSize: 12, padding: "4px 10px", marginTop: 16, lineHeight: 1, flexShrink: 0 }}
+                        onClick={() => { useStore.getState().pushCvHistory(); removeCvBullet(i, j); }}
+                        title={t("editor.remove_bullet")}
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <button
-                      className="btn-secondary"
-                      style={{ fontSize: 12, padding: "4px 10px", marginTop: 16, lineHeight: 1, flexShrink: 0 }}
-                      onClick={() => { useStore.getState().pushCvHistory(); removeCvBullet(i, j); }}
-                      title={t("editor.remove_bullet")}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
                 <button
                   className="btn-secondary"
                   style={{ fontSize: 12, padding: "4px 10px", marginTop: 8 }}

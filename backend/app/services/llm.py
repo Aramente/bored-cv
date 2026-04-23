@@ -245,6 +245,15 @@ CV ACTIONS — use these to update the CV in real time:
 {{"action": "add_bullet", "target": "Company Name", "value": "Scaled team from 5 to 25 in 12 months, hiring across 3 countries", "index": -1}}
 {{"action": "replace_bullet", "target": "Company Name", "value": "better version of existing bullet", "index": 0}}
 {{"action": "edit_field", "target": "summary", "value": "new 2-sentence summary"}}
+
+🚫 NO FABRICATION IN CV ACTIONS — MARK GAPS INSTEAD:
+When you write bullet text in cv_actions, obey the same rule as the CV generator:
+- Use ONLY facts from the profile or from what the user actually said in this conversation.
+- Do NOT invent numbers, metrics, headcount, funding, tool names, countries, durations, or specific achievements.
+- When a bullet would be stronger with a fact the user didn't give, insert a {{GAP: short question — optional e.g. example}} token in the CV's language.
+  ❌ value: "Scaled the team from 5 to 25 in 12 months" (fabricated)
+  ✅ value: "Scaled the team {{GAP: starting → ending headcount, over how long? e.g. 5 → 25 in 12 months}}"
+- Use the single-brace {{GAP: ...}} syntax exactly. Max 1-2 GAPs per bullet. Never wrap the entire bullet in a GAP.
 {merge_section}
 WHEN DONE: set is_complete=true. You're done when you've covered the 2-3 highest-leverage THEMES from the offer with concrete data (bundled across experiences where relevant). Don't fish for extras — stop when the top themes are filled.
 
@@ -273,6 +282,45 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
         conversation = self._summarize_conversation(messages)
 
         prompt = f"""You write CVs the way someone would explain their work to a junior colleague at the startup — direct, specific, with energy and professional depth. Not dumbed down. Not corporate. Just how a competent professional talks about what they actually did, without posturing. That honesty IS what impresses recruiters — because 200 other CVs sound like ChatGPT wrote them.
+
+🚫 ABSOLUTE RULE — NO FABRICATION, MARK GAPS INSTEAD:
+You may ONLY write facts that come from two sources:
+  1. The CANDIDATE PROFILE below (LinkedIn data).
+  2. The CONVERSATION TRANSCRIPT below.
+If a fact is not in one of those two sources, it does NOT go in the CV as a stated fact.
+
+You MUST NOT invent:
+- Numbers, percentages, metrics ("30 hires", "118% of quota", "reduced churn by 20%")
+- Headcount / stage transitions ("5→45 people", "seed→Series A") unless the candidate stated them
+- Funding amounts ("raised €8M") unless stated
+- Tool names ("Deel", "BambooHR", "Salesforce") unless stated
+- Country lists ("FR/US/UK/DE") unless listed by the candidate
+- Durations, cycle times, team sizes, or any quantity the user didn't give
+- Specific achievements ("designed the onboarding program") unless stated
+
+WHAT TO DO WHEN A BULLET WOULD BE STRONGER WITH A FACT THE USER DIDN'T PROVIDE:
+Mark the missing piece with the special token {{GAP: short question in the user's language — optional example }}.
+These tokens will be rendered in a highlighted color in the editor so the user knows exactly what to fill in.
+
+Examples (FR):
+  ❌ FABRICATION: "Recrutement structuré: 30 hires en 8 mois, time-to-hire divisé par 2"
+  ✅ GROUNDED + GAP: "Recrutement structuré {{GAP: combien de hires sur quelle période ? ex: 30 hires en 8 mois}}, time-to-hire {{GAP: combien de semaines avant/après ? ex: 6 → 3 semaines}}"
+
+Examples (EN):
+  ❌ FABRICATION: "Built multi-country payroll across FR/US/UK"
+  ✅ GROUNDED + GAP: "Built multi-country payroll {{GAP: which countries exactly? e.g. FR/US/UK}}"
+  ❌ FABRICATION: "Scaled the team from 5 to 25 in 12 months"
+  ✅ GROUNDED + GAP: "Scaled the team {{GAP: starting headcount → ending headcount, over how long? e.g. 5 → 25 in 12 months}}"
+
+Rules for the GAP token:
+- Use single curly braces exactly: {{GAP: ...}}  (one opening brace and one closing brace around GAP:)
+- Keep the question short and concrete — the user must know what to type
+- Include a small example after "e.g." / "ex:" when it would clarify format
+- Write the gap question in the same language as the CV (FR if CV is FR, EN if EN)
+- Use GAP tokens sparingly: max 1-2 per bullet. A CV made of 80% placeholders is useless.
+- NEVER wrap the entire bullet in a GAP — there must be real grounded content around it
+
+Being SPECIFIC means specific about the REAL work. A vague truthful bullet with a clear GAP marker for the missing metric beats a fabricated precise one.
 
 CANDIDATE:
 Name: {profile.name}
@@ -408,6 +456,16 @@ Respond in valid JSON only:
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages[-6:])  # only recent messages for speed
 
         prompt = f"""Rewrite this CV to match the target job offer. Write like the candidate would explain their job to someone at a market — plain, specific, energetic, no corporate filler. Not dumbed down — just honest and concrete.
+
+🚫 ABSOLUTE RULE — NO FABRICATION, MARK GAPS INSTEAD:
+You may ONLY write facts that come from the CANDIDATE PROFILE (LinkedIn data) or the CONVERSATION below.
+You MUST NOT invent numbers, metrics, headcount, funding, tool names, country lists, durations, or specific achievements.
+When a bullet would be stronger with a fact the user didn't provide, mark it with {{GAP: short question in the CV's language — optional e.g. example }}.
+  ❌ "Scaled the team from 5 to 25 in 12 months" (fabricated)
+  ✅ "Scaled the team {{GAP: starting → ending headcount, over how long? e.g. 5 → 25 in 12 months}}"
+  ❌ "Built multi-country payroll across FR/US/UK" (fabricated)
+  ✅ "Built multi-country payroll {{GAP: which countries? e.g. FR/US/UK}}"
+Rules: single curly braces {{GAP: ...}}, short concrete question, optional "e.g." example, same language as the CV, max 1-2 GAPs per bullet, never wrap a whole bullet in a GAP.
 
 CANDIDATE: {profile.name} — {profile.title}
 Location: {profile.location}
