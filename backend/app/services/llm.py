@@ -126,6 +126,10 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
+        # Match the chat to the user's actual writing language, not the UI locale
+        detected = self._detect_conversation_lang(messages)
+        if detected:
+            ui_language = detected
         conversation = self._summarize_conversation(messages)
         lang_instruction = "French" if ui_language == "fr" else "English"
 
@@ -260,6 +264,12 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
         return ChatResponse(**data)
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
+        # Override the frontend-supplied locale with what the user actually wrote
+        # in the chat — if they typed in French with the UI in English, the CV
+        # should still come out in French (translation happens in a second pass).
+        detected = self._detect_conversation_lang(messages)
+        if detected:
+            ui_language = detected
         conversation = self._summarize_conversation(messages)
 
         prompt = f"""You write CVs the way someone would explain their work to a junior colleague at the startup — direct, specific, with energy and professional depth. Not dumbed down. Not corporate. Just how a competent professional talks about what they actually did, without posturing. That honesty IS what impresses recruiters — because 200 other CVs sound like ChatGPT wrote them.
@@ -392,6 +402,9 @@ Respond in valid JSON only:
 
     def draft_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", target_market: str = "france") -> CVData:
         """Generate a quick draft CV from whatever info is available so far."""
+        detected = self._detect_conversation_lang(messages)
+        if detected:
+            ui_language = detected
         conversation = "\n".join(f"{m.role}: {m.content}" for m in messages[-6:])  # only recent messages for speed
 
         prompt = f"""Rewrite this CV to match the target job offer. Write like the candidate would explain their job to someone at a market — plain, specific, energetic, no corporate filler. Not dumbed down — just honest and concrete.
@@ -523,6 +536,40 @@ Respond in valid JSON only:
         text = self._call(prompt, model="mistral-large-latest", max_tokens=MAX_TOKENS_PER_CALL, temperature=0.5)
         data = self._parse_json(text)
         return CoverLetterData(**data)
+
+    def _detect_conversation_lang(self, messages: list[ChatMessage]) -> str | None:
+        """Return 'fr' or 'en' based on the user's actual messages, or None if
+        there's not enough signal. Used to override the frontend-supplied
+        ui_language when the UI locale and chat language diverge (e.g. UI in
+        English but the user types in French)."""
+        user_text = " ".join(m.content for m in messages if m.role == "user").lower()
+        if len(user_text) < 20:
+            return None
+        fr = 0
+        en = 0
+        # Accented chars are a strong French signal — English never uses them
+        if any(ch in user_text for ch in "éèêàâùûçîïôœ"):
+            fr += 3
+        padded = f" {user_text} "
+        fr_stopwords = (" je ", " tu ", " j'", " c'", " n'", " qu'", " pour ", " avec ",
+                        " chez ", " pas ", " très ", " mais ", " donc ", " est ",
+                        " suis ", " sont ", " était ", " alors ", " aussi ", " oui ",
+                        " non ", " faire ", " fait ", " dans ", " sur ")
+        en_stopwords = (" i ", " you ", " the ", " and ", " with ", " for ", " very ",
+                        " at ", " have ", " they ", " their ", " our ", " but ",
+                        " was ", " were ", " is ", " am ", " yes ", " no ",
+                        " doing ", " done ", " in ", " on ")
+        for w in fr_stopwords:
+            if w in padded:
+                fr += 1
+        for w in en_stopwords:
+            if w in padded:
+                en += 1
+        if fr > en and fr >= 2:
+            return "fr"
+        if en > fr and en >= 2:
+            return "en"
+        return None
 
     def _summarize_conversation(self, messages: list[ChatMessage], recent_count: int = 4) -> str:
         """Summarize a conversation, keeping the last `recent_count` messages verbatim."""
