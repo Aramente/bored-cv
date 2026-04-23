@@ -61,15 +61,20 @@ def _transcribe_mistral_sync(wav_bytes: bytes, lang: str, context_bias: list[str
         "language": lang,
     }
     if context_bias:
-        # Cap + dedupe to keep the bias list tight
+        # Voxtral requires each term to match ^[^,\s]+$ — no spaces, no commas.
+        # Split multi-word inputs into individual tokens, dedupe, cap at 20.
         seen: set[str] = set()
         cleaned: list[str] = []
         for term in context_bias:
-            t = (term or "").strip()
-            if not t or t.lower() in seen:
-                continue
-            seen.add(t.lower())
-            cleaned.append(t)
+            raw = (term or "").replace(",", " ")
+            for tok in raw.split():
+                t = tok.strip()
+                if not t or t.lower() in seen:
+                    continue
+                seen.add(t.lower())
+                cleaned.append(t)
+                if len(cleaned) >= 20:
+                    break
             if len(cleaned) >= 20:
                 break
         if cleaned:
