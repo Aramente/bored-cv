@@ -105,6 +105,24 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
 
         text = self._call(prompt, model="mistral-small-latest", max_tokens=2000, temperature=0.3)
         data = self._parse_json(text)
+        # Coerce list fields to flat list[str] — the model occasionally wraps items
+        # in dicts like {"question": "..."} despite the prompt asking for strings.
+        def _flatten_strs(items):
+            out: list[str] = []
+            for it in items or []:
+                if isinstance(it, str):
+                    s = it.strip()
+                elif isinstance(it, dict):
+                    # grab the first string value we find
+                    s = next((str(v).strip() for v in it.values() if isinstance(v, (str, int, float))), "")
+                else:
+                    s = str(it).strip()
+                if s:
+                    out.append(s)
+            return out
+        data["matched_skills"] = _flatten_strs(data.get("matched_skills"))
+        data["gaps"] = _flatten_strs(data.get("gaps"))
+        data["questions"] = _flatten_strs(data.get("questions"))
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
