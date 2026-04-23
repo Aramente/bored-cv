@@ -50,10 +50,14 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       const all = await navigator.mediaDevices.enumerateDevices();
       const mics = all.filter((d) => d.kind === "audioinput" && d.deviceId);
       setDevices(mics);
-      // If stored preference no longer exists, clear it
-      if (deviceId && !mics.some((m) => m.deviceId === deviceId)) {
-        setDeviceId("");
-        localStorage.removeItem(MIC_PREF_KEY);
+      if (deviceId) {
+        const current = mics.find((m) => m.deviceId === deviceId);
+        // Clear stale preference: device gone, OR it's an iPhone/Continuity one
+        // picked before we started filtering those.
+        if (!current || (current.label && AUTO_EXCLUDE_RE.test(current.label))) {
+          setDeviceId("");
+          localStorage.removeItem(MIC_PREF_KEY);
+        }
       }
     } catch (e) {
       console.warn("[voice] enumerateDevices failed:", e);
@@ -233,19 +237,20 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       }
 
       setTranscribing(true);
-      onInterim?.(isFr ? "transcription…" : "transcribing…");
+      // Clear the "listening…" text from the textarea BEFORE awaiting, so if
+      // transcription takes a moment the user isn't staring at stale text.
+      // Don't touch it again on success — onResult writes the transcript and
+      // any onInterim("") after that would wipe it.
+      onInterim?.("");
       try {
         const text = await transcribeAudio(blob, lang);
         if (text) {
           onResult(text);
-          onInterim?.("");
         } else {
-          onInterim?.("");
           onError?.(isFr ? "Pas de parole détectée" : "No speech detected");
         }
       } catch (e) {
         console.warn("[voice] transcribe failed:", e);
-        onInterim?.("");
         const msg = (e as Error).message || "Transcription failed";
         onError?.(msg);
       } finally {
