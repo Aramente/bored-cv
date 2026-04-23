@@ -1324,3 +1324,518 @@ textarea.input { resize: vertical; min-height: 100px; }
   color: #FDE68A;
   border-color: rgba(252, 211, 77, 0.4);
 }
+
+/* ---------- Template: Contrast (dark header + pill skills bar) ---------- */
+.contrast-tpl {
+  display: block;
+  padding: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.ct-header {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 32px 36px 24px;
+}
+.ct-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.ct-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6366f1;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ct-contact {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.6;
+}
+.ct-skills-bar {
+  background: #f8fafc;
+  padding: 14px 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+.ct-skill-pill {
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.ct-skills-editor {
+  width: 100%;
+  font-size: 11px;
+  color: #64748b;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+  margin-top: 4px;
+}
+.ct-highlights {
+  margin: 20px 36px 0;
+  border-left: 3px solid #6366f1;
+  background: #eef2ff;
+  padding: 12px 14px;
+  border-radius: 2px;
+}
+.ct-highlights-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6366f1;
+  margin-bottom: 4px;
+}
+.ct-highlights-text {
+  font-size: 13px;
+  color: #1e293b;
+  line-height: 1.55;
+  margin: 0;
+}
+.ct-body {
+  padding: 20px 36px 40px;
+}
+.ct-section { margin-bottom: 24px; }
+.ct-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  border-bottom: 2px solid #6366f1;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+.ct-exp-block {
+  padding: 2px 0;
+  margin-bottom: 16px;
+  position: relative;
+}
+.ct-exp-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+.ct-exp-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0 6px;
+}
+.ct-exp-company {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6366f1;
+}
+.ct-exp-dates {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.ct-edu {
+  margin-bottom: 10px;
+  padding: 4px 0;
+}
+.ct-edu-degree {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.ct-edu-school {
+  font-size: 12px;
+  color: #64748b;
+}
+.contrast-tpl .editable:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
+}
+.ct-header .editable:hover { background-color: rgba(255, 255, 255, 0.08); }
+.ct-header .editable:focus {
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
+/* ---------- Template: Minimal (stacked sections + thin dividers) ---------- */
+.minimal-tpl {
+  display: block;
+  padding: 56px 72px 64px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #1e293b;
+}
+.mn-name {
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  margin: 0 0 2px;
+  color: #0f172a;
+}
+.mn-title {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 6px;
+  font-style: italic;
+}
+.mn-contact {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0 0 2px;
+  letter-spacing: 0.02em;
+}
+.mn-divider {
+  border-top: 1px solid #e2e8f0;
+  margin: 20px 0;
+}
+.mn-section { margin-bottom: 4px; }
+.mn-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #555;
+  margin-bottom: 10px;
+}
+.mn-summary {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.7;
+  margin: 0;
+}
+.mn-exp-block {
+  margin-bottom: 16px;
+  padding: 2px 0;
+  position: relative;
+}
+.mn-exp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+.mn-exp-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.mn-exp-dates {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+}
+.mn-exp-company {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0 0 6px;
+  font-style: italic;
+}
+.mn-edu-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+  padding: 2px 0;
+  position: relative;
+}
+.mn-edu-line {
+  font-size: 13px;
+  color: #0f172a;
+}
+.mn-edu-year {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+}
+.mn-skills {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+/* ---------- Template: Retro (bordered Courier with double dividers) ---------- */
+.retro-tpl {
+  display: block;
+  padding: 40px 48px;
+  font-family: "Courier New", Courier, monospace;
+  color: #2c2415;
+  background: #fdfaf0;
+}
+.rt-header {
+  border: 2px solid #2c2415;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.rt-name {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 4px;
+  color: #2c2415;
+}
+.rt-title-line {
+  font-size: 12px;
+  color: #8a7050;
+  margin: 0 0 6px;
+  letter-spacing: 0.08em;
+}
+.rt-contact {
+  font-size: 11px;
+  color: #5c4a2d;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.rt-section { margin-bottom: 22px; }
+.rt-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #2c2415;
+  margin-bottom: 4px;
+}
+.rt-divider {
+  border-bottom: 2px solid #2c2415;
+  margin-bottom: 2px;
+}
+.rt-divider-thin {
+  border-bottom: 1px solid #8a7050;
+  margin-bottom: 12px;
+}
+.rt-summary {
+  font-size: 12px;
+  color: #2c2415;
+  line-height: 1.7;
+  border-left: 2px solid #8a7050;
+  padding-left: 10px;
+  margin: 0;
+}
+.rt-exp-block {
+  margin-bottom: 14px;
+  padding: 2px 0;
+  position: relative;
+}
+.rt-exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.rt-exp-company {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2c2415;
+  text-transform: uppercase;
+}
+.rt-exp-dates {
+  font-size: 11px;
+  color: #8a7050;
+}
+.rt-exp-title {
+  font-size: 12px;
+  color: #5c4a2d;
+  margin: 0 0 6px;
+  font-style: italic;
+}
+.rt-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.rt-bullet {
+  font-size: 12px;
+  color: #2c2415;
+  padding-left: 14px;
+  position: relative;
+  flex: 1;
+  line-height: 1.55;
+}
+.rt-bullet::before {
+  content: ">";
+  position: absolute;
+  left: 0;
+  color: #8a7050;
+  font-weight: 700;
+}
+.rt-edu-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 2px 0;
+  position: relative;
+}
+.rt-edu-degree {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2c2415;
+}
+.rt-edu-meta {
+  font-size: 11px;
+  color: #8a7050;
+}
+.rt-skills {
+  font-size: 12px;
+  color: #2c2415;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Template: Consultant (centered serif, top/bottom rules) ---------- */
+.consultant-tpl {
+  display: block;
+  padding: 40px 64px 48px;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  color: #111111;
+  background: #ffffff;
+}
+.cs-top-rule {
+  border-top: 3px solid #111111;
+  margin-bottom: 2px;
+}
+.cs-top-rule-thin {
+  border-top: 1px solid #111111;
+  margin-bottom: 20px;
+}
+.cs-bottom-rule-thin {
+  border-top: 1px solid #111111;
+  margin-top: 20px;
+  margin-bottom: 2px;
+}
+.cs-bottom-rule {
+  border-top: 3px solid #111111;
+}
+.cs-name-block {
+  text-align: center;
+  margin-bottom: 26px;
+}
+.cs-name {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #111111;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+.cs-title-line {
+  font-size: 13px;
+  color: #444444;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+.cs-contact {
+  font-size: 12px;
+  color: #555555;
+  margin: 0;
+  font-style: italic;
+}
+.cs-section { margin-bottom: 20px; }
+.cs-section-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 15px;
+  font-weight: 700;
+  font-style: italic;
+  color: #111111;
+  margin-bottom: 4px;
+}
+.cs-rule {
+  border-bottom: 1px solid #111111;
+  margin-bottom: 12px;
+}
+.cs-edu-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 2px 0;
+}
+.cs-edu-degree {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+}
+.cs-edu-school {
+  font-size: 12px;
+  color: #444444;
+  font-style: italic;
+}
+.cs-edu-meta {
+  font-size: 12px;
+  color: #555555;
+  white-space: nowrap;
+}
+.cs-skills {
+  font-size: 13px;
+  color: #222222;
+  line-height: 1.7;
+  text-align: justify;
+  margin: 0;
+}
+.cs-summary {
+  font-size: 13px;
+  color: #222222;
+  line-height: 1.7;
+  text-align: justify;
+  margin: 0;
+}
+.cs-exp-block {
+  margin-bottom: 16px;
+  padding: 2px 0;
+  position: relative;
+}
+.cs-exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+.cs-exp-company {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: 0.02em;
+}
+.cs-exp-dates {
+  font-size: 12px;
+  color: #555555;
+  font-style: italic;
+}
+.cs-exp-title {
+  font-size: 12px;
+  color: #444444;
+  font-style: italic;
+  margin: 0 0 6px;
+}
+.cs-bullet {
+  font-size: 12px;
+  color: #222222;
+  padding-left: 14px;
+  position: relative;
+  flex: 1;
+  line-height: 1.6;
+}
+.cs-bullet::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: #666666;
+}

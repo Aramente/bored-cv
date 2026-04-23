@@ -7,7 +7,21 @@ import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
 import CleanHtml from "../templates/CleanHtml";
+import ContrastHtml from "../templates/ContrastHtml";
+import MinimalHtml from "../templates/MinimalHtml";
+import RetroHtml from "../templates/RetroHtml";
+import ConsultantHtml from "../templates/ConsultantHtml";
+import type { TemplateId } from "../store";
 import type { TFunction } from "i18next";
+
+const templateHtmlComponents = {
+  clean: CleanHtml,
+  contrast: ContrastHtml,
+  minimal: MinimalHtml,
+  retro: RetroHtml,
+  consultant: ConsultantHtml,
+} as const;
+const templateIds: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant"];
 
 const RESPONSIBILITY_PATTERNS = /^(responsible for|helped with|worked on|assisted in|participated in|involved in|contributed to|supported the|managed the|in charge of)/i;
 const BUZZWORDS = /\b(dynamic|innovative|passionate|leveraged|synergies|spearheaded|orchestrated|cutting-edge|best-in-class|world-class|thought leader|proven track record|results-driven|detail-oriented|team player|strong background|eager to leverage)\b/i;
@@ -66,7 +80,7 @@ function validateCV(
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, tone, setTone, brandColors, useBrandColors } = useStore();
+  const { cvData, tone, setTone, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
   const [regenerating, setRegenerating] = useState(false);
 
   const handleToneChange = async (newTone: string) => {
@@ -174,8 +188,42 @@ export default function Editor() {
           </button>
         </div>
 
-        {/* The editable CV itself */}
-        <CleanHtml data={cvData} brandColors={useBrandColors ? brandColors : null} />
+        {/* Template switcher — pick the layout, edit inline below */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            alignItems: "center",
+            maxWidth: 794,
+            width: "100%",
+            background: "#ffffff",
+            padding: "8px 14px",
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 2px 6px rgba(15, 23, 42, 0.04)",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            {t("templates.title", "Template")}
+          </span>
+          {templateIds.map((id) => (
+            <button
+              key={id}
+              className={selectedTemplate === id ? "btn-primary" : "btn-secondary"}
+              style={{ padding: "6px 12px", fontSize: 12 }}
+              onClick={() => setSelectedTemplate(id)}
+            >
+              {t(`templates.${id}`, id)}
+            </button>
+          ))}
+        </div>
+
+        {/* The editable CV itself — renders the currently selected template */}
+        {(() => {
+          const TemplateHtml = templateHtmlComponents[selectedTemplate] ?? CleanHtml;
+          return <TemplateHtml data={cvData} brandColors={useBrandColors ? brandColors : null} />;
+        })()}
 
         {/* Validation panel below the sheet — non-blocking */}
         {issues.length > 0 && (
