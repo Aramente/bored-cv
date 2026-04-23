@@ -144,15 +144,23 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     recorderRef.current = rec;
     rec.start(1000);
 
+    const MAX_SECS = 120;
+    const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    const isFr = lang.startsWith("fr");
     let secs = 0;
-    onInterim?.(lang.startsWith("fr") ? "🎙️ j'écoute… 0s" : "🎙️ listening… 0s");
+    const tick = () => {
+      const remaining = MAX_SECS - secs;
+      if (remaining <= 20 && remaining > 0) {
+        onInterim?.(isFr ? `🎙️ ${remaining}s restantes (max 2 min)` : `🎙️ ${remaining}s left (2 min max)`);
+      } else {
+        onInterim?.(isFr ? `🎙️ j'écoute… ${fmt(secs)} / 2:00` : `🎙️ listening… ${fmt(secs)} / 2:00`);
+      }
+    };
+    tick();
     timerRef.current = setInterval(() => {
       secs++;
-      const m = Math.floor(secs / 60), s = secs % 60;
-      const time = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
-      onInterim?.(lang.startsWith("fr") ? `🎙️ j'écoute… ${time}` : `🎙️ listening… ${time}`);
-      // Hard cap at 2min to avoid runaway recordings
-      if (secs >= 120) {
+      tick();
+      if (secs >= MAX_SECS) {
         try { rec.state !== "inactive" && rec.stop(); } catch { /* */ }
       }
     }, 1000);
@@ -183,7 +191,13 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       onClick={toggle}
       type="button"
       disabled={transcribing}
-      title={active ? "Click to stop" : transcribing ? "Transcribing..." : "Click to speak"}
+      title={
+        active
+          ? (lang.startsWith("fr") ? "Cliquer pour arrêter" : "Click to stop")
+          : transcribing
+          ? (lang.startsWith("fr") ? "Transcription…" : "Transcribing…")
+          : (lang.startsWith("fr") ? "Parler (max 2 min)" : "Click to speak (max 2 min)")
+      }
     >
       {transcribing ? (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spin">
