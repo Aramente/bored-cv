@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
 from mistralai.client import Mistral
@@ -11,43 +10,31 @@ router = APIRouter(prefix="/api", tags=["transcribe"])
 MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY", "")
 
 
-def _ext_for(content_type: str) -> str:
+def _filename_for(content_type: str) -> str:
     ct = (content_type or "").lower()
     if "mp4" in ct or "m4a" in ct or "aac" in ct:
-        return ".mp4"
+        return "audio.mp4"
     if "ogg" in ct:
-        return ".ogg"
+        return "audio.ogg"
     if "wav" in ct:
-        return ".wav"
+        return "audio.wav"
     if "mpeg" in ct or "mp3" in ct:
-        return ".mp3"
-    return ".webm"
+        return "audio.mp3"
+    return "audio.webm"
 
 
 async def _transcribe_mistral(contents: bytes, content_type: str, lang: str, context_bias: list[str] | None = None) -> str:
     """Transcribe via Mistral Voxtral."""
-    suffix = _ext_for(content_type)
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-        tmp.write(contents)
-        tmp_path = tmp.name
-
-    try:
-        client = Mistral(api_key=MISTRAL_API_KEY)
-        with open(tmp_path, "rb") as fh:
-            kwargs = {
-                "model": "voxtral-mini-latest",
-                "file": fh,
-                "language": lang,
-            }
-            if context_bias:
-                kwargs["context_bias"] = context_bias
-            result = client.audio.transcriptions.complete(**kwargs)
-        return result.text.strip() if result and result.text else ""
-    finally:
-        try:
-            os.unlink(tmp_path)
-        except Exception:
-            pass
+    client = Mistral(api_key=MISTRAL_API_KEY)
+    kwargs = {
+        "model": "voxtral-mini-latest",
+        "file": {"file_name": _filename_for(content_type), "content": contents},
+        "language": lang,
+    }
+    if context_bias:
+        kwargs["context_bias"] = context_bias
+    result = client.audio.transcriptions.complete(**kwargs)
+    return result.text.strip() if result and result.text else ""
 
 
 @router.post("/transcribe")
