@@ -183,14 +183,26 @@ MERGE RULES: "merge/combine/fusionne/regroupe" → use "merge_experiences", NEVE
         for exp in profile.experiences:
             exp_summary.append(f"- {exp.title} at {exp.company} ({exp.dates})")
 
-        # Count how many questions have been asked (assistant messages)
-        question_count = sum(1 for m in messages if m.role == "assistant")
+        # Count how many questions have been asked (assistant messages, excluding error toasts)
+        prior_questions = [m.content for m in messages if m.role == "assistant" and not m.content.startswith("⚠️")]
+        question_count = len(prior_questions)
         remaining = max(0, 6 - question_count)
         urgency = ""
         if remaining <= 0:
             urgency = "\n\n⚠️ YOU MUST FINISH NOW. Set is_complete=true in your response. Say 'Je lance la génération.' You have asked enough questions."
         elif remaining <= 2:
             urgency = f"\n\n⚠️ Only {remaining} question(s) left. Wrap up soon — ask only what's critical."
+
+        # Explicit "do-not-repeat" section — the LLM otherwise anchors on gaps[0] every turn
+        already_asked_block = ""
+        if prior_questions:
+            numbered = "\n".join(f"  {i+1}. {q.strip()[:400]}" for i, q in enumerate(prior_questions))
+            already_asked_block = f"""
+
+⚠️ QUESTIONS YOU ALREADY ASKED (DO NOT REPEAT — NEW THEME REQUIRED):
+{numbered}
+
+Your next question MUST target a DIFFERENT theme from the ones above. Do not reuse the same opening framing ("L'offre met un fort accent sur…", etc.). If you've covered the top gap, move to the next one from THE OFFER NEEDS list. If every gap on the list has been addressed, set is_complete=true and stop."""
 
         prompt = f"""You're helping {first_name} build a killer CV for: {offer.title} at {offer.company}.
 QUESTIONS ASKED SO FAR: {question_count}/6. {f"Remaining: {remaining}." if remaining > 0 else "TIME TO FINISH."}{urgency}
@@ -200,6 +212,7 @@ THE OFFER NEEDS: {", ".join(gap_analysis.gaps)}
 {first_name}'S EXPERIENCES:
 {chr(10).join(exp_summary)}
 {knowledge_context}{cv_draft_context}
+{already_asked_block}
 
 CONVERSATION SO FAR:
 {conversation}
