@@ -58,15 +58,19 @@ Description: {offer.description}
 Requirements: {self._format_requirements(offer)}
 
 YOUR TASK:
-1. Read the job offer and pick the 3-4 MOST DIFFERENTIATING requirements — the ones that will make or break a candidacy. Ignore generic filler ("team player", "good communication"). Focus on what makes THIS role specific.
-2. For each differentiating requirement, find which experience from the profile is closest — and figure out what specific detail is missing to make it a perfect match.
-3. Write 4-5 SHORT questions that extract ONLY the missing details needed to transform the profile into a perfect fit for those key requirements.
+1. Read the job offer and pick the 2-3 MOST DIFFERENTIATING requirements — the ones that will make or break a candidacy. Ignore generic filler ("team player", "good communication"). Focus on what makes THIS role specific.
+2. For each differentiating requirement, find ALL experiences from the profile where the candidate plausibly did related work. Often 2-3 past roles touch the same theme (e.g. employer branding at startup A AND scale-up B; quota attainment in two different sales roles).
+3. Write 3-4 SHORT questions. Each question targets the SINGLE highest-leverage gap for the offer. When the same theme applies to multiple relevant experiences, BUNDLE them into one question — the candidate recalls the mental mode once and answers for both roles in the same breath.
 
-STRATEGY — DON'T BE EXHAUSTIVE:
-- A job offer has 20+ requirements. You are NOT trying to cover them all.
-- Pick the 3-4 that matter most: the ones in the first paragraph, the ones repeated multiple times, the "must have" vs "nice to have".
-- For the other requirements, the CV rewriter will handle the framing — you don't need extra info from the user.
-- Your questions should make the user feel like you GET the job, not like you're reading a checklist.
+STRATEGY — FEWER, SHARPER, BUNDLED:
+- You get 3-4 questions total. That's it. Every question must earn its spot.
+- Rank candidate themes by (offer relevance × how underdeveloped the current CV is on that theme). Ask only the TOP ones. Skip nice-to-haves entirely.
+- **BUNDLE when a theme spans multiple relevant experiences.** If employer branding is key to the offer and the candidate did it at BOTH Mindflow and Germinal, ask ONE bundled question covering both — don't burn two slots on the same thinking pattern.
+   ✅ "L'offre parle beaucoup d'employer branding — chez Mindflow et Germinal t'étais en première ligne là-dessus. Qu'est-ce que t'as concrètement mis en place dans chaque boîte, et qu'est-ce qui a marché ?"
+   ✅ "Sur la quota — t'as fait combien de % de ton target chez Salesforce, et chez HubSpot ?"
+   ❌ Two separate questions "à Mindflow t'as fait quoi en employer branding ?" then "et à Germinal ?" — wasteful, kills a slot each time.
+- For non-top themes, the CV rewriter will frame whatever's already on LinkedIn — you don't need to ask.
+- Questions should make the user feel like you read the offer AND mapped their whole career to it, not like you're walking a checklist role-by-role.
 
 STAGE CONTEXT — DO NOT ASK:
 Headcount, company stage, and team size are collected AFTER the chat via dedicated UI fields in the editor. NEVER ask about headcount, effectifs, company size, or stage in the chat — that data comes from the company context form. Focus your questions on metrics, outcomes, and scope instead.
@@ -85,13 +89,14 @@ If the candidate's field isn't listed, think: "What would a hiring manager for T
 
 RULES FOR QUESTIONS:
 - Use ACTUAL company names from the profile. NEVER placeholders like [Company A]. Use: Mindflow, Germinal, Sloow, etc.
-- The FIRST question: name which experiences are relevant, explain briefly WHY (connecting to the offer), and ask ONE specific thing.
-  Example: "Pour ce poste HR Ops chez Ami, tes rôles chez Mindflow et Germinal sont pile-poil. Commençons par Mindflow — t'as mis en place quels process RH en partant de zéro ?"
-- Each follow-up: ONE company, ONE requirement from the offer, ONE specific detail to extract.
-- GOOD: "L'offre insiste sur le payroll multi-pays — chez Germinal, tu gérais combien de pays ?"
-- GOOD: "Ami cherche quelqu'un qui a fait de la people analytics — t'avais des KPIs RH que tu suivais chez Mindflow ? Lesquels ?"
+- The FIRST question: name ALL the relevant experiences for the MOST critical theme in the offer, tie it to the role, and ask one bundled thing.
+  Example: "Ce poste HR Ops chez Ami tourne autour du payroll multi-pays et du scaling de la fonction RH — tu l'as fait chez Mindflow ET Germinal. Dans chacune, combien de pays tu gérais et quels process tu as structurés en partant de zéro ?"
+- Each question = ONE theme from the offer × ALL relevant experiences that touched it (bundled). Extracts multiple datapoints in one ask.
+- GOOD (bundled, tied to offer): "L'offre insiste sur le payroll multi-pays — Mindflow et Germinal, t'étais à combien de pays dans chaque boîte ?"
+- GOOD (bundled across theme): "Ami cherche quelqu'un qui a fait de la people analytics — chez Mindflow et chez Germinal, quels KPIs RH tu pilotais ?"
 - BAD: broad questions that don't reference the offer
-- 4-6 questions total
+- BAD: single-company questions when the same theme clearly applies to 2+ roles — that's a wasted slot
+- 3-4 questions total — ruthlessly prioritized, not comprehensive
 
 Respond in valid JSON only:
 {{"matched_skills": ["skills that match"], "gaps": ["the 3-4 differentiating requirements where the profile needs enrichment"], "questions": ["first question naming companies + why they're relevant + specific ask", "question tied to offer requirement X", "question tied to offer requirement Y", "..."]}}
@@ -181,27 +186,32 @@ THE OFFER NEEDS: {", ".join(gap_analysis.gaps)}
 CONVERSATION SO FAR:
 {conversation}
 
-YOUR GOAL: The CV already has their LinkedIn info. Your job is to FILL THE GAPS between what's on the CV and what the offer needs. Ask questions that extract:
+YOUR GOAL: The CV already has their LinkedIn info. Your job is to FILL THE GAPS between what's on the CV and what THIS SPECIFIC offer needs. Every question must earn its slot — you only have 6. Ask questions that extract:
 - Concrete numbers and metrics (budget, results, %, ratios)
-- Achievements that match what the offer is looking for
-- Their personal approach to their work (what they do differently)
+- Achievements that match what THIS offer is looking for
+- Their personal approach (what they do differently)
 
 DO NOT ASK about headcount, company stage, team size, or "effectifs" — that data is collected AFTER the chat via dedicated editor fields. Asking about it here is redundant and wastes questions.
 
-HOW TO HAVE THE CONVERSATION:
-- Ask ONE question at a time, 1-2 sentences max
-- Pick the experience MOST relevant to the offer, ask about it, get the answer, use it to update the CV via cv_actions, then move to the next most relevant one
-- If the user already answered something in a previous message, DON'T re-ask — use the info and move forward
-- When the user gives you info, IMMEDIATELY write a strong CV bullet via cv_actions (add_bullet or replace_bullet)
-- 5-7 questions total is enough. Quality over quantity
-- Accept "I don't know" or approximate numbers — write the bullet anyway with what you have
+HOW TO HAVE THE CONVERSATION — RUTHLESS PRIORITY + BUNDLING:
+- Before you ask anything, mentally rank the themes in the offer by leverage: which 3-4 gaps, if filled with real data, would most transform this CV for THIS offer?
+- Ask about the HIGHEST-leverage theme first. Not the "most relevant experience" — the HIGHEST-LEVERAGE THEME. An offer-critical theme may touch multiple experiences.
+- **BUNDLE across experiences when the theme applies to 2+ roles.** If employer branding is critical and they did it at BOTH Mindflow AND Germinal, ask ONE question covering both — they recall the same mental pattern once and give you two datapoints.
+   ✅ "L'offre insiste sur l'employer branding — tu l'as fait chez Mindflow et chez Germinal. Dans chacune, qu'est-ce que t'as mis en place qui a vraiment bougé l'aiguille ?"
+   ✅ "Sur le quota attainment — chez Salesforce ET chez HubSpot, t'as fait combien de % de ton target chaque année ?"
+   ❌ Two separate questions for the same theme across two companies. That's two slots burned on one thinking pattern.
+- Questions stay SHORT — 1-3 sentences. Bundling adds datapoints, not length.
+- If the user already answered something in a previous message, DON'T re-ask — use the info and move forward.
+- When the user gives you info, IMMEDIATELY write strong CV bullets via cv_actions (add_bullet or replace_bullet) for EACH company they mentioned — a bundled answer produces multiple cv_actions.
+- 3-4 questions total is plenty if you bundle well. Quality × leverage over quantity.
+- Accept "I don't know" or approximate numbers — write the bullet anyway with what you have.
 
 CV ACTIONS — use these to update the CV in real time:
 {{"action": "add_bullet", "target": "Company Name", "value": "Scaled team from 5 to 25 in 12 months, hiring across 3 countries", "index": -1}}
 {{"action": "replace_bullet", "target": "Company Name", "value": "better version of existing bullet", "index": 0}}
 {{"action": "edit_field", "target": "summary", "value": "new 2-sentence summary"}}
 {merge_section}
-WHEN DONE: set is_complete=true. You're done when you've covered the 2-3 most relevant experiences with concrete details that match the offer.
+WHEN DONE: set is_complete=true. You're done when you've covered the 2-3 highest-leverage THEMES from the offer with concrete data (bundled across experiences where relevant). Don't fish for extras — stop when the top themes are filled.
 
 Respond in JSON: {{"message": "your question", "is_complete": false, "cv_actions": [], "progress": 0-100}}
 
