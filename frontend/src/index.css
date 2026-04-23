@@ -1325,6 +1325,16 @@ textarea.input { resize: vertical; min-height: 100px; }
   border-color: rgba(252, 211, 77, 0.4);
 }
 
+/* ---------- In-chat tone picker (post-draft) ---------- */
+.tone-sample-card:hover {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.15);
+}
+.tone-sample-card:focus-visible {
+  outline: 2px solid var(--accent, #6366f1);
+  outline-offset: 2px;
+}
+
 /* ---------- Template: Contrast (dark header + pill skills bar) ---------- */
 .contrast-tpl {
   display: block;

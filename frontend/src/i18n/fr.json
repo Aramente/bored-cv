@@ -67,7 +67,14 @@
     "creative": "Créatif",
     "creative_desc": "audacieux, perso",
     "minimal": "Minimal",
-    "minimal_desc": "ultra-concis"
+    "minimal_desc": "ultra-concis",
+    "picker_title": "Dernière étape — quelle voix te ressemble ?",
+    "picker_hint": "Même fait, trois voix différentes. Choisis celle que t'enverrais.",
+    "picker_source_label": "Phrase d'origine",
+    "picker_loading": "On cherche ta voix...",
+    "picker_error": "Impossible de charger les exemples — tu pourras régler le ton dans l'éditeur.",
+    "picker_cta": "Utiliser cette voix",
+    "picker_skip": "Passer — garder défaut"
   },
   "chat": {
     "title": "ils te cherchent, ils le savent pas encore",

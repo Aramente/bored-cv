@@ -107,6 +107,18 @@ export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAn
   return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", target_market: market || "france" }, captchaToken, signal);
 }
 
+export interface ToneSamples {
+  source: string;
+  company: string;
+  startup: string;
+  creative: string;
+  minimal: string;
+}
+
+export async function getToneSamples(profile: Profile, offer: Offer, lang?: string): Promise<ToneSamples> {
+  return post("/api/tone-samples", { profile, offer, ui_language: lang || "en" }, "");
+}
+
 export async function translateCV(cvData: CVData, targetLanguage: string): Promise<CVData> {
   return post("/api/translate-cv", { cv_data: cvData, target_language: targetLanguage });
 }

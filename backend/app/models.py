@@ -153,6 +153,20 @@ class GenerateRequest(BaseModel):
     target_market: str = "france"  # france, europe, us, global
 
 
+class ToneSamplesRequest(BaseModel):
+    profile: Profile
+    offer: Offer
+    ui_language: str = "en"
+
+
+class ToneSamples(BaseModel):
+    source: str = ""   # the original bullet we rewrote (context for the UI)
+    company: str = ""  # which experience it came from
+    startup: str = ""
+    creative: str = ""
+    minimal: str = ""
+
+
 class OfferScrapeRequest(BaseModel):
     url: str = ""
     raw_text: str = ""

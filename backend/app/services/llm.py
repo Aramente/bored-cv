@@ -6,7 +6,7 @@ from mistralai.client import Mistral
 
 from app.models import (
     CoverLetterData, CVData, ChatMessage, ChatResponse, Education,
-    GapAnalysis, Offer, Profile, RewrittenExperience,
+    GapAnalysis, Offer, Profile, RewrittenExperience, ToneSamples,
 )
 
 MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking, not output
@@ -667,6 +667,65 @@ Respond in valid JSON only:
 - Focus on outcomes and metrics""",
         }
         return markets.get(market, markets["france"])
+
+    def tone_samples(self, profile: Profile, offer: Offer, ui_language: str = "en") -> ToneSamples:
+        """Rewrite one real bullet from the profile in 3 voices so the user can pick
+        which voice sounds like them. Uses the user's own data — never fabricates.
+        Runs on mistral-small-latest for speed (shown inline in chat)."""
+        lang_name = "French" if ui_language == "fr" else "English"
+
+        # Pick one concrete bullet from the most recent experience that actually has one.
+        # Fall back to description or summary if no bullets exist.
+        source_bullet = ""
+        source_company = ""
+        for exp in profile.experiences:
+            for b in exp.bullets:
+                if b and len(b.strip()) > 20:
+                    source_bullet = b.strip()
+                    source_company = exp.company
+                    break
+            if source_bullet:
+                break
+        if not source_bullet:
+            for exp in profile.experiences:
+                if exp.description and len(exp.description.strip()) > 20:
+                    source_bullet = exp.description.strip()
+                    source_company = exp.company
+                    break
+        if not source_bullet:
+            source_bullet = profile.summary or f"Worked on {offer.title.lower()}-related projects"
+            source_company = profile.experiences[0].company if profile.experiences else ""
+
+        prompt = f"""You're helping a job-seeker pick the voice of their CV. You will rewrite ONE real bullet from their experience in three different voices, so they can see the styles side by side and choose "which of these sounds like me?".
+
+RULES:
+- Keep EVERY fact, number, company name. Only the style changes.
+- One line per voice. Do not invent new metrics.
+- Write in {lang_name}.
+
+SOURCE BULLET (from {source_company or "their experience"}):
+{source_bullet}
+
+VOICES (write one line per voice):
+
+1. STARTUP — direct, confident, action-oriented. Short punchy dashes, implied first-person, informal. Show scrappiness and ownership. Max ~20 words.
+
+2. CREATIVE — bold, slightly unconventional. Personality visible, unusual framing allowed. The fact stays, the delivery gets texture. Max ~25 words.
+
+3. MINIMAL — telegraphic. Max 8 words. Pure signal, zero fluff.
+
+Return valid JSON only:
+{{"startup": "...", "creative": "...", "minimal": "..."}}"""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=500, temperature=0.7)
+        data = self._parse_json(text)
+        return ToneSamples(
+            source=source_bullet,
+            company=source_company,
+            startup=(data.get("startup") or "").strip(),
+            creative=(data.get("creative") or "").strip(),
+            minimal=(data.get("minimal") or "").strip(),
+        )
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {

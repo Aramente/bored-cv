@@ -167,7 +167,6 @@ export default function Editor() {
           </span>
           {[
             { id: "startup", label: t("tone.startup") },
-            { id: "corporate", label: t("tone.corporate") },
             { id: "creative", label: t("tone.creative") },
             { id: "minimal", label: t("tone.minimal") },
           ].map((tn) => (

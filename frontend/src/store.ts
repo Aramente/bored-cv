@@ -125,6 +125,7 @@ interface AppState {
   cvLang: "fr" | "en";
   selectedTemplate: TemplateId;
   tone: string;
+  toneChosen: boolean;  // true once the user has picked a voice in the in-chat picker
   projectId: number | null;
   user: { email: string; provider: string } | null;
   cvHistory: CVData[];
@@ -148,6 +149,7 @@ interface AppState {
   setCvLang: (lang: "fr" | "en") => void;
   setSelectedTemplate: (t: TemplateId) => void;
   setTone: (tone: string) => void;
+  setToneChosen: (chosen: boolean) => void;
   updateCvField: (path: string, value: string) => void;
   addCvExperience: () => void;
   removeCvExperience: (index: number) => void;
@@ -176,6 +178,7 @@ const initialState = {
   cvLang: "fr" as "fr" | "en",
   selectedTemplate: "clean" as TemplateId,
   tone: "startup",
+  toneChosen: false,
   projectId: null,
   user: null,
   cvHistory: [] as CVData[],
@@ -221,6 +224,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setCvLang: (cvLang) => set({ cvLang }),
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
+  setToneChosen: (toneChosen) => set({ toneChosen }),
   setLastSaved: (lastSaved) => set({ lastSaved }),
   setCoverLetterData: (coverLetterData) => set({ coverLetterData }),
   setBrandColors: (brandColors) => set({ brandColors }),
@@ -323,6 +327,7 @@ export const useStore = create<AppState>()(persist((set) => ({
     cvData: state.cvData,
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,
+    toneChosen: state.toneChosen,
     // user is intentionally excluded — session is server-side
     // cvHistory is intentionally excluded — too large for localStorage
   }),

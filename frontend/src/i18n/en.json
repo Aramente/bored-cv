@@ -67,7 +67,14 @@
     "creative": "Creative",
     "creative_desc": "bold, personality",
     "minimal": "Minimal",
-    "minimal_desc": "ultra-concise"
+    "minimal_desc": "ultra-concise",
+    "picker_title": "Last step — which voice sounds like you?",
+    "picker_hint": "Same fact, three different voices. Pick the one you'd send.",
+    "picker_source_label": "Original bullet",
+    "picker_loading": "Finding your voice...",
+    "picker_error": "Couldn't load samples — you can still set the tone later in the editor.",
+    "picker_cta": "Use this voice",
+    "picker_skip": "Skip — keep default"
   },
   "chat": {
     "title": "they're looking for you, they just don't know it yet",

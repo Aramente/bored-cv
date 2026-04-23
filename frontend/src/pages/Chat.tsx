@@ -8,6 +8,7 @@ import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
 import VoiceInput from "../components/VoiceInput";
+import TonePicker from "../components/TonePicker";
 
 export default function Chat() {
   const { t, i18n } = useTranslation();
@@ -16,7 +17,7 @@ export default function Chat() {
     profile, offer, gapAnalysis,
     messages, addMessage,
     setCvData, setCvDataAlt,
-    tone, targetMarket,
+    setTone, setToneChosen, targetMarket,
   } = useStore();
 
   const [input, setInput] = useState("");
@@ -28,6 +29,7 @@ export default function Chat() {
   const [showSkip, setShowSkip] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState("");
+  const [showTonePicker, setShowTonePicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -113,7 +115,11 @@ export default function Chat() {
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
       const allMessages = useStore.getState().messages;
       const currentGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
-      const cv = await generateCV(profile, offer, currentGap, allMessages, captcha, lang, tone, targetMarket);
+      // Read tone from store (not closure) — the in-chat tone picker calls
+      // setTone() immediately before handleGenerateNow() and the closure would
+      // still hold the previous value.
+      const currentTone = useStore.getState().tone;
+      const cv = await generateCV(profile, offer, currentGap, allMessages, captcha, lang, currentTone, targetMarket);
       setCvData(cv);
       const altLang = cv.language === "fr" ? "en" : "fr";
       translateCV(cv, altLang)
@@ -131,8 +137,8 @@ export default function Chat() {
           cv_data: cv,
           messages: allMessages,
           match_score: cv.match_score || 0,
-          template: tone,
-          tone: tone,
+          template: currentTone,
+          tone: currentTone,
         }).then((res) => {
           if (res.id) {
             useStore.getState().setProjectId(res.id);
@@ -147,7 +153,7 @@ export default function Chat() {
       addMessage({ role: "assistant", content: `⚠️ ${msg}` });
       setGenerating(false);
     }
-  }, [profile, offer, gapAnalysis, tone, targetMarket, i18n.language, setCvData, setCvDataAlt, navigate]);
+  }, [profile, offer, gapAnalysis, targetMarket, i18n.language, setCvData, setCvDataAlt, navigate, addMessage]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || !profile || !offer) return;
@@ -308,7 +314,15 @@ export default function Chat() {
       }
 
       if (response.is_complete) {
-        await handleGenerateNow();
+        // Spec 46afe50: before final generation, show the in-chat tone picker
+        // so the user picks voice with concrete sample paragraphs (not abstract
+        // labels). If the user has already picked a voice this session, skip
+        // straight to generation.
+        if (!useStore.getState().toneChosen) {
+          setShowTonePicker(true);
+        } else {
+          await handleGenerateNow();
+        }
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -415,12 +429,32 @@ export default function Chat() {
               <div className="chat-bubble"><span className="spinner" /></div>
             </div>
           )}
+          {showTonePicker && profile && offer && (
+            <TonePicker
+              profile={profile}
+              offer={offer}
+              lang={i18n.language.startsWith("fr") ? "fr" : "en"}
+              onPick={(picked) => {
+                setTone(picked);
+                setToneChosen(true);
+                setShowTonePicker(false);
+                handleGenerateNow();
+              }}
+              onSkip={() => {
+                // Mark chosen so we don't re-ask. Keep whatever tone is in store.
+                setToneChosen(true);
+                setShowTonePicker(false);
+                handleGenerateNow();
+              }}
+            />
+          )}
           <div ref={bottomRef} />
         </div>
 
-        {voiceError && (
+        {voiceError && !showTonePicker && (
           <div className="error" style={{ marginBottom: 8, fontSize: 12 }}>{voiceError}</div>
         )}
+        {!showTonePicker && (
         <form className="chat-input-bar" onSubmit={handleSubmit} style={{ alignItems: "flex-end" }}>
           <textarea
             ref={textareaRef}
@@ -467,10 +501,17 @@ export default function Chat() {
             {t("chat.send")}
           </button>
         </form>
-        {showSkip && !generating && (
+        )}
+        {showSkip && !generating && !showTonePicker && (
           <button
             className="btn-secondary"
-            onClick={handleGenerateNow}
+            onClick={() => {
+              if (!useStore.getState().toneChosen) {
+                setShowTonePicker(true);
+              } else {
+                handleGenerateNow();
+              }
+            }}
             disabled={loading || generating}
             style={{ marginTop: 8, fontSize: 13, padding: "6px 16px", alignSelf: "center" }}
           >
