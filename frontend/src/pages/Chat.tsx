@@ -7,6 +7,7 @@ import ChatMessage from "../components/ChatMessage";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
+import VoiceInput from "../components/VoiceInput";
 
 export default function Chat() {
   const { t, i18n } = useTranslation();
@@ -25,11 +26,22 @@ export default function Chat() {
   const [contradictions, setContradictions] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [showSkip, setShowSkip] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const draftInFlight = useRef(false);
   const progressRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Auto-grow textarea on content change (including live voice transcript)
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+  }, [input]);
 
 
   useEffect(() => {
@@ -406,15 +418,44 @@ export default function Chat() {
           <div ref={bottomRef} />
         </div>
 
-        <form className="chat-input-bar" onSubmit={handleSubmit}>
-          <input
+        {voiceError && (
+          <div className="error" style={{ marginBottom: 8, fontSize: 12 }}>{voiceError}</div>
+        )}
+        <form className="chat-input-bar" onSubmit={handleSubmit} style={{ alignItems: "flex-end" }}>
+          <textarea
+            ref={textareaRef}
             className="input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t("chat.placeholder")}
-            disabled={loading}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !listening) {
+                e.preventDefault();
+                if (input.trim() && !loading) sendMessage(input);
+              }
+            }}
+            placeholder={listening ? t("chat.speaking") : t("chat.placeholder")}
+            disabled={loading || listening}
+            rows={1}
+            style={{
+              resize: "none",
+              overflowY: "auto",
+              minHeight: 44,
+              maxHeight: 240,
+              lineHeight: 1.5,
+              fontFamily: "inherit",
+            }}
           />
-          <button className="btn-primary" type="submit" disabled={!input.trim() || loading}
+          <VoiceInput
+            lang={i18n.language}
+            onInterim={(text) => setInput(text)}
+            onResult={(text) => setInput(text)}
+            onError={(msg) => setVoiceError(msg)}
+            onListeningChange={(isListening) => {
+              setListening(isListening);
+              if (isListening) setVoiceError("");
+            }}
+          />
+          <button className="btn-primary" type="submit" disabled={!input.trim() || loading || listening}
             style={{ padding: "10px 20px" }}>
             {t("chat.send")}
           </button>
