@@ -236,16 +236,17 @@ export const useStore = create<AppState>()(persist((set) => ({
         return { cvData: cv };
       }
       const keys = path.split(".");
+      // Walk to the parent of the final key. JS indexing works the same for
+      // arr["0"] and arr[0], so no special-case for array indices is needed —
+      // the old logic descended one step too deep on paths like
+      // "experiences.0.bullets.3" and tried to assign "3" on a string, throwing
+      // "Cannot create property '3' on string ''" which silently killed every
+      // add_bullet cv_action from the chat.
       let obj: Record<string, unknown> = cv as unknown as Record<string, unknown>;
       for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        const next = obj[key];
-        if (Array.isArray(next) && /^\d+$/.test(keys[i + 1])) {
-          obj = next[parseInt(keys[i + 1])] as Record<string, unknown>;
-          i++;
-        } else {
-          obj = next as Record<string, unknown>;
-        }
+        const next = obj[keys[i]];
+        if (next == null || typeof next !== "object") return { cvData: cv };
+        obj = next as Record<string, unknown>;
       }
       obj[keys[keys.length - 1]] = value;
       return { cvData: cv };
