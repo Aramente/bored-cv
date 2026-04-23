@@ -7,6 +7,8 @@ interface Props {
   onError?: (msg: string) => void;
   onListeningChange?: (listening: boolean) => void;
   lang: string;
+  /** Names/terms to bias Voxtral toward (companies, people, jargon). */
+  contextBias?: string[];
 }
 
 const hasMediaRecorder =
@@ -18,7 +20,7 @@ const MIC_PREF_KEY = "bored-cv:preferred-mic";
 // AirPods that aren't in use, etc.). User can still pick them from the dropdown.
 const AUTO_EXCLUDE_RE = /\b(iphone|ipad|continuity|airpods)\b/i;
 
-export default function VoiceInput({ onResult, onInterim, onError, onListeningChange, lang }: Props) {
+export default function VoiceInput({ onResult, onInterim, onError, onListeningChange, lang, contextBias }: Props) {
   const [active, setActive] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
@@ -243,7 +245,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       // any onInterim("") after that would wipe it.
       onInterim?.("");
       try {
-        const text = await transcribeAudio(blob, lang);
+        const text = await transcribeAudio(blob, lang, contextBias);
         if (text) {
           onResult(text);
         } else {

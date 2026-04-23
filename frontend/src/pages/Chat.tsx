@@ -447,6 +447,13 @@ export default function Chat() {
           />
           <VoiceInput
             lang={i18n.language}
+            contextBias={[
+              ...(offer?.company ? [offer.company] : []),
+              ...(offer?.title ? [offer.title] : []),
+              ...(profile?.name ? [profile.name] : []),
+              ...((profile?.experiences || []).map((e) => e.company).filter(Boolean)),
+              ...((profile?.experiences || []).map((e) => e.title).filter(Boolean)),
+            ]}
             onInterim={(text) => setInput(text)}
             onResult={(text) => setInput(text)}
             onError={(msg) => setVoiceError(msg)}
