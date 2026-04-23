@@ -94,7 +94,7 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience Professionnelle" : "Professional Experience"}</Text>
           <View style={[styles.rule, { borderBottomColor: accentColor }]} />
           {data.experiences.map((exp, i) => (
-            <View key={i} style={styles.expBlock}>
+            <View key={i} wrap={false} style={styles.expBlock}>
               <View style={styles.expHeader}>
                 <Text style={styles.expCompany}>{exp.company}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>

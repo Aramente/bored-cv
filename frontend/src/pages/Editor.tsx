@@ -11,6 +11,11 @@ import ContrastHtml from "../templates/ContrastHtml";
 import MinimalHtml from "../templates/MinimalHtml";
 import RetroHtml from "../templates/RetroHtml";
 import ConsultantHtml from "../templates/ConsultantHtml";
+import TimelineHtml from "../templates/TimelineHtml";
+import MonoHtml from "../templates/MonoHtml";
+import ExecutiveHtml from "../templates/ExecutiveHtml";
+import EditorialHtml from "../templates/EditorialHtml";
+import CompactHtml from "../templates/CompactHtml";
 import type { TemplateId } from "../store";
 import type { TFunction } from "i18next";
 
@@ -20,8 +25,13 @@ const templateHtmlComponents = {
   minimal: MinimalHtml,
   retro: RetroHtml,
   consultant: ConsultantHtml,
+  timeline: TimelineHtml,
+  mono: MonoHtml,
+  executive: ExecutiveHtml,
+  editorial: EditorialHtml,
+  compact: CompactHtml,
 } as const;
-const templateIds: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant"];
+const templateIds: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant", "timeline", "mono", "executive", "editorial", "compact"];
 
 const RESPONSIBILITY_PATTERNS = /^(responsible for|helped with|worked on|assisted in|participated in|involved in|contributed to|supported the|managed the|in charge of)/i;
 const BUZZWORDS = /\b(dynamic|innovative|passionate|leveraged|synergies|spearheaded|orchestrated|cutting-edge|best-in-class|world-class|thought leader|proven track record|results-driven|detail-oriented|team player|strong background|eager to leverage)\b/i;

@@ -112,7 +112,9 @@ export interface CoverLetterData {
   language: string;
 }
 
-export type TemplateId = "clean" | "contrast" | "minimal" | "retro" | "consultant";
+export type TemplateId =
+  | "clean" | "contrast" | "minimal" | "retro" | "consultant"
+  | "timeline" | "mono" | "executive" | "editorial" | "compact";
 
 interface AppState {
   profile: Profile | null;

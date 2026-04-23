@@ -11,9 +11,17 @@ import Contrast from "../templates/Contrast";
 import Minimal from "../templates/Minimal";
 import Retro from "../templates/Retro";
 import Consultant from "../templates/Consultant";
+import Timeline from "../templates/Timeline";
+import Mono from "../templates/Mono";
+import Executive from "../templates/Executive";
+import Editorial from "../templates/Editorial";
+import Compact from "../templates/Compact";
 
-const templateComponents = { clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant };
-const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant"];
+const templateComponents = {
+  clean: Clean, contrast: Contrast, minimal: Minimal, retro: Retro, consultant: Consultant,
+  timeline: Timeline, mono: Mono, executive: Executive, editorial: Editorial, compact: Compact,
+};
+const templateKeys: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant", "timeline", "mono", "executive", "editorial", "compact"];
 
 const templateAccentStyles: Record<TemplateId, React.CSSProperties> = {
   clean: { borderLeft: "4px solid var(--gold)" },
@@ -21,6 +29,11 @@ const templateAccentStyles: Record<TemplateId, React.CSSProperties> = {
   minimal: { borderLeft: "2px solid var(--border)" },
   retro: { borderLeft: "4px dashed var(--text-dim)" },
   consultant: { borderLeft: "4px double var(--text-muted)" },
+  timeline: { borderLeft: "4px solid #0f172a" },
+  mono: { borderLeft: "4px solid #10b981" },
+  executive: { borderLeft: "4px solid #b8860b" },
+  editorial: { borderLeft: "4px solid #7c3aed" },
+  compact: { borderLeft: "4px solid #0ea5e9" },
 };
 
 export default function Templates() {

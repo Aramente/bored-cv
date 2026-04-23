@@ -69,7 +69,7 @@ export default function Clean({ data, brandColors }: TemplateProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
-              <View key={i} style={[styles.expBlock, { borderLeftColor: accentColor }]}>
+              <View key={i} wrap={false} style={[styles.expBlock, { borderLeftColor: accentColor }]}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
                 <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>

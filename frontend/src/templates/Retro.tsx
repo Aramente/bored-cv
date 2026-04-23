@@ -51,7 +51,7 @@ export default function Retro({ data, brandColors }: TemplateProps) {
           <View style={[styles.divider, { borderBottomColor: accentColor }]} />
           <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
           {data.experiences.map((exp, i) => (
-            <View key={i} style={styles.expBlock}>
+            <View key={i} wrap={false} style={styles.expBlock}>
               <View style={styles.expHeader}>
                 <Text style={styles.expCompany}>{exp.company}</Text>
                 <Text style={styles.expDates}>[{exp.dates}]</Text>

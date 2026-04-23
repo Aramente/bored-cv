@@ -50,7 +50,7 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { borderBottomColor: accentColor }]}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
             {data.experiences.map((exp, i) => (
-              <View key={i} style={styles.expBlock}>
+              <View key={i} wrap={false} style={styles.expBlock}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
                 <View style={styles.expMeta}>
                   <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>

@@ -55,7 +55,7 @@ export default function Minimal({ data, brandColors }: TemplateProps) {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: accentColor }]}>{data.language === "fr" ? "Expérience" : "Experience"}</Text>
           {data.experiences.map((exp, i) => (
-            <View key={i} style={styles.expBlock}>
+            <View key={i} wrap={false} style={styles.expBlock}>
               <View style={styles.expRow}>
                 <Text style={styles.expTitle}>{exp.title}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>
