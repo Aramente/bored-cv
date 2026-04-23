@@ -224,7 +224,7 @@ FORMAT the "message" field with Markdown for readability (the UI renders it):
 
 Write in {lang_instruction}. Use first name only. Be warm and direct."""
 
-        text = self._call(prompt, model="mistral-large-latest", max_tokens=3000, temperature=0.7)
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=1200, temperature=0.6)
         data = self._parse_json(text)
         return ChatResponse(**data)
 
