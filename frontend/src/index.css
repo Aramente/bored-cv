@@ -1065,3 +1065,262 @@ textarea.input { resize: vertical; min-height: 100px; }
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ---------- WYSIWYG CV sheet (mirrors the Clean PDF template) ---------- */
+/* A4 proportions at ~96dpi: 794 × 1123 pixels. We use min-height so content
+   can overflow if the user adds more than fits on one page — the final PDF
+   export still paginates via @react-pdf/renderer. */
+.cv-sheet {
+  display: flex;
+  width: 794px;
+  min-height: 1123px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+  position: relative;
+}
+.cv-sidebar {
+  width: 30%;
+  background: #0c1f3d;
+  color: #e2e8f0;
+  padding: 28px 24px 24px;
+  position: relative;
+}
+.cv-sidebar-top-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: #F5C542;
+}
+.cv-sidebar-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.cv-sidebar-title {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 20px;
+}
+.cv-sidebar-section { margin-bottom: 20px; }
+.cv-sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+.cv-contact {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin: 0 0 4px;
+}
+.cv-skills {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  min-height: 1.2em;
+}
+.cv-skills-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.cv-skill-tag {
+  background: rgba(255,255,255,0.1);
+  padding: 3px 7px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: #e2e8f0;
+}
+.cv-edu { margin-bottom: 10px; }
+.cv-edu-degree {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+.cv-edu-school {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin: 0;
+}
+.cv-main {
+  width: 70%;
+  padding: 32px 32px 48px;
+}
+.cv-highlights {
+  border-left: 3px solid #6366f1;
+  background: #f5f3ff;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
+.cv-highlights-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6366f1;
+  margin-bottom: 4px;
+}
+.cv-highlights-text {
+  font-size: 13px;
+  color: #1e293b;
+  line-height: 1.55;
+  margin: 0;
+}
+.cv-section { margin-bottom: 20px; }
+.cv-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+.cv-exp-block {
+  border-left: 2px solid #6366f1;
+  padding: 2px 0 2px 12px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.cv-exp-remove, .cv-bullet-remove {
+  position: absolute;
+  right: 0; top: 0;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.cv-bullet-remove {
+  position: static;
+  opacity: 0;
+  margin-left: 4px;
+  align-self: center;
+  color: #94a3b8;
+}
+.cv-exp-block:hover .cv-exp-remove,
+.cv-bullet-row:hover .cv-bullet-remove {
+  opacity: 1;
+}
+.cv-exp-remove:hover, .cv-bullet-remove:hover { color: #ef4444; }
+.cv-exp-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+.cv-exp-company {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6366f1;
+  margin: 2px 0;
+}
+.cv-exp-dates {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0 0 6px;
+}
+.cv-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.cv-bullet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 2px 0;
+}
+.cv-bullet {
+  font-size: 12px;
+  color: #475569;
+  padding-left: 12px;
+  position: relative;
+  flex: 1;
+  line-height: 1.5;
+}
+.cv-bullet::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #94a3b8;
+}
+.cv-add-bullet, .cv-add-exp {
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.15s;
+}
+.cv-add-exp { margin-top: 12px; }
+.cv-add-bullet:hover, .cv-add-exp:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+/* Editable fields — subtle hover state so users discover they're clickable */
+.editable {
+  outline: none;
+  border-radius: 3px;
+  transition: background-color 0.15s, box-shadow 0.15s;
+  cursor: text;
+}
+.editable:hover {
+  background-color: rgba(99, 102, 241, 0.06);
+}
+.editable:focus {
+  background-color: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
+}
+.cv-sidebar .editable:hover { background-color: rgba(255, 255, 255, 0.06); }
+.cv-sidebar .editable:focus {
+  background-color: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.5);
+}
+.editable-empty::before {
+  content: attr(data-placeholder);
+  color: #cbd5e1;
+  font-style: italic;
+  pointer-events: none;
+}
+.cv-sidebar .editable-empty::before { color: rgba(226, 232, 240, 0.35); }
+
+/* GAP tokens — amber pills that mark where the LLM needs the user to fill in
+   a real fact instead of fabricating one. Visible both when rendered inline
+   and preserved as plain text when the user edits the field. */
+.gap-pill {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 0.92em;
+  font-style: italic;
+  white-space: normal;
+}
+.cv-sidebar .gap-pill {
+  background: rgba(254, 243, 199, 0.22);
+  color: #FDE68A;
+  border-color: rgba(252, 211, 77, 0.4);
+}
