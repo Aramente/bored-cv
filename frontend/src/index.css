@@ -411,7 +411,88 @@ textarea.input { resize: vertical; min-height: 100px; }
   color: var(--text);
   border-bottom-right-radius: 4px;
   font-weight: 500;
+  white-space: pre-wrap;
 }
+
+/* Markdown body inside assistant bubbles */
+.md-body { font-size: 15px; line-height: 1.65; }
+.md-body > *:first-child { margin-top: 0; }
+.md-body > *:last-child { margin-bottom: 0; }
+.md-body p { margin: 0 0 10px; }
+.md-body p:last-child { margin-bottom: 0; }
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4 {
+  margin: 16px 0 8px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+.md-body h1 { font-size: 1.25em; }
+.md-body h2 { font-size: 1.15em; }
+.md-body h3 { font-size: 1.05em; }
+.md-body h4 { font-size: 1em; }
+.md-body ul,
+.md-body ol {
+  margin: 6px 0 10px;
+  padding-left: 22px;
+}
+.md-body li { margin: 3px 0; }
+.md-body li > p { margin: 0 0 4px; }
+.md-body li::marker { color: var(--text-muted); }
+.md-body ul ul,
+.md-body ol ol,
+.md-body ul ol,
+.md-body ol ul { margin: 4px 0; }
+.md-body strong { font-weight: 700; }
+.md-body em { font-style: italic; }
+.md-body a {
+  color: var(--gold, #b88a2a);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.md-body pre {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.md-body pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.9em;
+}
+.md-body blockquote {
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+  margin: 8px 0;
+  padding: 2px 0 2px 12px;
+}
+.md-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+.md-body table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.95em;
+}
+.md-body th,
+.md-body td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+.md-body th { background: rgba(0, 0, 0, 0.04); font-weight: 600; }
 .chat-input-bar {
   display: flex;
   gap: 8px;

@@ -215,6 +215,13 @@ WHEN DONE: set is_complete=true. You're done when you've covered the 2-3 highest
 
 Respond in JSON: {{"message": "your question", "is_complete": false, "cv_actions": [], "progress": 0-100}}
 
+FORMAT the "message" field with Markdown for readability (the UI renders it):
+- Use **bold** for the key word(s) the user should focus on
+- Use bullet lists (`- item`) when asking about multiple experiences or listing 2+ points — one bullet per experience/item, not a run-on sentence
+- Add a blank line between a lead-in sentence and a bullet list
+- Keep it scannable: short lines, never a wall of text
+- Don't overdo it — plain prose is fine for single-question turns; use lists when there are genuinely multiple items
+
 Write in {lang_instruction}. Use first name only. Be warm and direct."""
 
         text = self._call(prompt, model="mistral-large-latest", max_tokens=3000, temperature=0.7)
