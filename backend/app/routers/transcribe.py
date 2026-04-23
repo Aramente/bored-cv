@@ -1,6 +1,7 @@
 import os
 
 from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from mistralai.client import Mistral
 
 from app.middleware.security import verify_turnstile, check_rate_limit
@@ -23,8 +24,8 @@ def _filename_for(content_type: str) -> str:
     return "audio.webm"
 
 
-async def _transcribe_mistral(contents: bytes, content_type: str, lang: str, context_bias: list[str] | None = None) -> str:
-    """Transcribe via Mistral Voxtral."""
+def _transcribe_mistral_sync(contents: bytes, content_type: str, lang: str, context_bias: list[str] | None = None) -> str:
+    """Transcribe via Mistral Voxtral. Blocking SDK call — must be run in threadpool."""
     client = Mistral(api_key=MISTRAL_API_KEY)
     kwargs = {
         "model": "voxtral-mini-latest",
@@ -72,7 +73,9 @@ async def transcribe_audio(
     content_type = file.content_type or "audio/webm"
 
     try:
-        text = await _transcribe_mistral(contents, content_type, lang, context_bias or None)
+        text = await run_in_threadpool(
+            _transcribe_mistral_sync, contents, content_type, lang, context_bias or None
+        )
         return {"text": text}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Transcription failed: {e}") from e

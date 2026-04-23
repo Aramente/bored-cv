@@ -104,6 +104,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       stream.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      setActive(false);
+      onListeningChange?.(false);
 
       const blob = new Blob(chunksRef.current, { type: mimeRef.current });
       chunksRef.current = [];
@@ -170,14 +172,13 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
   }, [lang, onResult, onInterim, onError, onListeningChange]);
 
   const stop = useCallback(() => {
+    // State reset happens in rec.onstop so it covers both manual + auto-stop paths
     try {
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         recorderRef.current.stop();
       }
     } catch { /* */ }
-    setActive(false);
-    onListeningChange?.(false);
-  }, [onListeningChange]);
+  }, []);
 
   const toggle = useCallback(() => {
     if (active) stop(); else start();
