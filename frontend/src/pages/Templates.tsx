@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
-import { createSnapshot } from "../services/api";
+import { createSnapshot, SnapshotError } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
@@ -42,7 +42,7 @@ export default function Templates() {
   const navigate = useNavigate();
   const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal } = useStore();
   const [beforeAfterOpen, setBeforeAfterOpen] = useState(false);
-  const [shareState, setShareState] = useState<"idle" | "creating" | "copied" | "error">("idle");
+  const [shareState, setShareState] = useState<"idle" | "creating" | "copied" | "auth" | "network" | "error">("idle");
   const [shareUrl, setShareUrl] = useState<string>("");
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
@@ -270,14 +270,21 @@ export default function Templates() {
               setTimeout(() => setShareState("idle"), 4000);
             } catch (e) {
               console.error(e);
-              setShareState("error");
+              const next = e instanceof SnapshotError
+                ? (e.status === 401 || e.status === 403 ? "auth"
+                  : e.status === 0 ? "network"
+                  : "error")
+                : "error";
+              setShareState(next);
               setTimeout(() => setShareState("idle"), 4000);
             }
           }}
         >
           {shareState === "creating" ? <span className="spinner" />
             : shareState === "copied" ? `✓ Link copied — ${shareUrl}`
-            : shareState === "error" ? "Sign in to share a public link"
+            : shareState === "auth" ? "Sign in to share a public link"
+            : shareState === "network" ? "Network error — check connection"
+            : shareState === "error" ? "Share failed — try again"
             : "Share public link"}
         </button>
       </div>

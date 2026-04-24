@@ -175,8 +175,32 @@ export interface SnapshotPayload {
   use_brand_colors: boolean;
 }
 
+export class SnapshotError extends Error {
+  // Status is exposed so the UI can distinguish "sign in" (401) from other
+  // failures (network, 500). The generic post() helper flattens both into a
+  // plain Error which is why we bypass it here.
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = "SnapshotError";
+  }
+}
+
 export async function createSnapshot(payload: SnapshotPayload): Promise<{ slug: string }> {
-  return post("/api/snapshots", payload);
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/api/snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    throw new SnapshotError(0, (e as Error).message || "Network error");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+    throw new SnapshotError(res.status, err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 export async function getSnapshot(slug: string): Promise<SnapshotPayload> {
