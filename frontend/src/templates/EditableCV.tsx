@@ -99,3 +99,43 @@ export function Editable({
 export function joinContact(parts: (string | undefined)[], separator = "  ·  "): string {
   return parts.filter(Boolean).join(separator);
 }
+
+/**
+ * Headcount chip — "120 → 450". Each endpoint is independently editable; the
+ * chip itself hides only when both endpoints are empty so the user can still
+ * click in to fill either side. Shared across all 10 HTML templates.
+ */
+export function HeadcountChip({
+  start,
+  end,
+  onSaveStart,
+  onSaveEnd,
+  isFr,
+}: {
+  start: string;
+  end: string;
+  onSaveStart: (v: string) => void;
+  onSaveEnd: (v: string) => void;
+  isFr: boolean;
+}) {
+  const hasAny = !!(start || end);
+  return (
+    <span className="cv-headcount-chip" style={!hasAny ? { opacity: 0.55 } : undefined}>
+      <Editable
+        as="span"
+        value={start || ""}
+        onSave={onSaveStart}
+        placeholder={isFr ? "effectif" : "size"}
+        rich={false}
+      />
+      <span className="cv-headcount-arrow" aria-hidden>→</span>
+      <Editable
+        as="span"
+        value={end || ""}
+        onSave={onSaveEnd}
+        placeholder={isFr ? "effectif" : "size"}
+        rich={false}
+      />
+    </span>
+  );
+}

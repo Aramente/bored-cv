@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
   eduSchool: { fontSize: 9, fontFamily: "Times-Italic", color: "#5f5478" },
   skills: { fontSize: 10, color: "#2a2440", lineHeight: 1.6 },
   contractType: { fontSize: 8, fontFamily: "Times-Bold", color: "#5f5478", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 },
+  headcount: { fontSize: 8, fontFamily: "Times-Italic", color: "#9e93b8", marginBottom: 4 },
   exitReason: { fontSize: 9, fontFamily: "Times-Italic", color: "#5f5478", marginTop: 4 },
 });
 
@@ -60,6 +61,7 @@ export default function Editorial({ data, brandColors }: TemplateProps) {
             </View>
             <Text style={styles.expTitle}>{exp.title}</Text>
             {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
+            {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>{exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
             {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`· ${b}`} style={styles.bullet} />)}
             {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
           </View>

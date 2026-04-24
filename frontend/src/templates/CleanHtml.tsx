@@ -1,6 +1,6 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
-import { Editable } from "./EditableCV";
+import { Editable, HeadcountChip } from "./EditableCV";
 import PhotoSlot from "./PhotoSlot";
 
 interface Props {
@@ -93,6 +93,7 @@ export default function CleanHtml({ data, brandColors }: Props) {
               <div style={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                 <Editable as="p" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="cv-exp-dates" placeholder="2022 — 2024" rich={false} />
                 <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
+                <HeadcountChip start={exp.headcountStart || ""} end={exp.headcountEnd || ""} onSaveStart={(v) => save(`experiences.${i}.headcountStart`, v)} onSaveEnd={(v) => save(`experiences.${i}.headcountEnd`, v)} isFr={isFr} />
               </div>
               <ul className="cv-bullets">
                 {exp.bullets.map((b, j) => (

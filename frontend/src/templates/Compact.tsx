@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
   eduDegree: { fontSize: 9, fontFamily: "Helvetica-Bold" },
   eduSchool: { fontSize: 8, color: "#64748b" },
   contractType: { fontSize: 6.5, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2, fontFamily: "Helvetica-Bold" },
+  headcount: { fontSize: 6.5, color: "#94a3b8", marginBottom: 2, fontFamily: "Helvetica" },
   exitReason: { fontSize: 7.5, color: "#64748b", fontStyle: "italic", marginTop: 2 },
 });
 
@@ -64,6 +65,7 @@ export default function Compact({ data, brandColors }: TemplateProps) {
                 </View>
                 <Text style={[styles.expCompany, { color: accent }]}>{exp.company}</Text>
                 {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
+                {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>{exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
                 {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />)}
                 {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
               </View>

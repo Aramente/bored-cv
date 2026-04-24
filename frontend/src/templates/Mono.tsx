@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
   skills: { fontSize: 9, fontFamily: "Courier", color: "#1e293b", lineHeight: 1.5 },
   eduLine: { fontSize: 9, marginBottom: 3 },
   contractType: { fontSize: 7, fontFamily: "Courier-Bold", color: "#64748b", marginBottom: 3 },
+  headcount: { fontSize: 7, fontFamily: "Courier", color: "#94a3b8", marginBottom: 3 },
   exitReason: { fontSize: 8, fontFamily: "Courier", color: "#64748b", marginTop: 2 },
 });
 
@@ -58,6 +59,7 @@ export default function Mono({ data, brandColors }: TemplateProps) {
               </Text>
             </View>
             {exp.contractType ? <Text style={styles.contractType}>// {exp.contractType}</Text> : null}
+            {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>// team: {exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
             {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`▸ ${b}`} style={styles.bullet} />)}
             {exp.exitReason ? <Text style={styles.exitReason}>// {exp.exitReason}</Text> : null}
           </View>

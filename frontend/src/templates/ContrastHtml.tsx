@@ -1,6 +1,6 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
-import { Editable, joinContact } from "./EditableCV";
+import { Editable, HeadcountChip, joinContact } from "./EditableCV";
 import PhotoSlot from "./PhotoSlot";
 
 interface Props {
@@ -64,6 +64,7 @@ export default function ContrastHtml({ data, brandColors }: Props) {
                 <Editable as="span" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="ct-exp-company" style={{ color: accentColor }} placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
                 <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="ct-exp-dates" placeholder="2022 — 2024" rich={false} />
                 <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
+                <HeadcountChip start={exp.headcountStart || ""} end={exp.headcountEnd || ""} onSaveStart={(v) => save(`experiences.${i}.headcountStart`, v)} onSaveEnd={(v) => save(`experiences.${i}.headcountEnd`, v)} isFr={isFr} />
               </div>
               <ul className="cv-bullets">
                 {exp.bullets.map((b, j) => (

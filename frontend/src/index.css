@@ -1442,13 +1442,37 @@ textarea.input { resize: vertical; min-height: 100px; }
   font-style: italic;
   margin: 4px 0 0;
 }
-/* When meta-chip sits inside a dark sidebar, invert tones so it stays legible. */
-.cv-sidebar .cv-meta-chip {
+/* Headcount chip — company size at start/end of tenure, e.g. "120 → 450".
+   Softer than .cv-meta-chip so the two can sit side-by-side without shouting.
+   Each endpoint is independently editable; empty endpoints render a muted "?". */
+.cv-headcount-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.05);
+  color: #475569;
+  margin-left: 6px;
+  vertical-align: middle;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.cv-headcount-chip .cv-headcount-arrow { color: #94a3b8; }
+.cv-headcount-chip [contenteditable="true"] { min-width: 1.5em; }
+/* When a chip sits inside a dark sidebar, invert tones so it stays legible. */
+.cv-sidebar .cv-meta-chip,
+.cv-sidebar .cv-headcount-chip {
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.82);
 }
 .cv-sidebar .cv-meta-line {
   color: rgba(255, 255, 255, 0.7);
+}
+.cv-sidebar .cv-headcount-chip .cv-headcount-arrow {
+  color: rgba(255, 255, 255, 0.55);
 }
 
 /* Photo remove button — hidden until the photo is hovered, so the big red X

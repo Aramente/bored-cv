@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
   expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#6366f1", marginBottom: 2 },
   expDates: { fontSize: 8, color: "#94a3b8", marginBottom: 4 },
   contractType: { fontSize: 7, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginTop: -2, marginBottom: 4, fontFamily: "Helvetica-Bold" },
+  headcount: { fontSize: 7, color: "#94a3b8", marginBottom: 4, fontFamily: "Helvetica" },
   exitReason: { fontSize: 8, color: "#64748b", fontStyle: "italic", marginTop: 2 },
   bullet: { fontSize: 9, color: "#475569", marginBottom: T.bulletMarginBottom, paddingLeft: 8, lineHeight: T.bulletLineHeight },
   contactItem: { fontSize: 8, color: "#cbd5e1", marginBottom: 3 },
@@ -83,6 +84,7 @@ export default function Clean({ data, brandColors }: TemplateProps) {
                 <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>
                 {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
+                {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>{exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
                 {exp.bullets.map((b, j) => (
                   <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
                 ))}

@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
   eduDegree: { fontSize: 9, fontFamily: "Courier-Bold" },
   eduMeta: { fontSize: 8, fontFamily: "Courier", color: "#5c4a2a" },
   contractType: { fontSize: 7, fontFamily: "Courier-Bold", color: "#5c4a2a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 },
+  headcount: { fontSize: 7, fontFamily: "Courier", color: "#8a7550", marginBottom: 3 },
   exitReason: { fontSize: 8, fontFamily: "Courier-Oblique", color: "#5c4a2a", marginTop: 2 },
 });
 
@@ -62,6 +63,7 @@ export default function Retro({ data, brandColors }: TemplateProps) {
               </View>
               <Text style={styles.expTitle}>{exp.title}</Text>
               {exp.contractType ? <Text style={styles.contractType}>[{exp.contractType}]</Text> : null}
+              {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>[ {exp.headcountStart || "?"} {"->"} {exp.headcountEnd || "?"} ]</Text> : null}
               {exp.bullets.map((b, j) => (
                 <BoldMetrics key={j} text={`>> ${b}`} style={styles.bullet} />
               ))}

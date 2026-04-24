@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
   eduItem: { fontSize: 9, marginBottom: 4 },
   eduSchool: { fontSize: 8, color: "#94a3b8" },
   contractType: { fontSize: 7, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 3, fontFamily: "Helvetica-Bold" },
+  headcount: { fontSize: 7, color: "#94a3b8", marginBottom: 3, fontFamily: "Helvetica" },
   exitReason: { fontSize: 8, color: "#64748b", fontStyle: "italic", marginTop: 2 },
 });
 
@@ -64,6 +65,7 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
                   <Text style={styles.expDates}>{exp.dates}</Text>
                 </View>
                 {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
+                {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>{exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
                 {exp.bullets.map((b, j) => (
                   <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
                 ))}

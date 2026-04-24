@@ -97,9 +97,13 @@ export interface RewrittenExperience {
   context?: CompanyContext;
   // Optional metadata surfaced on the CV. `contractType` renders as a small
   // badge next to the dates; `exitReason` renders as a muted italic subline.
-  // Both are hidden when empty — they don't exist on legacy rewrites.
+  // `headcountStart` / `headcountEnd` render as a growth chip "120 → 450"
+  // next to the contract type. All four are hidden when empty — they don't
+  // exist on legacy rewrites.
   contractType?: string;
   exitReason?: string;
+  headcountStart?: string;
+  headcountEnd?: string;
 }
 
 export interface CVData {
