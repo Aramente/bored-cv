@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -26,9 +27,14 @@ export default function MinimalHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet minimal-tpl" aria-label="Editable CV preview">
-      <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="mn-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-      <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="mn-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
-      <p className="mn-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 4 }}>
+        <PhotoSlot size={68} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="mn-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="mn-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+          <p className="mn-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+        </div>
+      </div>
       <div className="mn-divider" />
 
       {data.summary !== undefined && (

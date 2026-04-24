@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -28,6 +29,9 @@ export default function CleanHtml({ data, brandColors }: Props) {
     <div className="cv-sheet clean-tpl" aria-label="Editable CV preview">
       <div className="cv-sidebar" style={{ background: sidebarBg }}>
         <div className="cv-sidebar-top-accent" />
+        <div style={{ marginBottom: 12 }}>
+          <PhotoSlot size={72} tone="dark" />
+        </div>
         <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="cv-sidebar-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
         <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="cv-sidebar-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
 

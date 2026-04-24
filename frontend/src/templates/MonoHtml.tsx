@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -28,13 +29,16 @@ export default function MonoHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet mono-tpl" aria-label="Editable CV preview">
-      <header className="mo-header">
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="mo-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-        <p className="mo-prompt" style={{ color: accentColor }}>
-          <span>{"# "}</span>
-          <Editable as="span" value={data.title} onSave={(v) => save("title", v)} className="mo-title" placeholder={isFr ? "rôle" : "role"} rich={false} />
-        </p>
-        <p className="mo-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+      <header className="mo-header" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <PhotoSlot size={68} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="mo-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <p className="mo-prompt" style={{ color: accentColor }}>
+            <span>{"# "}</span>
+            <Editable as="span" value={data.title} onSave={(v) => save("title", v)} className="mo-title" placeholder={isFr ? "rôle" : "role"} rich={false} />
+          </p>
+          <p className="mo-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+        </div>
       </header>
 
       {data.summary !== undefined && (

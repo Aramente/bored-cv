@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -29,10 +30,13 @@ export default function ExecutiveHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet executive-tpl" aria-label="Editable CV preview">
-      <header className="ex-header" style={{ borderBottomColor: goldAccent }}>
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ex-name" style={{ color: accentColor }} placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-        <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ex-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
-        <p className="ex-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+      <header className="ex-header" style={{ borderBottomColor: goldAccent, display: "flex", alignItems: "center", gap: 22 }}>
+        <PhotoSlot size={88} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ex-name" style={{ color: accentColor }} placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ex-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+          <p className="ex-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+        </div>
       </header>
 
       {data.summary !== undefined && (

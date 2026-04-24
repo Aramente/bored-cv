@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -28,9 +29,14 @@ export default function EditorialHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet editorial-tpl" aria-label="Editable CV preview">
-      <div className="ed-eyebrow" style={{ color: accentColor }}>{isFr ? "Portfolio" : "Curriculum"}</div>
-      <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ed-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-      <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ed-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="ed-eyebrow" style={{ color: accentColor }}>{isFr ? "Portfolio" : "Curriculum"}</div>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ed-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ed-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+        </div>
+        <PhotoSlot size={80} tone="light" style={{ marginTop: 8 }} />
+      </div>
 
       {data.summary !== undefined && (
         <section className="ed-lede">

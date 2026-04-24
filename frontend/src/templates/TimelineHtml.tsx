@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -28,10 +29,13 @@ export default function TimelineHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet timeline-tpl" aria-label="Editable CV preview">
-      <header className="tl-header">
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="tl-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-        <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="tl-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
-        <p className="tl-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+      <header className="tl-header" style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <PhotoSlot size={76} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="tl-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="tl-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+          <p className="tl-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+        </div>
       </header>
 
       {data.summary !== undefined && (

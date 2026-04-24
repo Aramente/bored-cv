@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -28,8 +29,9 @@ export default function CompactHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet compact-tpl" aria-label="Editable CV preview">
-      <header className="co-header" style={{ borderBottomColor: accentColor }}>
-        <div className="co-header-left">
+      <header className="co-header" style={{ borderBottomColor: accentColor, display: "flex", alignItems: "center", gap: 14 }}>
+        <PhotoSlot size={60} tone="light" />
+        <div className="co-header-left" style={{ flex: 1, minWidth: 0 }}>
           <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="co-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
           <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="co-title" placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
         </div>

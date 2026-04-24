@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -27,10 +28,13 @@ export default function RetroHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet retro-tpl" aria-label="Editable CV preview">
-      <div className="rt-header" style={{ borderColor: accentColor }}>
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="rt-name" placeholder={isFr ? "VOTRE NOM" : "YOUR NAME"} rich={false} />
-        <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="rt-title-line" placeholder={isFr ? "titre" : "title"} rich={false} />
-        <p className="rt-contact">{joinContact([data.email, data.phone, data.linkedin, data.location], "  //  ")}</p>
+      <div className="rt-header" style={{ borderColor: accentColor, display: "flex", alignItems: "center", gap: 18 }}>
+        <PhotoSlot size={76} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="rt-name" placeholder={isFr ? "VOTRE NOM" : "YOUR NAME"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="rt-title-line" placeholder={isFr ? "titre" : "title"} rich={false} />
+          <p className="rt-contact">{joinContact([data.email, data.phone, data.linkedin, data.location], "  //  ")}</p>
+        </div>
       </div>
 
       {data.summary !== undefined && (

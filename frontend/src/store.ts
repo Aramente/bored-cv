@@ -101,6 +101,10 @@ export interface CVData {
   match_score: number;
   strengths: string[];
   improvements: string[];
+  // Optional profile photo as a base64 data URL. Stored client-side in
+  // localStorage — we resize to 400px max / JPEG q=0.85 on upload so it
+  // stays ~50-80KB and doesn't blow the persist quota.
+  photo?: string;
 }
 
 export interface CoverLetterData {

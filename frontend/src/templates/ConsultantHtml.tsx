@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -29,10 +30,13 @@ export default function ConsultantHtml({ data, brandColors }: Props) {
       <div className="cs-top-rule" style={{ borderTopColor: accentColor }} />
       <div className="cs-top-rule-thin" />
 
-      <div className="cs-name-block">
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="cs-name" placeholder={isFr ? "VOTRE NOM" : "YOUR NAME"} rich={false} />
-        <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="cs-title-line" placeholder={isFr ? "TITRE" : "TITLE"} rich={false} />
-        <p className="cs-contact">{joinContact([data.email, data.phone, data.linkedin, data.location])}</p>
+      <div className="cs-name-block" style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <PhotoSlot size={80} tone="light" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="cs-name" placeholder={isFr ? "VOTRE NOM" : "YOUR NAME"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="cs-title-line" placeholder={isFr ? "TITRE" : "TITLE"} rich={false} />
+          <p className="cs-contact">{joinContact([data.email, data.phone, data.linkedin, data.location])}</p>
+        </div>
       </div>
 
       <section className="cs-section">

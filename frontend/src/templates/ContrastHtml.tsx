@@ -1,6 +1,7 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
 import { Editable, joinContact } from "./EditableCV";
+import PhotoSlot from "./PhotoSlot";
 
 interface Props {
   data: CVData;
@@ -27,10 +28,13 @@ export default function ContrastHtml({ data, brandColors }: Props) {
 
   return (
     <div className="cv-sheet contrast-tpl" aria-label="Editable CV preview">
-      <div className="ct-header" style={{ background: headerBg }}>
-        <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ct-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
-        <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ct-title" style={{ color: accentColor }} placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
-        <p className="ct-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+      <div className="ct-header" style={{ background: headerBg, display: "flex", alignItems: "center", gap: 20 }}>
+        <PhotoSlot size={88} tone="dark" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Editable as="h1" value={data.name} onSave={(v) => save("name", v)} className="ct-name" placeholder={isFr ? "Votre nom" : "Your name"} rich={false} />
+          <Editable as="p" value={data.title} onSave={(v) => save("title", v)} className="ct-title" style={{ color: accentColor }} placeholder={isFr ? "Votre titre" : "Your title"} rich={false} />
+          <p className="ct-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
+        </div>
       </div>
 
       <div className="ct-skills-bar">
