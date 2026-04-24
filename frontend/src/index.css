@@ -1871,115 +1871,117 @@ textarea.input { resize: vertical; min-height: 100px; }
 /* ============================================================
    Timeline template — vertical rail with dots
    ============================================================ */
-.timeline-tpl { display: block; padding: 36px 44px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1e293b; }
-.timeline-tpl .tl-name { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-.timeline-tpl .tl-title { font-size: 13px; color: #475569; margin-bottom: 2px; }
-.timeline-tpl .tl-contact { font-size: 11px; color: #94a3b8; margin-bottom: 18px; }
-.timeline-tpl .tl-summary { border-left: 3px solid; padding: 8px 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.55; }
-.timeline-tpl .tl-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; margin-top: 6px; }
-.timeline-tpl .tl-rail { border-left: 1px solid #cbd5e1; padding-left: 20px; margin-left: 4px; position: relative; }
-.timeline-tpl .tl-exp { margin-bottom: 16px; position: relative; }
-.timeline-tpl .tl-exp::before { content: ""; position: absolute; left: -24px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.timeline-tpl .tl-exp-dates { font-size: 11px; color: #94a3b8; margin-bottom: 2px; }
-.timeline-tpl .tl-exp-title { font-size: 14px; font-weight: 700; }
-.timeline-tpl .tl-exp-company { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
-.timeline-tpl .tl-bullet { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
-.timeline-tpl .tl-split { display: flex; gap: 28px; margin-top: 10px; }
+.timeline-tpl { display: block; padding: 40px 48px; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #0f172a; font-feature-settings: "ss01", "cv11"; }
+.timeline-tpl .tl-name { font-size: 26px; font-weight: 700; color: #0a0f1f; margin-bottom: 3px; letter-spacing: -0.02em; }
+.timeline-tpl .tl-title { font-size: 14px; color: #334155; margin-bottom: 4px; font-weight: 500; }
+.timeline-tpl .tl-contact { font-size: 11.5px; color: #64748b; margin-bottom: 22px; }
+.timeline-tpl .tl-summary { border-left: 3px solid; padding: 10px 16px; margin-bottom: 22px; font-size: 13px; line-height: 1.6; color: #1e293b; background: #f8fafc; }
+.timeline-tpl .tl-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 14px; margin-top: 10px; color: #0f172a; }
+.timeline-tpl .tl-rail { border-left: 1.5px solid #e2e8f0; padding-left: 22px; margin-left: 4px; position: relative; }
+.timeline-tpl .tl-exp { margin-bottom: 18px; position: relative; }
+.timeline-tpl .tl-exp::before { content: ""; position: absolute; left: -27px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px #fff; }
+.timeline-tpl .tl-exp-dates { font-size: 11px; color: #64748b; margin-bottom: 2px; font-weight: 500; letter-spacing: 0.3px; }
+.timeline-tpl .tl-exp-title { font-size: 14.5px; font-weight: 700; color: #0a0f1f; }
+.timeline-tpl .tl-exp-company { font-size: 12.5px; font-weight: 600; margin-bottom: 7px; color: #334155; }
+.timeline-tpl .tl-bullet { font-size: 12.5px; color: #1e293b; margin-bottom: 4px; line-height: 1.55; }
+.timeline-tpl .tl-split { display: flex; gap: 32px; margin-top: 12px; }
 .timeline-tpl .tl-col { flex: 1; }
 .timeline-tpl .tl-edu { margin-bottom: 8px; }
-.timeline-tpl .tl-edu-degree { font-size: 13px; font-weight: 700; }
-.timeline-tpl .tl-edu-school { font-size: 11px; color: #64748b; }
-.timeline-tpl .tl-skills { font-size: 12px; color: #475569; line-height: 1.55; }
+.timeline-tpl .tl-edu-degree { font-size: 13px; font-weight: 700; color: #0a0f1f; }
+.timeline-tpl .tl-edu-school { font-size: 11.5px; color: #475569; }
+.timeline-tpl .tl-skills { font-size: 12.5px; color: #1e293b; line-height: 1.6; }
 
 /* ============================================================
    Mono template — engineering aesthetic
    ============================================================ */
-.mono-tpl { display: block; padding: 28px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1e293b; }
-.mono-tpl .mo-name { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-.mono-tpl .mo-prompt { font-size: 13px; font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; margin-bottom: 2px; }
-.mono-tpl .mo-contact { font-size: 11px; color: #94a3b8; margin-bottom: 18px; }
-.mono-tpl .mo-section-title { font-size: 13px; font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; margin-top: 14px; margin-bottom: 10px; }
-.mono-tpl .mo-summary { font-size: 13px; line-height: 1.55; margin-bottom: 12px; }
+.mono-tpl { display: block; padding: 32px 36px; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #0f172a; font-feature-settings: "ss01", "cv11"; }
+.mono-tpl .mo-name { font-size: 26px; font-weight: 700; color: #0a0f1f; margin-bottom: 3px; letter-spacing: -0.02em; }
+.mono-tpl .mo-prompt { font-size: 13px; font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace; font-weight: 600; margin-bottom: 2px; }
+.mono-tpl .mo-contact { font-size: 11.5px; color: #64748b; margin-bottom: 20px; font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; }
+.mono-tpl .mo-section-title { font-size: 13px; font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace; font-weight: 700; margin-top: 18px; margin-bottom: 10px; }
+.mono-tpl .mo-summary { font-size: 13px; line-height: 1.6; margin-bottom: 14px; color: #1e293b; }
 .mono-tpl .mo-exp { margin-bottom: 14px; }
-.mono-tpl .mo-exp-line { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.mono-tpl .mo-exp-at { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; }
-.mono-tpl .mo-exp-dates { font-size: 11px; color: #94a3b8; font-weight: 400; }
-.mono-tpl .mo-bullet { font-size: 12px; color: #475569; margin-bottom: 3px; line-height: 1.5; }
-.mono-tpl .mo-skills { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: #1e293b; line-height: 1.6; }
-.mono-tpl .mo-edu-line { font-size: 12px; margin-bottom: 4px; }
+.mono-tpl .mo-exp-line { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; color: #0a0f1f; }
+.mono-tpl .mo-exp-at { font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace; font-weight: 600; }
+.mono-tpl .mo-exp-dates { font-size: 11px; color: #64748b; font-weight: 400; font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; }
+.mono-tpl .mo-bullet { font-size: 12.5px; color: #1e293b; margin-bottom: 3px; line-height: 1.55; }
+.mono-tpl .mo-skills { font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: #0f172a; line-height: 1.7; }
+.mono-tpl .mo-edu-line { font-size: 12.5px; margin-bottom: 4px; color: #1e293b; }
 
 /* ============================================================
    Executive template — centered serif with gold underline
    ============================================================ */
-.executive-tpl { display: block; padding: 44px 52px; font-family: Georgia, "Times New Roman", serif; color: #1e293b; }
-.executive-tpl .ex-header { padding-bottom: 12px; margin-bottom: 18px; border-bottom: 1.5px solid; text-align: center; }
-.executive-tpl .ex-name { font-size: 28px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 3px; }
-.executive-tpl .ex-title { font-size: 13px; font-style: italic; color: #475569; }
-.executive-tpl .ex-contact { font-size: 10px; color: #94a3b8; margin-top: 8px; }
-.executive-tpl .ex-summary { font-style: italic; font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
-.executive-tpl .ex-section { margin-bottom: 16px; }
-.executive-tpl .ex-ornament { width: 22px; height: 2px; margin-bottom: 8px; }
-.executive-tpl .ex-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
-.executive-tpl .ex-exp { margin-bottom: 14px; }
+.executive-tpl { display: block; padding: 48px 56px; font-family: "Source Serif 4", Georgia, "Times New Roman", serif; color: #0f172a; }
+.executive-tpl .ex-header { padding-bottom: 14px; margin-bottom: 22px; border-bottom: 1.5px solid; text-align: center; }
+.executive-tpl .ex-name { font-size: 32px; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; color: #0a0f1f; }
+.executive-tpl .ex-title { font-size: 14px; font-style: italic; color: #475569; font-weight: 400; }
+.executive-tpl .ex-contact { font-size: 11px; color: #64748b; margin-top: 10px; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.2px; }
+.executive-tpl .ex-summary { font-style: italic; font-size: 14.5px; line-height: 1.65; margin-bottom: 20px; color: #1e293b; }
+.executive-tpl .ex-section { margin-bottom: 18px; }
+.executive-tpl .ex-ornament { width: 28px; height: 2px; margin-bottom: 10px; }
+.executive-tpl .ex-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 12px; font-family: "Inter", -apple-system, sans-serif; color: #0f172a; }
+.executive-tpl .ex-exp { margin-bottom: 16px; }
 .executive-tpl .ex-exp-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-.executive-tpl .ex-exp-title { font-size: 14px; font-weight: 700; }
-.executive-tpl .ex-exp-company { font-style: italic; color: #475569; font-size: 12px; }
-.executive-tpl .ex-exp-dates { font-size: 11px; color: #94a3b8; }
-.executive-tpl .ex-bullet { font-size: 12px; color: #334155; margin-bottom: 3px; line-height: 1.55; padding-left: 14px; position: relative; }
-.executive-tpl .ex-bullet::before { content: "—"; position: absolute; left: 0; }
-.executive-tpl .ex-split { display: flex; gap: 36px; margin-top: 8px; }
+.executive-tpl .ex-exp-title { font-size: 15px; font-weight: 700; color: #0a0f1f; }
+.executive-tpl .ex-exp-company { font-style: italic; color: #475569; font-size: 12.5px; }
+.executive-tpl .ex-exp-dates { font-size: 11px; color: #64748b; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.3px; }
+.executive-tpl .ex-bullet { font-size: 13px; color: #1e293b; margin-bottom: 4px; line-height: 1.6; padding-left: 16px; position: relative; }
+.executive-tpl .ex-bullet::before { content: "—"; position: absolute; left: 0; color: #64748b; }
+.executive-tpl .ex-split { display: flex; gap: 40px; margin-top: 10px; }
 .executive-tpl .ex-col { flex: 1; }
 .executive-tpl .ex-edu { margin-bottom: 8px; }
-.executive-tpl .ex-edu-degree { font-size: 12px; font-weight: 700; }
-.executive-tpl .ex-edu-school { font-size: 11px; color: #64748b; }
-.executive-tpl .ex-skills { font-size: 12px; color: #334155; line-height: 1.6; }
+.executive-tpl .ex-edu-degree { font-size: 13px; font-weight: 700; color: #0a0f1f; }
+.executive-tpl .ex-edu-school { font-size: 11.5px; color: #475569; font-style: italic; }
+.executive-tpl .ex-skills { font-size: 13px; color: #1e293b; line-height: 1.65; }
 
 /* ============================================================
    Editorial template — magazine feature with eyebrow + lede
    ============================================================ */
-.editorial-tpl { display: block; padding: 40px 48px; font-family: Georgia, "Times New Roman", serif; color: #1e1b2e; }
-.editorial-tpl .ed-eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px; }
-.editorial-tpl .ed-name { font-size: 40px; font-weight: 700; color: #0f0c1d; line-height: 1.05; margin-bottom: 4px; }
-.editorial-tpl .ed-title { font-size: 15px; font-style: italic; color: #3f3654; margin-bottom: 16px; }
-.editorial-tpl .ed-lede { font-size: 15px; font-style: italic; line-height: 1.55; padding-left: 14px; border-left: 3px solid; margin-bottom: 16px; }
-.editorial-tpl .ed-contact { font-size: 11px; color: #7a7090; margin-bottom: 20px; }
-.editorial-tpl .ed-section { margin-bottom: 18px; }
-.editorial-tpl .ed-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 12px; }
-.editorial-tpl .ed-exp { margin-bottom: 16px; }
-.editorial-tpl .ed-exp-meta { display: flex; gap: 10px; align-items: baseline; margin-bottom: 2px; }
-.editorial-tpl .ed-exp-dates { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; }
-.editorial-tpl .ed-exp-company { font-size: 11px; font-style: italic; color: #3f3654; }
-.editorial-tpl .ed-exp-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-.editorial-tpl .ed-bullet { font-size: 13px; color: #2a2440; margin-bottom: 3px; line-height: 1.55; padding-left: 14px; position: relative; }
-.editorial-tpl .ed-bullet::before { content: "·"; position: absolute; left: 3px; font-size: 18px; line-height: 1; }
-.editorial-tpl .ed-split { display: flex; gap: 32px; margin-top: 10px; }
+.editorial-tpl { display: block; padding: 44px 52px; font-family: "Source Serif 4", Georgia, "Times New Roman", serif; color: #1e1b2e; }
+.editorial-tpl .ed-eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; font-family: "Inter", -apple-system, sans-serif; color: #5b4e8a; }
+.editorial-tpl .ed-name { font-size: 44px; font-weight: 700; color: #0f0c1d; line-height: 1.02; margin-bottom: 6px; letter-spacing: -0.015em; }
+.editorial-tpl .ed-title { font-size: 16px; font-style: italic; color: #3f3654; margin-bottom: 18px; }
+.editorial-tpl .ed-lede { font-size: 15.5px; font-style: italic; line-height: 1.6; padding-left: 16px; border-left: 3px solid; margin-bottom: 18px; color: #2a2440; }
+.editorial-tpl .ed-contact { font-size: 11px; color: #5f5478; margin-bottom: 22px; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.2px; }
+.editorial-tpl .ed-section { margin-bottom: 20px; }
+.editorial-tpl .ed-section-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.8px; margin-bottom: 14px; font-family: "Inter", -apple-system, sans-serif; color: #0f0c1d; }
+.editorial-tpl .ed-exp { margin-bottom: 18px; }
+.editorial-tpl .ed-exp-meta { display: flex; gap: 12px; align-items: baseline; margin-bottom: 3px; }
+.editorial-tpl .ed-exp-dates { font-size: 11px; font-weight: 700; letter-spacing: 1px; font-family: "Inter", -apple-system, sans-serif; color: #5b4e8a; }
+.editorial-tpl .ed-exp-company { font-size: 12px; font-style: italic; color: #3f3654; }
+.editorial-tpl .ed-exp-title { font-size: 18px; font-weight: 700; margin-bottom: 7px; color: #0f0c1d; letter-spacing: -0.01em; }
+.editorial-tpl .ed-bullet { font-size: 13.5px; color: #1e1b2e; margin-bottom: 4px; line-height: 1.6; padding-left: 16px; position: relative; }
+.editorial-tpl .ed-bullet::before { content: "·"; position: absolute; left: 3px; font-size: 20px; line-height: 1; color: #5b4e8a; }
+.editorial-tpl .ed-split { display: flex; gap: 36px; margin-top: 12px; }
 .editorial-tpl .ed-edu { margin-bottom: 8px; }
-.editorial-tpl .ed-edu-degree { font-size: 13px; font-weight: 700; }
-.editorial-tpl .ed-edu-school { font-size: 11px; font-style: italic; color: #5f5478; }
-.editorial-tpl .ed-skills { font-size: 13px; color: #2a2440; line-height: 1.6; }
+.editorial-tpl .ed-edu-degree { font-size: 13.5px; font-weight: 700; color: #0f0c1d; }
+.editorial-tpl .ed-edu-school { font-size: 11.5px; font-style: italic; color: #5f5478; }
+.editorial-tpl .ed-skills { font-size: 13.5px; color: #1e1b2e; line-height: 1.65; }
 
 /* ============================================================
    Compact template — dense two-column
    ============================================================ */
-.compact-tpl { display: block; padding: 28px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; color: #0f172a; }
-.compact-tpl .co-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 8px; border-bottom: 1.5px solid; margin-bottom: 12px; }
-.compact-tpl .co-name { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; }
-.compact-tpl .co-title { font-size: 12px; color: #475569; margin: 1px 0 0; }
-.compact-tpl .co-contact { font-size: 10px; color: #64748b; text-align: right; line-height: 1.4; white-space: pre-line; }
-.compact-tpl .co-summary { margin-bottom: 12px; }
-.compact-tpl .co-summary-text { font-size: 11px; line-height: 1.45; color: #1e293b; }
-.compact-tpl .co-grid { display: flex; gap: 22px; }
+/* Compact bumped all font sizes ~1-1.5px to stop people squinting.
+   Still dense, but now readable without a magnifier. */
+.compact-tpl { display: block; padding: 32px 36px; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; color: #0f172a; font-feature-settings: "ss01", "cv11"; }
+.compact-tpl .co-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; border-bottom: 1.5px solid; margin-bottom: 14px; }
+.compact-tpl .co-name { font-size: 24px; font-weight: 700; color: #0a0f1f; margin: 0; letter-spacing: -0.01em; }
+.compact-tpl .co-title { font-size: 12.5px; color: #334155; margin: 2px 0 0; font-weight: 500; }
+.compact-tpl .co-contact { font-size: 11px; color: #64748b; text-align: right; line-height: 1.5; white-space: pre-line; }
+.compact-tpl .co-summary { margin-bottom: 14px; }
+.compact-tpl .co-summary-text { font-size: 12px; line-height: 1.55; color: #1e293b; }
+.compact-tpl .co-grid { display: flex; gap: 26px; }
 .compact-tpl .co-main { flex: 2.4; }
 .compact-tpl .co-aside { flex: 1; }
-.compact-tpl .co-section { margin-bottom: 12px; }
-.compact-tpl .co-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
-.compact-tpl .co-exp { margin-bottom: 10px; }
-.compact-tpl .co-exp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1px; }
-.compact-tpl .co-exp-title { font-size: 12px; font-weight: 700; }
-.compact-tpl .co-exp-dates { font-size: 10px; color: #64748b; }
-.compact-tpl .co-exp-company { font-size: 10px; margin: 0 0 4px; }
-.compact-tpl .co-bullet { font-size: 10.5px; color: #334155; margin-bottom: 2px; line-height: 1.4; }
-.compact-tpl .co-skills { font-size: 10.5px; color: #1e293b; line-height: 1.5; }
-.compact-tpl .co-edu { margin-bottom: 6px; }
-.compact-tpl .co-edu-degree { font-size: 11px; font-weight: 700; margin: 0; }
-.compact-tpl .co-edu-school { font-size: 10px; color: #64748b; margin: 0; }
+.compact-tpl .co-section { margin-bottom: 14px; }
+.compact-tpl .co-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 9px; color: #0a0f1f; }
+.compact-tpl .co-exp { margin-bottom: 11px; }
+.compact-tpl .co-exp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+.compact-tpl .co-exp-title { font-size: 12.5px; font-weight: 700; color: #0a0f1f; }
+.compact-tpl .co-exp-dates { font-size: 10.5px; color: #64748b; letter-spacing: 0.2px; }
+.compact-tpl .co-exp-company { font-size: 11px; margin: 0 0 5px; color: #475569; }
+.compact-tpl .co-bullet { font-size: 11.5px; color: #1e293b; margin-bottom: 3px; line-height: 1.5; }
+.compact-tpl .co-skills { font-size: 11.5px; color: #1e293b; line-height: 1.55; }
+.compact-tpl .co-edu { margin-bottom: 7px; }
+.compact-tpl .co-edu-degree { font-size: 11.5px; font-weight: 700; margin: 0; color: #0a0f1f; }
+.compact-tpl .co-edu-school { font-size: 10.5px; color: #475569; margin: 0; }
