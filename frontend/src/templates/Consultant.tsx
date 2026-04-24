@@ -3,6 +3,7 @@ import type { Style } from "@react-pdf/types";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
 import PhotoSlotPdf from "./PhotoSlotPdf";
+import { T } from "./tokens";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Times-Roman", fontSize: 10, color: "#111111", padding: "28 40" },
@@ -15,13 +16,13 @@ const styles = StyleSheet.create({
   rule: { borderBottomWidth: 0.5, borderBottomColor: "#333333", marginBottom: 10 },
   sectionTitle: { fontSize: 9, fontFamily: "Times-Bold", textTransform: "uppercase", letterSpacing: 1.5, color: "#111111", marginBottom: 6 },
   section: { marginBottom: 14 },
-  expBlock: { marginBottom: 10 },
+  expBlock: { marginBottom: T.expBlockMarginBottom },
   expHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
-  expCompany: { fontSize: 10, fontFamily: "Times-Bold" },
+  expTitle: { fontSize: 10, fontFamily: "Times-Bold" },
   expDates: { fontSize: 9, fontFamily: "Times-Roman", color: "#444444" },
-  expTitle: { fontSize: 9, fontFamily: "Times-Italic", color: "#333333", marginBottom: 4 },
-  bullet: { fontSize: 9, fontFamily: "Times-Roman", color: "#222222", marginBottom: 2, paddingLeft: 10, lineHeight: 1.5 },
-  summary: { fontSize: 9, fontFamily: "Times-Roman", lineHeight: 1.6, color: "#222222", marginBottom: 2 },
+  expCompany: { fontSize: 9, fontFamily: "Times-Italic", color: "#333333", marginBottom: 4 },
+  bullet: { fontSize: 9, fontFamily: "Times-Roman", color: "#222222", marginBottom: T.bulletMarginBottom, paddingLeft: 10, lineHeight: T.bulletLineHeight },
+  summary: { fontSize: 9, fontFamily: "Times-Roman", lineHeight: T.summaryLineHeight, color: "#222222", marginBottom: 2 },
   eduRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
   eduDegree: { fontSize: 10, fontFamily: "Times-Bold" },
   eduMeta: { fontSize: 9, fontFamily: "Times-Roman", color: "#444444" },
@@ -98,10 +99,10 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
           {data.experiences.map((exp, i) => (
             <View key={i} wrap={false} style={styles.expBlock}>
               <View style={styles.expHeader}>
-                <Text style={styles.expCompany}>{exp.company}</Text>
+                <Text style={styles.expTitle}>{exp.title}</Text>
                 <Text style={styles.expDates}>{exp.dates}</Text>
               </View>
-              <Text style={styles.expTitle}>{exp.title}</Text>
+              <Text style={styles.expCompany}>{exp.company}</Text>
               {exp.bullets.map((b, j) => (
                 <BoldLeadBullet key={j} text={`• ${b}`} style={styles.bullet} />
               ))}

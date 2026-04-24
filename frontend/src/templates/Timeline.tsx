@@ -2,21 +2,22 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
 import PhotoSlotPdf from "./PhotoSlotPdf";
+import { T } from "./tokens";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b", padding: 28 },
   name: { fontSize: 18, fontFamily: "Helvetica-Bold", color: "#0f172a" },
   title: { fontSize: 11, color: "#475569", marginBottom: 2 },
   contact: { fontSize: 8, color: "#94a3b8", marginBottom: 14 },
-  summary: { borderLeftWidth: 2, padding: "4 10", marginBottom: 14, fontSize: 10, lineHeight: 1.5 },
+  summary: { borderLeftWidth: 2, padding: "4 10", marginBottom: 14, fontSize: 10, lineHeight: T.summaryLineHeight },
   sectionTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, marginTop: 6 },
   rail: { borderLeftWidth: 1, borderLeftColor: "#cbd5e1", paddingLeft: 18, marginLeft: 4 },
-  exp: { marginBottom: 14, position: "relative" },
+  exp: { marginBottom: T.expBlockMarginBottom, position: "relative" },
   dot: { position: "absolute", left: -22, top: 4, width: 6, height: 6, borderRadius: 3 },
   expDates: { fontSize: 8, color: "#94a3b8", marginBottom: 2 },
   expTitle: { fontSize: 11, fontFamily: "Helvetica-Bold" },
   expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  bullet: { fontSize: 9, color: "#475569", marginBottom: 2, paddingLeft: 8 },
+  bullet: { fontSize: 9, color: "#475569", marginBottom: T.bulletMarginBottom, paddingLeft: 8, lineHeight: T.bulletLineHeight },
   split: { flexDirection: "row", gap: 24, marginTop: 10 },
   col: { flex: 1 },
   eduBlock: { marginBottom: 8 },

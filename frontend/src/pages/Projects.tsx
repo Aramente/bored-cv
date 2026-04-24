@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { API_URL } from "../services/api";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 
 interface Project {
   id: number | string;
@@ -29,7 +28,7 @@ export default function Projects() {
     if (offer && cvData) {
       allProjects.push({
         id: "current",
-        name: offer.company || offer.title || "Current project",
+        name: offer.company || offer.title || "Current session",
         offer_title: offer.title,
         match_score: cvData.match_score || 0,
         updated_at: new Date().toISOString(),
@@ -76,13 +75,7 @@ export default function Projects() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+      <TopNav />
       <div className="page-content">
         <div className="projects-header">
           <h1>{t("projects.title")}</h1>

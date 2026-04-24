@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
 import PhotoSlotPdf from "./PhotoSlotPdf";
+import { T } from "./tokens";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#111111", padding: 32 },
@@ -13,13 +14,13 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#555555", marginBottom: 8 },
   highlights: { marginBottom: 14 },
   highlightsLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 1, color: "#555555", marginBottom: 6 },
-  highlightBullet: { fontSize: 10, color: "#111111", lineHeight: 1.55, marginBottom: 3, paddingLeft: 10 },
-  expBlock: { marginBottom: 12 },
+  highlightBullet: { fontSize: 10, color: "#111111", lineHeight: T.summaryLineHeight, marginBottom: 3, paddingLeft: 10 },
+  expBlock: { marginBottom: T.expBlockMarginBottom },
   expRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
   expTitle: { fontSize: 10, fontFamily: "Helvetica-Bold" },
   expDates: { fontSize: 9, color: "#555555" },
   expCompany: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#222222", marginBottom: 3 },
-  bullet: { fontSize: 9, color: "#333333", marginBottom: 2, paddingLeft: 8 },
+  bullet: { fontSize: 9, color: "#333333", marginBottom: T.bulletMarginBottom, paddingLeft: 8, lineHeight: T.bulletLineHeight },
   skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   skill: { fontSize: 9, color: "#333333" },
   eduBlock: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },

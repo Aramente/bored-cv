@@ -4,15 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { parseLinkedIn, scrapeOffer, analyzeProfile, draftCV, translateCV, extractColors } from "../services/api";
 import type { CVData } from "../store";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import RememberedCard from "../components/RememberedCard";
 
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, setTargetMarket, profile: storedProfile } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, profile: storedProfile } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -151,14 +150,7 @@ export default function Upload() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-        <StepIndicator current="upload" />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+      <TopNav center={<StepIndicator current="upload" />} />
       <div className="page-content">
         <h1>{t("upload.title")}</h1>
 
@@ -264,23 +256,6 @@ export default function Upload() {
               onChange={(e) => setOfferText(e.target.value)}
             />
           )}
-        </section>
-
-        <section style={{ marginBottom: 32 }}>
-          <label className="label">{t("upload.market_label")}</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {(["france", "europe", "us", "global"] as const).map((m) => (
-              <button
-                key={m}
-                className={targetMarket === m ? "btn-primary" : "btn-secondary"}
-                style={{ padding: "8px 16px", fontSize: 13 }}
-                onClick={() => setTargetMarket(m)}
-              >
-                {t(`upload.market_${m}`)}
-              </button>
-            ))}
-          </div>
-          <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 6 }}>{t("upload.market_hint")}</p>
         </section>
 
         <button

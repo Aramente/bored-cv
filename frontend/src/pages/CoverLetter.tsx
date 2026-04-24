@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Document, Page, Text, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type CoverLetterData } from "../store";
 import { generateCoverLetter } from "../services/api";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 
 const pdfStyles = StyleSheet.create({
   page: { padding: 60, fontFamily: "Helvetica", fontSize: 11, color: "#1e293b", lineHeight: 1.6 },
@@ -60,13 +59,7 @@ export default function CoverLetter() {
   if (!cvData) {
     return (
       <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <AuthButton />
-            <LanguageToggle />
-          </div>
-        </nav>
+        <TopNav />
         <div className="guard-state">
           <div>
             <p>{t("guards.no_generated")}</p>
@@ -86,16 +79,13 @@ export default function CoverLetter() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <TopNav
+        extra={
           <button className="btn-secondary" onClick={() => navigate("/templates")} style={{ padding: "6px 12px", fontSize: 12 }}>
             {t("common.back")}
           </button>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+        }
+      />
       <div className="page-content">
         <h1>{t("cover_letter.title")}</h1>
         <p className="subtitle">{t("cover_letter.subtitle")}</p>

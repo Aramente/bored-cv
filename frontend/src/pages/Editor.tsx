@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import CleanHtml from "../templates/CleanHtml";
 import ContrastHtml from "../templates/ContrastHtml";
@@ -100,13 +99,7 @@ export default function Editor() {
   if (!cvData) {
     return (
       <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <AuthButton />
-            <LanguageToggle />
-          </div>
-        </nav>
+        <TopNav />
         <div className="guard-state">
           <div>
             <p>{t("guards.no_generated")}</p>
@@ -121,15 +114,10 @@ export default function Editor() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-        <StepIndicator current="editor" />
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn-secondary" onClick={() => navigate("/chat")}>{t("common.back")}</button>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+      <TopNav
+        center={<StepIndicator current="editor" />}
+        extra={<button className="btn-secondary" onClick={() => navigate("/chat")}>{t("common.back")}</button>}
+      />
 
       <div
         style={{

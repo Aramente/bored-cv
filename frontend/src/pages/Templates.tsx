@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
 import { createSnapshot, SnapshotError } from "../services/api";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
@@ -50,13 +49,7 @@ export default function Templates() {
   if (!cvData) {
     return (
       <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <AuthButton />
-            <LanguageToggle />
-          </div>
-        </nav>
+        <TopNav />
         <div className="guard-state">
           <div>
             <p>{t("guards.no_generated")}</p>
@@ -78,15 +71,10 @@ export default function Templates() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{cursor:"pointer"}}>bored cv</span>
-        <StepIndicator current="templates" />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button className="btn-secondary" onClick={() => navigate("/editor")}>{t("common.back")}</button>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+      <TopNav
+        center={<StepIndicator current="templates" />}
+        extra={<button className="btn-secondary" onClick={() => navigate("/editor")}>{t("common.back")}</button>}
+      />
       <div className="page-content">
         <h1>{t("templates.title")}</h1>
         <p className="subtitle">{t("templates.subtitle")}</p>

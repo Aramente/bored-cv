@@ -817,11 +817,34 @@ textarea.input { resize: vertical; min-height: 100px; }
   gap: 12px;
   margin-bottom: 24px;
 }
+.templates-grid > .card {
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+.templates-grid > .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
 @media (max-width: 1024px) {
   .templates-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 640px) {
   .templates-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .templates-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+    margin-left: calc(var(--sp-md) * -1);
+    margin-right: calc(var(--sp-md) * -1);
+    padding: 4px var(--sp-md);
+    scrollbar-width: thin;
+  }
+  .templates-grid > .card {
+    flex: 0 0 66%;
+    scroll-snap-align: start;
+  }
 }
 
 /* Tone selector */

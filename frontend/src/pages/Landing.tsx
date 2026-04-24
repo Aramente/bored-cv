@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { API_URL } from "../services/api";
-import LanguageToggle from "../components/LanguageToggle";
-import AuthButton from "../components/AuthButton";
+import TopNav from "../components/TopNav";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -28,13 +27,7 @@ export default function Landing() {
 
   return (
     <div className="page landing">
-      <nav className="nav">
-        <span className="logo">bored cv</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <AuthButton />
-          <LanguageToggle />
-        </div>
-      </nav>
+      <TopNav staticLogo />
 
       <section className="hero">
         <img src="/bored-cv/logo-hero.webp" alt="Bored CV character" className="logo-hero" />

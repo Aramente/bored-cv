@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { getSnapshot, type SnapshotPayload } from "../services/api";
+import TopNav from "../components/TopNav";
 import type { TemplateId } from "../store";
 import Clean from "../templates/Clean";
 import Contrast from "../templates/Contrast";
@@ -54,9 +55,7 @@ export default function SharedView() {
   if (error) {
     return (
       <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-        </nav>
+        <TopNav minimal />
         <div className="guard-state">
           <div>
             <p>This CV link is no longer available.</p>
@@ -70,9 +69,14 @@ export default function SharedView() {
   if (!snapshot || !pdfDocument) {
     return (
       <div className="page">
-        <nav className="nav">
-          <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-        </nav>
+        <TopNav
+          minimal
+          extra={
+            <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: "var(--radius-pill)", background: "var(--bg-muted)", color: "var(--text-muted)", letterSpacing: 0.3 }}>
+              Shared · view only
+            </span>
+          }
+        />
         <div className="guard-state"><div><span className="spinner" /></div></div>
       </div>
     );
@@ -80,9 +84,14 @@ export default function SharedView() {
 
   return (
     <div className="page">
-      <nav className="nav">
-        <span className="logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>bored cv</span>
-      </nav>
+      <TopNav
+        minimal
+        extra={
+          <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: "var(--radius-pill)", background: "var(--bg-muted)", color: "var(--text-muted)", letterSpacing: 0.3 }}>
+            Shared · view only
+          </span>
+        }
+      />
       <div className="page-content">
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", height: 700, marginBottom: 16 }}>
           <PDFViewer width="100%" height="100%" showToolbar={false}>
