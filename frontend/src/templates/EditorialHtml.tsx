@@ -54,6 +54,7 @@ export default function EditorialHtml({ data, brandColors }: Props) {
             <div className="ed-exp-meta">
               <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="ed-exp-dates" style={{ color: accentColor }} placeholder="2022 — 2024" rich={false} />
               <Editable as="span" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="ed-exp-company" placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
+              <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
             </div>
             <Editable as="h3" value={exp.title} onSave={(v) => save(`experiences.${i}.title`, v)} className="ed-exp-title" placeholder={isFr ? "Intitulé" : "Job title"} rich={false} />
             <ul className="cv-bullets ed-bullets">
@@ -64,6 +65,7 @@ export default function EditorialHtml({ data, brandColors }: Props) {
                 </li>
               ))}
             </ul>
+            <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "raison du départ (optionnel)" : "reason for leaving (optional)"} rich={false} />
             <button type="button" className="cv-add-bullet" onClick={() => { pushCvHistory(); addCvBullet(i); }}>+ {isFr ? "Ajouter une puce" : "Add bullet"}</button>
           </article>
         ))}

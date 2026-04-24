@@ -20,6 +20,8 @@ const styles = StyleSheet.create({
   bullet: { fontSize: 9, color: "#475569", marginBottom: T.bulletMarginBottom, paddingLeft: 10, lineHeight: T.bulletLineHeight },
   skills: { fontSize: 9, fontFamily: "Courier", color: "#1e293b", lineHeight: 1.5 },
   eduLine: { fontSize: 9, marginBottom: 3 },
+  contractType: { fontSize: 7, fontFamily: "Courier-Bold", color: "#64748b", marginBottom: 3 },
+  exitReason: { fontSize: 8, fontFamily: "Courier", color: "#64748b", marginTop: 2 },
 });
 
 export default function Mono({ data, brandColors }: TemplateProps) {
@@ -55,7 +57,9 @@ export default function Mono({ data, brandColors }: TemplateProps) {
                 <Text style={styles.expDates}>{"  " + exp.dates}</Text>
               </Text>
             </View>
+            {exp.contractType ? <Text style={styles.contractType}>// {exp.contractType}</Text> : null}
             {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`▸ ${b}`} style={styles.bullet} />)}
+            {exp.exitReason ? <Text style={styles.exitReason}>// {exp.exitReason}</Text> : null}
           </View>
         ))}
 

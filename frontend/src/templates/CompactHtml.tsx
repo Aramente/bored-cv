@@ -55,7 +55,10 @@ export default function CompactHtml({ data, brandColors }: Props) {
                   <Editable as="span" value={exp.title} onSave={(v) => save(`experiences.${i}.title`, v)} className="co-exp-title" placeholder={isFr ? "Intitulé" : "Job title"} rich={false} />
                   <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="co-exp-dates" placeholder="2022 — 2024" rich={false} />
                 </div>
-                <Editable as="p" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="co-exp-company" style={{ color: accentColor }} placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
+                <div style={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                  <Editable as="p" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="co-exp-company" style={{ color: accentColor }} placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
+                  <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
+                </div>
                 <ul className="cv-bullets co-bullets">
                   {exp.bullets.map((b, j) => (
                     <li key={j} className="cv-bullet-row">
@@ -64,6 +67,7 @@ export default function CompactHtml({ data, brandColors }: Props) {
                     </li>
                   ))}
                 </ul>
+                <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "raison du départ (optionnel)" : "reason for leaving (optional)"} rich={false} />
                 <button type="button" className="cv-add-bullet" onClick={() => { pushCvHistory(); addCvBullet(i); }}>+ {isFr ? "Ajouter une puce" : "Add bullet"}</button>
               </div>
             ))}

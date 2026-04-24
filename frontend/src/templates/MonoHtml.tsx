@@ -58,6 +58,7 @@ export default function MonoHtml({ data, brandColors }: Props) {
               <span className="mo-at" style={{ color: accentColor }}> @ </span>
               <Editable as="span" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="mo-exp-company" placeholder={isFr ? "Entreprise" : "Company"} rich={false} />
               <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="mo-exp-dates" placeholder="2022 — 2024" rich={false} />
+              <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
             </div>
             <ul className="cv-bullets mo-bullets">
               {exp.bullets.map((b, j) => (
@@ -68,6 +69,7 @@ export default function MonoHtml({ data, brandColors }: Props) {
                 </li>
               ))}
             </ul>
+            <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "// raison du départ (optionnel)" : "// reason for leaving (optional)"} rich={false} />
             <button type="button" className="cv-add-bullet" onClick={() => { pushCvHistory(); addCvBullet(i); }}>+ {isFr ? "Ajouter une puce" : "Add bullet"}</button>
           </div>
         ))}

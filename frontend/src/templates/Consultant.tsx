@@ -30,6 +30,8 @@ const styles = StyleSheet.create({
   skillsText: { fontSize: 9, fontFamily: "Times-Roman", color: "#222222", lineHeight: 1.6 },
   bottomRuleThin: { borderTopWidth: 0.5, borderTopColor: "#444444", marginTop: 16, marginBottom: 2 },
   bottomRule: { borderTopWidth: 1.5, borderTopColor: "#111111" },
+  contractType: { fontSize: 7, fontFamily: "Times-Bold", color: "#444444", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+  exitReason: { fontSize: 8, fontFamily: "Times-Italic", color: "#444444", marginTop: 3 },
 });
 
 function BoldLeadBullet({ text, style }: { text: string; style: Style }) {
@@ -103,9 +105,11 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
                 <Text style={styles.expDates}>{exp.dates}</Text>
               </View>
               <Text style={styles.expCompany}>{exp.company}</Text>
+              {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
               {exp.bullets.map((b, j) => (
                 <BoldLeadBullet key={j} text={`• ${b}`} style={styles.bullet} />
               ))}
+              {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
             </View>
           ))}
         </View>

@@ -24,6 +24,8 @@ const styles = StyleSheet.create({
   skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   skill: { fontSize: 9, color: "#333333" },
   eduBlock: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  contractType: { fontSize: 7, color: "#555555", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 3, fontFamily: "Helvetica-Bold" },
+  exitReason: { fontSize: 8, color: "#555555", fontStyle: "italic", marginTop: 2 },
 });
 
 export default function Minimal({ data, brandColors }: TemplateProps) {
@@ -68,9 +70,11 @@ export default function Minimal({ data, brandColors }: TemplateProps) {
                 <Text style={styles.expDates}>{exp.dates}</Text>
               </View>
               <Text style={styles.expCompany}>{exp.company}</Text>
+              {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
               {exp.bullets.map((b, j) => (
                 <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
               ))}
+              {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
             </View>
           ))}
         </View>

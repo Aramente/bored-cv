@@ -24,6 +24,8 @@ const styles = StyleSheet.create({
   eduDegree: { fontSize: 10, fontFamily: "Helvetica-Bold" },
   eduSchool: { fontSize: 9, color: "#64748b" },
   skills: { fontSize: 9, color: "#475569", lineHeight: 1.5 },
+  contractType: { fontSize: 7, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 3, fontFamily: "Helvetica-Bold" },
+  exitReason: { fontSize: 8, color: "#64748b", fontStyle: "italic", marginTop: 2 },
 });
 
 export default function Timeline({ data, brandColors }: TemplateProps) {
@@ -55,7 +57,9 @@ export default function Timeline({ data, brandColors }: TemplateProps) {
               <Text style={styles.expDates}>{exp.dates}</Text>
               <Text style={styles.expTitle}>{exp.title}</Text>
               <Text style={[styles.expCompany, { color: accent }]}>{exp.company}</Text>
+              {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
               {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />)}
+              {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
             </View>
           ))}
         </View>

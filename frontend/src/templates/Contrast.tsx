@@ -26,6 +26,8 @@ const styles = StyleSheet.create({
   bullet: { fontSize: 9, color: "#475569", marginBottom: T.bulletMarginBottom, paddingLeft: 8, lineHeight: T.bulletLineHeight },
   eduItem: { fontSize: 9, marginBottom: 4 },
   eduSchool: { fontSize: 8, color: "#94a3b8" },
+  contractType: { fontSize: 7, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 3, fontFamily: "Helvetica-Bold" },
+  exitReason: { fontSize: 8, color: "#64748b", fontStyle: "italic", marginTop: 2 },
 });
 
 export default function Contrast({ data, brandColors }: TemplateProps) {
@@ -61,9 +63,11 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
                   <Text style={[styles.expCompany, { color: accentColor }]}>{exp.company}</Text>
                   <Text style={styles.expDates}>{exp.dates}</Text>
                 </View>
+                {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
                 {exp.bullets.map((b, j) => (
                   <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />
                 ))}
+                {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
               </View>
             ))}
           </View>

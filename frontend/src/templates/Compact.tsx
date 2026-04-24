@@ -26,6 +26,8 @@ const styles = StyleSheet.create({
   eduBlock: { marginBottom: 5 },
   eduDegree: { fontSize: 9, fontFamily: "Helvetica-Bold" },
   eduSchool: { fontSize: 8, color: "#64748b" },
+  contractType: { fontSize: 6.5, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2, fontFamily: "Helvetica-Bold" },
+  exitReason: { fontSize: 7.5, color: "#64748b", fontStyle: "italic", marginTop: 2 },
 });
 
 export default function Compact({ data, brandColors }: TemplateProps) {
@@ -61,7 +63,9 @@ export default function Compact({ data, brandColors }: TemplateProps) {
                   <Text style={styles.expDates}>{exp.dates}</Text>
                 </View>
                 <Text style={[styles.expCompany, { color: accent }]}>{exp.company}</Text>
+                {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
                 {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`• ${b}`} style={styles.bullet} />)}
+                {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
               </View>
             ))}
           </View>

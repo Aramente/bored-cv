@@ -26,6 +26,8 @@ const styles = StyleSheet.create({
   eduDegree: { fontSize: 10, fontFamily: "Times-Bold" },
   eduSchool: { fontSize: 9, color: "#64748b" },
   skills: { fontSize: 10, color: "#334155", lineHeight: 1.5 },
+  contractType: { fontSize: 8, fontFamily: "Times-Bold", color: "#64748b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+  exitReason: { fontSize: 9, fontFamily: "Times-Italic", color: "#64748b", marginTop: 3 },
 });
 
 export default function Executive({ data, brandColors }: TemplateProps) {
@@ -64,7 +66,9 @@ export default function Executive({ data, brandColors }: TemplateProps) {
                 </View>
                 <Text style={styles.expDates}>{exp.dates}</Text>
               </View>
+              {exp.contractType ? <Text style={styles.contractType}>{exp.contractType}</Text> : null}
               {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`— ${b}`} style={styles.bullet} />)}
+              {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
             </View>
           ))}
         </View>
