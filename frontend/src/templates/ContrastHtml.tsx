@@ -34,17 +34,12 @@ export default function ContrastHtml({ data, brandColors }: Props) {
       </div>
 
       <div className="ct-skills-bar">
+        {/* Pills are the single source of truth — the comma-text Editable
+            that lived here was a duplicate of the pills above and made every
+            template render skills twice. Inline editing is a separate task. */}
         {data.skills.map((s, i) => (
           <span key={i} className="ct-skill-pill" style={{ background: accentColor }}>{s}</span>
         ))}
-        <Editable
-          as="div"
-          value={data.skills.join(", ")}
-          onSave={(v) => save("skills", v)}
-          className="ct-skills-editor"
-          placeholder={isFr ? "compétence, compétence..." : "skill, skill..."}
-          rich={false}
-        />
       </div>
 
       {data.summary !== undefined && (
