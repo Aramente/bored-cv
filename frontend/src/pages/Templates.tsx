@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { useStore, type TemplateId } from "../store";
+import { createSnapshot } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
@@ -41,6 +42,8 @@ export default function Templates() {
   const navigate = useNavigate();
   const { cvData, cvDataAlt, cvLang, setCvLang, selectedTemplate, setSelectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal } = useStore();
   const [beforeAfterOpen, setBeforeAfterOpen] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "creating" | "copied" | "error">("idle");
+  const [shareUrl, setShareUrl] = useState<string>("");
 
   const activeCv = cvLang === (cvData?.language || "en") ? cvData : (cvDataAlt || cvData);
 
@@ -242,6 +245,40 @@ export default function Templates() {
         </PDFDownloadLink>
         <button className="btn-secondary" style={{ width: "100%", marginTop: 8 }} onClick={() => navigate("/cover-letter")}>
           {t("templates.cover_letter")}
+        </button>
+
+        {/* Shareable public URL — freezes the CV at share time. Creator must
+            be signed in (backend enforces). Anyone with the link can view;
+            robots are blocked at three layers. */}
+        <button
+          className="btn-secondary"
+          style={{ width: "100%", marginTop: 8 }}
+          disabled={shareState === "creating"}
+          onClick={async () => {
+            setShareState("creating");
+            try {
+              const { slug } = await createSnapshot({
+                cv_data: displayCv,
+                template: selectedTemplate,
+                brand_colors: brandColors,
+                use_brand_colors: useBrandColors,
+              });
+              const url = `${window.location.origin}/bored-cv/v/${slug}`;
+              setShareUrl(url);
+              await navigator.clipboard.writeText(url).catch(() => {});
+              setShareState("copied");
+              setTimeout(() => setShareState("idle"), 4000);
+            } catch (e) {
+              console.error(e);
+              setShareState("error");
+              setTimeout(() => setShareState("idle"), 4000);
+            }
+          }}
+        >
+          {shareState === "creating" ? <span className="spinner" />
+            : shareState === "copied" ? `✓ Link copied — ${shareUrl}`
+            : shareState === "error" ? "Sign in to share a public link"
+            : "Share public link"}
         </button>
       </div>
     </div>

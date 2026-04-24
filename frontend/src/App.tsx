@@ -6,6 +6,7 @@ import Templates from "./pages/Templates";
 import Editor from "./pages/Editor";
 import Projects from "./pages/Projects";
 import CoverLetter from "./pages/CoverLetter";
+import SharedView from "./pages/SharedView";
 import ConsentBanner from "./components/ConsentBanner";
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/editor" element={<Editor />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/cover-letter" element={<CoverLetter />} />
+        <Route path="/v/:slug" element={<SharedView />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ConsentBanner />

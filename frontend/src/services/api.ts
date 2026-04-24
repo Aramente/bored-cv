@@ -165,3 +165,25 @@ export async function loadProject(id: number): Promise<any> {
   if (!res.ok) throw new Error("Failed to load project");
   return res.json();
 }
+
+// Shareable public snapshots — freeze-in-time CV copies under a random slug.
+// See backend/app/routers/snapshots.py for the auth + privacy model.
+export interface SnapshotPayload {
+  cv_data: CVData;
+  template: string;
+  brand_colors: { primary: string; secondary: string } | null;
+  use_brand_colors: boolean;
+}
+
+export async function createSnapshot(payload: SnapshotPayload): Promise<{ slug: string }> {
+  return post("/api/snapshots", payload);
+}
+
+export async function getSnapshot(slug: string): Promise<SnapshotPayload> {
+  const res = await fetch(`${API_URL}/api/snapshots/${encodeURIComponent(slug)}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Snapshot not found" }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}

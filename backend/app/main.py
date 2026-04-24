@@ -4,7 +4,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge, cover_letter, transcribe
+from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge, cover_letter, transcribe, snapshots
 
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
 
@@ -40,6 +40,7 @@ app.include_router(projects.router)
 app.include_router(knowledge.router)
 app.include_router(cover_letter.router)
 app.include_router(transcribe.router)
+app.include_router(snapshots.router)
 
 
 @app.get("/api/stats")

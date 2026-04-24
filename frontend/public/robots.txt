@@ -1,0 +1,7 @@
+User-agent: *
+# Shareable CV snapshots under /v/ are private by obscurity.
+# Crawlers should not index them. The server also sends X-Robots-Tag:
+# noindex, and the SharedView page emits a <meta name="robots"> tag —
+# three barriers for defence in depth.
+Disallow: /bored-cv/v/
+Disallow: /v/
