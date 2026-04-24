@@ -41,7 +41,9 @@ export default function CleanHtml({ data, brandColors }: Props) {
 
         <div className="cv-sidebar-section">
           <div className="cv-sidebar-section-title">{isFr ? "Compétences" : "Skills"}</div>
-          <Editable as="div" value={data.skills.join(", ")} onSave={(v) => save("skills", v)} className="cv-skills" placeholder={isFr ? "compétence, compétence..." : "skill, skill..."} rich={false} />
+          {/* Single chip-pill display — removed the duplicate comma-text Editable per Kevin's feedback.
+              To edit skills from this template, use the chat or settings; inline-chip editing is a
+              separate UX task if we want it back. */}
           <div className="cv-skills-preview">
             {data.skills.map((s, i) => <span key={i} className="cv-skill-tag">{s}</span>)}
           </div>

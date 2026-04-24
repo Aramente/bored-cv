@@ -1084,6 +1084,24 @@ textarea.input { resize: vertical; min-height: 100px; }
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
   position: relative;
 }
+/* Page-break indicator: dashed horizontal line at every A4 boundary so users
+   see what will spill to page 2 in the exported PDF. The line uses
+   repeating-linear-gradient so it auto-repeats if the CV grows past 1 page. */
+.cv-sheet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 1121px,
+    rgba(239, 68, 68, 0.28) 1121px 1123px
+  );
+  /* Hide the implicit line at y=0 so we only see breaks AFTER page 1 */
+  mask-image: linear-gradient(to bottom, transparent 0 1100px, #000 1100px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0 1100px, #000 1100px);
+}
 .cv-sidebar {
   width: 30%;
   background: #0c1f3d;

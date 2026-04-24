@@ -197,10 +197,14 @@ function asArray(v: unknown): string[] {
   return [];
 }
 
+// Hard cap: resumes read better with 4-6 focused competencies than a 12-skill
+// wall. Applied everywhere we accept CV data (user edits, upload, backend).
+const MAX_SKILLS = 6;
+
 function sanitizeCv(cv: CVData): CVData {
   return {
     ...cv,
-    skills: asArray(cv.skills),
+    skills: asArray(cv.skills).slice(0, MAX_SKILLS),
     languages: asArray(cv.languages),
     strengths: asArray(cv.strengths),
     improvements: asArray(cv.improvements),
@@ -238,7 +242,7 @@ export const useStore = create<AppState>()(persist((set) => ({
       if (!s.cvData) return s;
       const cv = structuredClone(s.cvData);
       if (path === "skills") {
-        cv.skills = value.split(",").map((s: string) => s.trim()).filter(Boolean);
+        cv.skills = value.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, MAX_SKILLS);
         return { cvData: cv };
       }
       const keys = path.split(".");
@@ -327,6 +331,12 @@ export const useStore = create<AppState>()(persist((set) => ({
     gapAnalysis: state.gapAnalysis,
     messages: state.messages.slice(-20),
     cvData: state.cvData,
+    // Persist the translated-alt CV so returning users can see the opposite
+    // language without re-hitting the translate endpoint. Without this, a user
+    // who generates EN, translates to FR, and reloads the page loses the FR
+    // version and sees only EN in the Editor — the "legacy project" bug.
+    cvDataAlt: state.cvDataAlt,
+    cvLang: state.cvLang,
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,
     toneChosen: state.toneChosen,

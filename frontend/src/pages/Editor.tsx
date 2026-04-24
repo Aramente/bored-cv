@@ -90,8 +90,15 @@ function validateCV(
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, tone, setTone, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, tone, setTone, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
   const [regenerating, setRegenerating] = useState(false);
+
+  // Language resolution — matches Templates.tsx. If the user toggled cvLang to
+  // the opposite of the stored CV language, show the translated alt (falling
+  // back to the original if translation hasn't finished). Without this, the
+  // Editor always rendered cvData regardless of cvLang, so loading a legacy
+  // EN-generated project meant you couldn't see the FR translation.
+  const activeCv = cvData && cvLang === (cvData.language || "en") ? cvData : (cvDataAlt || cvData);
 
   const handleToneChange = async (newTone: string) => {
     setTone(newTone);
@@ -131,7 +138,7 @@ export default function Editor() {
     );
   }
 
-  const issues = validateCV(cvData, t);
+  const issues = validateCV(activeCv || cvData, t);
 
   return (
     <div className="page">
@@ -226,12 +233,34 @@ export default function Editor() {
               {t(`templates.${id}`, id)}
             </button>
           ))}
+          {/* CV language toggle — swaps between cvData (original) and cvDataAlt
+              (translated). Disabled for the alt side when the translation
+              hasn't been produced yet. */}
+          <span style={{ flex: 1 }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            CV
+          </span>
+          {(["fr", "en"] as const).map((lang) => {
+            const hasLang = cvData?.language === lang || cvDataAlt?.language === lang;
+            return (
+              <button
+                key={lang}
+                className={cvLang === lang ? "btn-primary" : "btn-secondary"}
+                style={{ padding: "6px 10px", fontSize: 12, opacity: hasLang ? 1 : 0.4 }}
+                onClick={() => setCvLang(lang)}
+                disabled={!hasLang}
+                title={hasLang ? undefined : t("editor.translation_pending", "Translation not ready yet")}
+              >
+                {lang.toUpperCase()}
+              </button>
+            );
+          })}
         </div>
 
         {/* The editable CV itself — renders the currently selected template */}
         {(() => {
           const TemplateHtml = templateHtmlComponents[selectedTemplate] ?? CleanHtml;
-          return <TemplateHtml data={cvData} brandColors={useBrandColors ? brandColors : null} />;
+          return <TemplateHtml data={activeCv || cvData} brandColors={useBrandColors ? brandColors : null} />;
         })()}
 
         {/* Validation panel below the sheet — non-blocking */}
