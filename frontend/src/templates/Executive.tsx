@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Times-Roman", fontSize: 10, color: "#1e293b", padding: "36 42" },
@@ -34,6 +35,11 @@ export default function Executive({ data, brandColors }: TemplateProps) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={[styles.header, { borderBottomColor: gold }]}>
+          {data.photo && (
+            <View style={{ alignItems: "center", marginBottom: 10 }}>
+              <PhotoSlotPdf photo={data.photo} size={72} />
+            </View>
+          )}
           <Text style={[styles.name, { color: accent }]}>{data.name}</Text>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>

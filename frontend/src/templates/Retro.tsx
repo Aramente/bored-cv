@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Courier", fontSize: 10, color: "#2c2415", padding: "32 36", backgroundColor: "#faf5e8" },
@@ -31,10 +32,13 @@ export default function Retro({ data, brandColors }: TemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={[styles.header, { borderColor: accentColor }]}>
-          <Text style={styles.name}>{data.name}</Text>
-          <Text style={styles.titleLine}>_{data.title}_</Text>
-          <Text style={styles.contact}>{[data.email, data.phone, data.linkedin, data.location].filter(Boolean).join("  //  ")}</Text>
+        <View style={[styles.header, { borderColor: accentColor, flexDirection: "row", alignItems: "center", gap: 14 }]}>
+          {data.photo && <PhotoSlotPdf photo={data.photo} size={64} />}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{data.name}</Text>
+            <Text style={styles.titleLine}>_{data.title}_</Text>
+            <Text style={styles.contact}>{[data.email, data.phone, data.linkedin, data.location].filter(Boolean).join("  //  ")}</Text>
+          </View>
         </View>
 
         {data.summary && (

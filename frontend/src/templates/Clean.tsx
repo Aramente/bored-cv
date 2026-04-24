@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { flexDirection: "row", fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
@@ -32,6 +33,11 @@ export default function Clean({ data, brandColors }: TemplateProps) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={[styles.sidebar, { backgroundColor: sidebarBg }]}>
+          {data.photo && (
+            <View style={{ marginBottom: 12 }}>
+              <PhotoSlotPdf photo={data.photo} size={64} />
+            </View>
+          )}
           <Text style={styles.sidebarName}>{data.name}</Text>
           <Text style={styles.sidebarTitle}>{data.title}</Text>
           {(data.email || data.location) && (

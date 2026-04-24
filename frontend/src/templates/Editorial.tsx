@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Times-Roman", fontSize: 10, color: "#1e1b2e", padding: "36 44" },
@@ -30,9 +31,14 @@ export default function Editorial({ data, brandColors }: TemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={[styles.eyebrow, { color: accent }]}>{isFr ? "Portfolio" : "Curriculum"}</Text>
-        <Text style={styles.name}>{data.name}</Text>
-        <Text style={styles.title}>{data.title}</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.eyebrow, { color: accent }]}>{isFr ? "Portfolio" : "Curriculum"}</Text>
+            <Text style={styles.name}>{data.name}</Text>
+            <Text style={styles.title}>{data.title}</Text>
+          </View>
+          {data.photo && <PhotoSlotPdf photo={data.photo} size={72} />}
+        </View>
 
         {data.summary && (
           <View wrap={false}>

@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b" },
@@ -32,10 +33,13 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={[styles.header, { backgroundColor: headerBg }]}>
-          <Text style={styles.headerName}>{data.name}</Text>
-          <Text style={[styles.headerTitle, { color: accentColor }]}>{data.title}</Text>
-          <Text style={styles.headerContact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+        <View style={[styles.header, { backgroundColor: headerBg, flexDirection: "row", alignItems: "center", gap: 16 }]}>
+          {data.photo && <PhotoSlotPdf photo={data.photo} size={72} />}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerName}>{data.name}</Text>
+            <Text style={[styles.headerTitle, { color: accentColor }]}>{data.title}</Text>
+            <Text style={styles.headerContact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+          </View>
         </View>
         <View style={styles.skillsBar}>
           {data.skills.map((s, i) => <Text key={i} style={[styles.skillPill, { backgroundColor: accentColor }]}>{s}</Text>)}

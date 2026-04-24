@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { Style } from "@react-pdf/types";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Times-Roman", fontSize: 10, color: "#111111", padding: "28 40" },
@@ -55,6 +56,7 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
         <View style={styles.topRuleThin} />
 
         <View style={styles.nameBlock}>
+          {data.photo && <View style={{ marginBottom: 10 }}><PhotoSlotPdf photo={data.photo} size={72} /></View>}
           <Text style={styles.name}>{data.name}</Text>
           <Text style={styles.titleLine}>{data.title.toUpperCase()}</Text>
           <Text style={styles.contact}>{[data.email, data.phone, data.linkedin, data.location].filter(Boolean).join("  ·  ")}</Text>

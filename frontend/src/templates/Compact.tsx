@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 9, color: "#0f172a", padding: 24 },
@@ -33,9 +34,12 @@ export default function Compact({ data, brandColors }: TemplateProps) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={[styles.header, { borderBottomColor: accent }]}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.name}>{data.name}</Text>
-            <Text style={styles.title}>{data.title}</Text>
+          <View style={[styles.headerLeft, { flexDirection: "row", alignItems: "center", gap: 10 }]}>
+            {data.photo && <PhotoSlotPdf photo={data.photo} size={52} />}
+            <View>
+              <Text style={styles.name}>{data.name}</Text>
+              <Text style={styles.title}>{data.title}</Text>
+            </View>
           </View>
           <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("\n")}</Text>
         </View>

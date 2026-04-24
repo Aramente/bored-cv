@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 10, color: "#1e293b", padding: 28 },
@@ -30,9 +31,14 @@ export default function Timeline({ data, brandColors }: TemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.name}>{data.name}</Text>
-        <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 10 }}>
+          {data.photo && <PhotoSlotPdf photo={data.photo} size={64} />}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{data.name}</Text>
+            <Text style={styles.title}>{data.title}</Text>
+            <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+          </View>
+        </View>
 
         {data.summary && (
           <View wrap={false} style={[styles.summary, { borderLeftColor: accent }]}>

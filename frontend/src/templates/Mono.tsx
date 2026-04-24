@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { TemplateProps } from "./types";
 import { BoldMetrics } from "./BoldMetrics";
+import PhotoSlotPdf from "./PhotoSlotPdf";
 
 // Courier is the safest mono bundled with react-pdf.
 const styles = StyleSheet.create({
@@ -26,9 +27,14 @@ export default function Mono({ data, brandColors }: TemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.name}>{data.name}</Text>
-        <Text style={[styles.prompt, { color: accent }]}># {data.title}</Text>
-        <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 6 }}>
+          {data.photo && <PhotoSlotPdf photo={data.photo} size={58} />}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{data.name}</Text>
+            <Text style={[styles.prompt, { color: accent }]}># {data.title}</Text>
+            <Text style={styles.contact}>{[data.location, data.email, data.phone, data.linkedin].filter(Boolean).join("  ·  ")}</Text>
+          </View>
+        </View>
 
         {data.summary && (
           <View wrap={false}>
