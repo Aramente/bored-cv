@@ -52,7 +52,7 @@ export default function Clean({ data, brandColors }: TemplateProps) {
           <View style={styles.sidebarSection}>
             <Text style={styles.sidebarSectionTitle}>{data.language === "fr" ? "Formation" : "Education"}</Text>
             {data.education.map((e, i) => (
-              <View key={i} style={{ marginBottom: 6 }}>
+              <View key={i} wrap={false} style={{ marginBottom: 6 }}>
                 <Text style={{ fontSize: 9, fontFamily: "Helvetica-Bold" }}>{e.degree}</Text>
                 <Text style={styles.contactItem}>{e.school}, {e.year}</Text>
               </View>

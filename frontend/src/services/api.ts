@@ -179,8 +179,10 @@ export class SnapshotError extends Error {
   // Status is exposed so the UI can distinguish "sign in" (401) from other
   // failures (network, 500). The generic post() helper flattens both into a
   // plain Error which is why we bypass it here.
-  constructor(public status: number, message: string) {
+  status: number;
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
     this.name = "SnapshotError";
   }
 }

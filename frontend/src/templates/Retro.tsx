@@ -69,7 +69,7 @@ export default function Retro({ data, brandColors }: TemplateProps) {
           <View style={[styles.divider, { borderBottomColor: accentColor }]} />
           <View style={[styles.dividerThin, { borderBottomColor: accentLight }]} />
           {data.education.map((e, i) => (
-            <View key={i} style={styles.eduRow}>
+            <View key={i} wrap={false} style={styles.eduRow}>
               <Text style={styles.eduDegree}>{e.degree}</Text>
               <Text style={styles.eduMeta}>{e.school}  [{e.year}]</Text>
             </View>

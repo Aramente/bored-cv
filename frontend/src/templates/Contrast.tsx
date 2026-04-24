@@ -65,7 +65,7 @@ export default function Contrast({ data, brandColors }: TemplateProps) {
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { borderBottomColor: accentColor }]}>{data.language === "fr" ? "Formation" : "Education"}</Text>
             {data.education.map((e, i) => (
-              <View key={i} style={{ marginBottom: 4 }}>
+              <View key={i} wrap={false} style={{ marginBottom: 4 }}>
                 <Text style={styles.eduItem}>{e.degree}</Text>
                 <Text style={styles.eduSchool}>{e.school}, {e.year}</Text>
               </View>

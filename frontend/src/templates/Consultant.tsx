@@ -65,7 +65,7 @@ export default function Consultant({ data, brandColors }: TemplateProps) {
           <Text style={styles.sectionTitle}>{data.language === "fr" ? "Formation" : "Education"}</Text>
           <View style={[styles.rule, { borderBottomColor: accentColor }]} />
           {data.education.map((e, i) => (
-            <View key={i} style={styles.eduRow}>
+            <View key={i} wrap={false} style={styles.eduRow}>
               <View>
                 <Text style={styles.eduDegree}>{e.degree}</Text>
                 <Text style={styles.eduSchool}>{e.school}</Text>

@@ -71,7 +71,7 @@ export default function Minimal({ data, brandColors }: TemplateProps) {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: accentColor }]}>{data.language === "fr" ? "Formation" : "Education"}</Text>
           {data.education.map((e, i) => (
-            <View key={i} style={styles.eduBlock}>
+            <View key={i} wrap={false} style={styles.eduBlock}>
               <Text style={{ fontSize: 9 }}>{e.degree}  —  {e.school}</Text>
               <Text style={{ fontSize: 9, color: "#555555" }}>{e.year}</Text>
             </View>
