@@ -7,11 +7,12 @@
   --text: #141413;
   --text-muted: #555550;
   --text-dim: #8a8a80;
-  --accent: #e8a800;
-  --accent-hover: #cc9400;
-  --accent-subtle: rgba(232, 168, 0, 0.08);
-  --gold: #e8a800;
-  --gold-hover: #cc9400;
+  --accent: #1e293b;
+  --accent-hover: #0f172a;
+  --accent-subtle: rgba(30, 41, 59, 0.06);
+  --gold: #1e293b;
+  --gold-hover: #0f172a;
+  --amber: #e8a800;
   --green: #2d9d3f;
   --red: #d93025;
   --radius-sm: 4px;
@@ -30,7 +31,7 @@
 html { scroll-behavior: smooth; }
 
 ::selection {
-  background: rgba(232, 168, 0, 0.3);
+  background: rgba(30, 41, 59, 0.18);
   color: var(--text);
 }
 
@@ -142,7 +143,7 @@ body {
 .btn-primary:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(232, 168, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
 }
 .btn-primary:active {
   transform: translateY(0);
@@ -280,7 +281,7 @@ body {
 }
 .card.selected {
   border: 2px solid var(--gold);
-  box-shadow: 0 0 0 3px rgba(232, 168, 0, 0.12);
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
 }
 
 /* Forms */
@@ -298,7 +299,7 @@ body {
 }
 .input:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(232, 168, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.08);
 }
 .input::placeholder { color: var(--text-dim); }
 textarea.input { resize: vertical; min-height: 100px; }
@@ -721,7 +722,7 @@ textarea.input { resize: vertical; min-height: 100px; }
 .ats-bar-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--green) 100%);
+  background: linear-gradient(90deg, var(--red) 0%, var(--amber) 50%, var(--green) 100%);
   transition: width 0.5s ease;
 }
 .match-section-label {
@@ -950,9 +951,9 @@ textarea.input { resize: vertical; min-height: 100px; }
   opacity: 0.6;
 }
 .ba-after {
-  background: rgba(232, 168, 0, 0.04);
+  background: rgba(30, 41, 59, 0.03);
   border: 2px solid var(--gold);
-  box-shadow: 0 8px 32px rgba(232, 168, 0, 0.12);
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.1);
 }
 .ba-label {
   font-size: 10px;
@@ -969,7 +970,7 @@ textarea.input { resize: vertical; min-height: 100px; }
   color: #9ca3af;
 }
 .ba-after .ba-label {
-  background: rgba(232, 168, 0, 0.15);
+  background: rgba(30, 41, 59, 0.12);
   color: #b8860b;
 }
 .ba-title {
@@ -1152,6 +1153,11 @@ textarea.input { resize: vertical; min-height: 100px; }
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 2px 0;
+  /* Fade the right edge when the chips overflow so the user knows there are
+     more templates hiding to the right. Falls back to a hard edge in browsers
+     without mask-image support. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
 }
 .ed-toolbar-chips::-webkit-scrollbar { display: none; }
 .ed-toolbar-divider {
@@ -1410,6 +1416,74 @@ textarea.input { resize: vertical; min-height: 100px; }
   pointer-events: none;
 }
 .cv-sidebar .editable-empty::before { color: rgba(226, 232, 240, 0.35); }
+
+/* Generic experience-meta utilities, shared across all 10 HTML templates.
+   `.cv-meta-chip` is the small badge for contract type (e.g. "Freelance"),
+   `.cv-meta-line` is the muted italic subline for exit reason. Both hide
+   when their Editable value is empty (the editor shows a low-contrast
+   placeholder instead — the print/PDF rendering skips empty fields). */
+.cv-meta-chip {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.08);
+  color: #334155;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+.cv-meta-line {
+  font-size: 11.5px;
+  color: #64748b;
+  font-style: italic;
+  margin: 4px 0 0;
+}
+/* When meta-chip sits inside a dark sidebar, invert tones so it stays legible. */
+.cv-sidebar .cv-meta-chip {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.82);
+}
+.cv-sidebar .cv-meta-line {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Photo remove button — hidden until the photo is hovered, so the big red X
+   doesn't dominate the CV sheet when it's just sitting there idle. */
+.cv-photo-slot .cv-photo-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  color: #ffffff;
+  border: 1.5px solid #ffffff;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 120ms ease, transform 120ms ease, background 120ms ease;
+  pointer-events: none;
+}
+.cv-photo-slot:hover .cv-photo-remove,
+.cv-photo-slot .cv-photo-remove:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.cv-photo-slot .cv-photo-remove:hover {
+  background: #dc2626;
+}
 
 /* GAP tokens — amber pills that mark where the LLM needs the user to fill in
    a real fact instead of fabricating one. Visible both when rendered inline
@@ -1683,7 +1757,10 @@ textarea.input { resize: vertical; min-height: 100px; }
 .retro-tpl {
   display: block;
   padding: 40px 48px;
-  font-family: "Courier New", Courier, monospace;
+  /* JetBrains Mono / IBM Plex Mono render far cleaner on screen than
+     Courier New, which crushes x-height and makes 11-12px copy unreadable.
+     Courier stays as a last-resort fallback to keep the "retro" vibe. */
+  font-family: "JetBrains Mono", "IBM Plex Mono", "SF Mono", Menlo, Consolas, "Courier New", Courier, monospace;
   color: #2c2415;
   background: #fdfaf0;
 }
@@ -1694,8 +1771,8 @@ textarea.input { resize: vertical; min-height: 100px; }
   text-align: center;
 }
 .rt-name {
-  font-family: "Courier New", Courier, monospace;
-  font-size: 24px;
+  font-family: inherit;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: 0.1em;
   margin: 0 0 4px;
@@ -1730,9 +1807,9 @@ textarea.input { resize: vertical; min-height: 100px; }
   margin-bottom: 12px;
 }
 .rt-summary {
-  font-size: 12px;
+  font-size: 13.5px;
   color: #2c2415;
-  line-height: 1.7;
+  line-height: 1.65;
   border-left: 2px solid #8a7050;
   padding-left: 10px;
   margin: 0;
@@ -1750,19 +1827,19 @@ textarea.input { resize: vertical; min-height: 100px; }
   margin-bottom: 2px;
 }
 .rt-exp-company {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #2c2415;
   text-transform: uppercase;
 }
 .rt-exp-dates {
-  font-size: 11px;
+  font-size: 12px;
   color: #8a7050;
 }
 .rt-exp-title {
-  font-size: 12px;
-  color: #5c4a2d;
+  font-size: 13px;
+  color: #4a3718;
   margin: 0 0 6px;
   font-style: italic;
 }
@@ -1772,12 +1849,12 @@ textarea.input { resize: vertical; min-height: 100px; }
   margin: 0;
 }
 .rt-bullet {
-  font-size: 12px;
+  font-size: 13px;
   color: #2c2415;
   padding-left: 14px;
   position: relative;
   flex: 1;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .rt-bullet::before {
   content: ">";
@@ -1796,18 +1873,18 @@ textarea.input { resize: vertical; min-height: 100px; }
   position: relative;
 }
 .rt-edu-degree {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #2c2415;
 }
 .rt-edu-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: #8a7050;
 }
 .rt-skills {
-  font-size: 12px;
+  font-size: 13px;
   color: #2c2415;
-  line-height: 1.7;
+  line-height: 1.65;
   letter-spacing: 0.02em;
 }
 
@@ -1815,7 +1892,7 @@ textarea.input { resize: vertical; min-height: 100px; }
 .consultant-tpl {
   display: block;
   padding: 40px 64px 48px;
-  font-family: "Times New Roman", Times, Georgia, serif;
+  font-family: Georgia, "Source Serif 4", "Times New Roman", Times, serif;
   color: #111111;
   background: #ffffff;
 }
@@ -1840,7 +1917,7 @@ textarea.input { resize: vertical; min-height: 100px; }
   margin-bottom: 26px;
 }
 .cs-name {
-  font-family: "Times New Roman", Times, Georgia, serif;
+  font-family: Georgia, "Source Serif 4", "Times New Roman", Times, serif;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.25em;
@@ -1863,7 +1940,7 @@ textarea.input { resize: vertical; min-height: 100px; }
 }
 .cs-section { margin-bottom: 20px; }
 .cs-section-title {
-  font-family: "Times New Roman", Times, Georgia, serif;
+  font-family: Georgia, "Source Serif 4", "Times New Roman", Times, serif;
   font-size: 15px;
   font-weight: 700;
   font-style: italic;
@@ -1898,15 +1975,15 @@ textarea.input { resize: vertical; min-height: 100px; }
   white-space: nowrap;
 }
 .cs-skills {
-  font-size: 13px;
-  color: #222222;
+  font-size: 13.5px;
+  color: #1a1a1a;
   line-height: 1.7;
   text-align: justify;
   margin: 0;
 }
 .cs-summary {
-  font-size: 13px;
-  color: #222222;
+  font-size: 14px;
+  color: #1a1a1a;
   line-height: 1.7;
   text-align: justify;
   margin: 0;
@@ -1935,18 +2012,18 @@ textarea.input { resize: vertical; min-height: 100px; }
   font-style: italic;
 }
 .cs-exp-title {
-  font-size: 12px;
-  color: #444444;
+  font-size: 13px;
+  color: #2b2b2b;
   font-style: italic;
   margin: 0 0 6px;
 }
 .cs-bullet {
-  font-size: 12px;
-  color: #222222;
+  font-size: 13.5px;
+  color: #1a1a1a;
   padding-left: 14px;
   position: relative;
   flex: 1;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .cs-bullet::before {
   content: "—";
@@ -2001,25 +2078,25 @@ textarea.input { resize: vertical; min-height: 100px; }
 .executive-tpl { display: block; padding: 48px 56px; font-family: "Source Serif 4", Georgia, "Times New Roman", serif; color: #0f172a; }
 .executive-tpl .ex-header { padding-bottom: 14px; margin-bottom: 22px; border-bottom: 1.5px solid; text-align: center; }
 .executive-tpl .ex-name { font-size: 32px; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; color: #0a0f1f; }
-.executive-tpl .ex-title { font-size: 14px; font-style: italic; color: #475569; font-weight: 400; }
-.executive-tpl .ex-contact { font-size: 11px; color: #64748b; margin-top: 10px; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.2px; }
-.executive-tpl .ex-summary { font-style: italic; font-size: 14.5px; line-height: 1.65; margin-bottom: 20px; color: #1e293b; }
+.executive-tpl .ex-title { font-size: 14.5px; font-style: italic; color: #334155; font-weight: 400; }
+.executive-tpl .ex-contact { font-size: 12px; color: #475569; margin-top: 10px; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.2px; }
+.executive-tpl .ex-summary { font-style: italic; font-size: 14.5px; line-height: 1.65; margin-bottom: 20px; color: #0f172a; }
 .executive-tpl .ex-section { margin-bottom: 18px; }
 .executive-tpl .ex-ornament { width: 28px; height: 2px; margin-bottom: 10px; }
 .executive-tpl .ex-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 12px; font-family: "Inter", -apple-system, sans-serif; color: #0f172a; }
 .executive-tpl .ex-exp { margin-bottom: 16px; }
 .executive-tpl .ex-exp-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
 .executive-tpl .ex-exp-title { font-size: 15px; font-weight: 700; color: #0a0f1f; }
-.executive-tpl .ex-exp-company { font-style: italic; color: #475569; font-size: 12.5px; }
-.executive-tpl .ex-exp-dates { font-size: 11px; color: #64748b; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.3px; }
-.executive-tpl .ex-bullet { font-size: 13px; color: #1e293b; margin-bottom: 4px; line-height: 1.6; padding-left: 16px; position: relative; }
+.executive-tpl .ex-exp-company { font-style: italic; color: #334155; font-size: 13.5px; }
+.executive-tpl .ex-exp-dates { font-size: 12px; color: #475569; font-family: "Inter", -apple-system, sans-serif; letter-spacing: 0.3px; }
+.executive-tpl .ex-bullet { font-size: 13.5px; color: #0f172a; margin-bottom: 4px; line-height: 1.65; padding-left: 16px; position: relative; }
 .executive-tpl .ex-bullet::before { content: "—"; position: absolute; left: 0; color: #64748b; }
 .executive-tpl .ex-split { display: flex; gap: 40px; margin-top: 10px; }
 .executive-tpl .ex-col { flex: 1; }
 .executive-tpl .ex-edu { margin-bottom: 8px; }
 .executive-tpl .ex-edu-degree { font-size: 13px; font-weight: 700; color: #0a0f1f; }
-.executive-tpl .ex-edu-school { font-size: 11.5px; color: #475569; font-style: italic; }
-.executive-tpl .ex-skills { font-size: 13px; color: #1e293b; line-height: 1.65; }
+.executive-tpl .ex-edu-school { font-size: 12.5px; color: #334155; font-style: italic; }
+.executive-tpl .ex-skills { font-size: 13.5px; color: #0f172a; line-height: 1.7; }
 
 /* ============================================================
    Editorial template — magazine feature with eyebrow + lede

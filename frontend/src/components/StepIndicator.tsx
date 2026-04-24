@@ -4,7 +4,10 @@ const steps = [
   { key: "upload", path: "/upload" },
   { key: "chat", path: "/chat" },
   { key: "editor", path: "/editor" },
-  { key: "templates", path: "/templates" },
+  // The last step used to be labelled "Templates" — confusing because the
+  // design/template picking actually lives in the Editor now. This step is
+  // where you finalize brand colors and download the PDF.
+  { key: "download", path: "/templates" },
 ];
 
 export default function StepIndicator({ current }: { current: string }) {

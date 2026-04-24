@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
+import { translateCV } from "../services/api";
 import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import CleanHtml from "../templates/CleanHtml";
@@ -87,7 +89,24 @@ function validateCV(
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate, setCvDataAlt } = useStore();
+  const [translating, setTranslating] = useState(false);
+  const translateAttempted = useRef(false);
+
+  // Legacy-project backfill: projects created before the auto-translate flow
+  // existed have cvData but no cvDataAlt, which leaves the FR/EN toggle stuck.
+  // Kick off a translation once when Editor mounts so the toggle works. The
+  // ref guard prevents re-firing if translateCV briefly fails.
+  useEffect(() => {
+    if (!cvData || cvDataAlt || translating || translateAttempted.current) return;
+    translateAttempted.current = true;
+    const altLang = (cvData.language || "en") === "en" ? "fr" : "en";
+    setTranslating(true);
+    translateCV(cvData, altLang)
+      .then((alt) => setCvDataAlt(alt))
+      .catch(() => { /* swallow — toggle will just remain disabled */ })
+      .finally(() => setTranslating(false));
+  }, [cvData, cvDataAlt, translating, setCvDataAlt]);
 
   // Language resolution — matches Templates.tsx. If the user toggled cvLang to
   // the opposite of the stored CV language, show the translated alt (falling
@@ -130,11 +149,16 @@ export default function Editor() {
           gap: 24,
         }}
       >
-        {/* Continue to templates */}
-        <div className="ed-toolbar" style={{ justifyContent: "flex-end" }}>
-          <button className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }} onClick={() => navigate("/templates")}>
-            {t("editor.continue")}
-          </button>
+        {/* Page intro — sets expectation that this is the content-review step,
+            not a template picker. The "continue" CTA moved to the bottom so
+            users edit first, advance second. */}
+        <div style={{ maxWidth: 794, width: "100%", textAlign: "center", marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>
+            {t("editor.heading", "Review & edit your content")}
+          </h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.55 }}>
+            {t("editor.intro", "Click any field to edit inline. Pick the visual style below, then download your CV.")}
+          </p>
         </div>
 
         {/* Template picker + CV language. Chips are the single source of truth —
@@ -142,7 +166,7 @@ export default function Editor() {
             three-row block. The inner strip scrolls horizontally when 10
             templates overflow on narrower viewports. */}
         <div className="ed-toolbar">
-          <span className="ed-toolbar-label">{t("templates.title", "Template")}</span>
+          <span className="ed-toolbar-label">{t("templates.title", "Template")} · {templateIds.length}</span>
           <div className="ed-toolbar-chips">
             {templateIds.map((id) => (
               <button
@@ -158,15 +182,16 @@ export default function Editor() {
           <span className="ed-toolbar-label">CV</span>
           {(["fr", "en"] as const).map((lang) => {
             const hasLang = cvData?.language === lang || cvDataAlt?.language === lang;
+            const isPending = !hasLang && translating;
             return (
               <button
                 key={lang}
                 className={`chip ${cvLang === lang ? "is-active" : ""}`}
                 onClick={() => setCvLang(lang)}
                 disabled={!hasLang}
-                title={hasLang ? undefined : t("editor.translation_pending", "Translation not ready yet")}
+                title={hasLang ? undefined : isPending ? t("editor.translation_in_progress", "Translating…") : t("editor.translation_pending", "Translation not ready yet")}
               >
-                {lang.toUpperCase()}
+                {lang.toUpperCase()}{isPending ? " …" : ""}
               </button>
             );
           })}
@@ -208,6 +233,19 @@ export default function Editor() {
             ))}
           </div>
         )}
+
+        {/* Bottom CTA — advance to the finalize/download step. Moved from the
+            top because surfacing "continue" before the user sees what they're
+            reviewing was confusing. */}
+        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", marginTop: 8 }}>
+          <button
+            className="btn-primary"
+            style={{ padding: "10px 20px", fontSize: 14 }}
+            onClick={() => navigate("/templates")}
+          >
+            {t("editor.continue", "Continue to download")}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -73,27 +73,10 @@ export default function PhotoSlot({ size = 80, className, style, tone = "light",
           />
           <button
             type="button"
+            className="cv-photo-remove"
             onClick={onRemove}
             title="Remove photo"
             aria-label="Remove photo"
-            style={{
-              position: "absolute",
-              top: -6,
-              right: -6,
-              width: 22,
-              height: 22,
-              borderRadius: "50%",
-              background: "#ef4444",
-              color: "#ffffff",
-              border: "2px solid #ffffff",
-              fontSize: 13,
-              lineHeight: 1,
-              cursor: "pointer",
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >×</button>
         </>
       ) : (

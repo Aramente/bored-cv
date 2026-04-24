@@ -77,12 +77,29 @@ export interface CompanyContext {
   team_size: string;
 }
 
+// Common contract types — used as placeholder hints, not a hard enum. The
+// field stores free text so users can type whatever fits (e.g. "Apprentice",
+// "CDI", "Stage alterné") without fighting a dropdown.
+export const CONTRACT_TYPE_HINTS = [
+  "Permanent",
+  "Freelance",
+  "Founder",
+  "Contract",
+  "Internship",
+  "Part-time",
+] as const;
+
 export interface RewrittenExperience {
   title: string;
   company: string;
   dates: string;
   bullets: string[];
   context?: CompanyContext;
+  // Optional metadata surfaced on the CV. `contractType` renders as a small
+  // badge next to the dates; `exitReason` renders as a muted italic subline.
+  // Both are hidden when empty — they don't exist on legacy rewrites.
+  contractType?: string;
+  exitReason?: string;
 }
 
 export interface CVData {
