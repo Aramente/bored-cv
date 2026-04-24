@@ -1081,24 +1081,44 @@ textarea.input { resize: vertical; min-height: 100px; }
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
   line-height: 1.5;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+  /* Deeper shadow so the sheet feels like paper floating above the viewer bg,
+     not a flat rectangle. Two layers: a tight close shadow + a wider ambient. */
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.08),
+    0 24px 48px rgba(15, 23, 42, 0.18);
+  border-radius: 2px;
   position: relative;
 }
-/* Page-break indicator: dashed horizontal line at every A4 boundary so users
-   see what will spill to page 2 in the exported PDF. The line uses
-   repeating-linear-gradient so it auto-repeats if the CV grows past 1 page. */
+/* Page-break: visual gap between A4 pages so the preview reads as a stacked
+   PDF document, not one long scroll. Every 1123px we paint a 44px-tall band
+   in the viewer background color, with soft edge shadows on the bottom of
+   the outgoing page and the top of the incoming page — mimicking how real
+   PDF viewers render paginated documents.
+   Content that lands on the gap stays semi-readable but clearly "between
+   pages" — a visual nudge to shorten, since the exported PDF paginates via
+   wrap={false} at the experience-block level anyway. */
 .cv-sheet::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  background-image: repeating-linear-gradient(
+  /* Single gradient, cycle = 1167px (1123 page + 44 gap). Each cycle layers:
+       - 1117-1120: soft bottom-edge shadow on the outgoing page
+       - 1120-1123: darker paper-edge line
+       - 1123-1164: the gap itself, painted slightly darker than the viewer
+         background so the band reads as a visible seam
+       - 1164-1167: soft top-edge shadow on the incoming page
+     The mask hides the implicit gradient "zero point" above y=1100 so page 1
+     doesn't sprout a phantom gap at its top. */
+  background: repeating-linear-gradient(
     to bottom,
-    transparent 0 1121px,
-    rgba(239, 68, 68, 0.28) 1121px 1123px
+    transparent 0 1117px,
+    rgba(15, 23, 42, 0.08) 1117px 1120px,
+    rgba(15, 23, 42, 0.22) 1120px 1123px,
+    #cbd5e1 1123px 1164px,
+    rgba(15, 23, 42, 0.14) 1164px 1167px
   );
-  /* Hide the implicit line at y=0 so we only see breaks AFTER page 1 */
   mask-image: linear-gradient(to bottom, transparent 0 1100px, #000 1100px);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0 1100px, #000 1100px);
 }
