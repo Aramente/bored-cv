@@ -19,12 +19,12 @@ interface Props {
   className?: string;
   style?: React.CSSProperties;
   tone?: "light" | "dark";
+  onError?: (msg: string) => void;
 }
 
-export default function PhotoSlot({ size = 80, className, style, tone = "light" }: Props) {
+export default function PhotoSlot({ size = 80, className, style, tone = "light", onError }: Props) {
   const photo = useStore((s) => s.cvData?.photo);
   const updateCvField = useStore((s) => s.updateCvField);
-  const pushCvHistory = useStore((s) => s.pushCvHistory);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,16 +33,14 @@ export default function PhotoSlot({ size = 80, className, style, tone = "light" 
     if (!f) return;
     try {
       const b64 = await resizeToBase64(f, 400, 0.85);
-      pushCvHistory();
       updateCvField("photo", b64);
     } catch (err) {
-      console.error("photo upload failed", err);
+      onError?.((err as Error).message || "Photo upload failed");
     }
   };
 
   const onRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
-    pushCvHistory();
     updateCvField("photo", "");
   };
 

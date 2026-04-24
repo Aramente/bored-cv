@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { generateCV } from "../services/api";
 import LanguageToggle from "../components/LanguageToggle";
 import AuthButton from "../components/AuthButton";
 import StepIndicator from "../components/StepIndicator";
@@ -90,8 +88,7 @@ function validateCV(
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, tone, setTone, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
-  const [regenerating, setRegenerating] = useState(false);
+  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate } = useStore();
 
   // Language resolution — matches Templates.tsx. If the user toggled cvLang to
   // the opposite of the stored CV language, show the translated alt (falling
@@ -99,24 +96,6 @@ export default function Editor() {
   // Editor always rendered cvData regardless of cvLang, so loading a legacy
   // EN-generated project meant you couldn't see the FR translation.
   const activeCv = cvData && cvLang === (cvData.language || "en") ? cvData : (cvDataAlt || cvData);
-
-  const handleToneChange = async (newTone: string) => {
-    setTone(newTone);
-    const { profile, offer, gapAnalysis, messages, targetMarket } = useStore.getState();
-    if (profile && offer && gapAnalysis) {
-      setRegenerating(true);
-      try {
-        const lang = cvData?.language || "en";
-        const cv = await generateCV(profile, offer, gapAnalysis, messages, "", lang, newTone, targetMarket);
-        useStore.getState().pushCvHistory();
-        useStore.getState().setCvData(cv);
-      } catch (e) {
-        console.warn("Regeneration failed:", e);
-      } finally {
-        setRegenerating(false);
-      }
-    }
-  };
 
   if (!cvData) {
     return (
@@ -163,28 +142,8 @@ export default function Editor() {
           gap: 24,
         }}
       >
-        {/* Tone + continue — small utility toolbar */}
-        <div className="ed-toolbar">
-          <span className="ed-toolbar-label">{t("editor.tone_label")}</span>
-          <div className="ed-toolbar-chips">
-            {[
-              { id: "startup", label: t("tone.startup") },
-              { id: "creative", label: t("tone.creative") },
-              { id: "minimal", label: t("tone.minimal") },
-            ].map((tn) => (
-              <button
-                key={tn.id}
-                className={`chip ${tone === tn.id ? "is-active" : ""}`}
-                onClick={() => handleToneChange(tn.id)}
-                disabled={regenerating}
-              >
-                {tn.label}
-              </button>
-            ))}
-            {regenerating && (
-              <span style={{ fontSize: 11, color: "var(--text-dim)", marginLeft: 6 }}>{t("editor.regenerating")}</span>
-            )}
-          </div>
+        {/* Continue to templates */}
+        <div className="ed-toolbar" style={{ justifyContent: "flex-end" }}>
           <button className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }} onClick={() => navigate("/templates")}>
             {t("editor.continue")}
           </button>

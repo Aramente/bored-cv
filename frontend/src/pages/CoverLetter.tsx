@@ -146,10 +146,6 @@ export default function CoverLetter() {
                 )}
               </PDFDownloadLink>
             </div>
-
-            <button className="btn-secondary" style={{ width: "100%" }} onClick={() => navigate("/templates")}>
-              {t("cover_letter.back")}
-            </button>
           </>
         )}
       </div>

@@ -167,8 +167,6 @@ interface AppState {
   removeCvLanguage: (index: number) => void;
   pushCvHistory: () => void;
   undo: () => void;
-  lastSaved: string | null;
-  setLastSaved: (ts: string) => void;
   setUser: (user: { email: string; provider: string } | null) => void;
   reset: () => void;
 }
@@ -190,7 +188,6 @@ const initialState = {
   cvHistory: [] as CVData[],
   coverLetterData: null,
   targetMarket: "france" as "france" | "europe" | "us" | "global",
-  lastSaved: null,
   brandColors: null,
   useBrandColors: true,
 };
@@ -235,7 +232,6 @@ export const useStore = create<AppState>()(persist((set) => ({
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
   setTone: (tone) => set({ tone }),
   setToneChosen: (toneChosen) => set({ toneChosen }),
-  setLastSaved: (lastSaved) => set({ lastSaved }),
   setCoverLetterData: (coverLetterData) => set({ coverLetterData }),
   setBrandColors: (brandColors) => set({ brandColors }),
   setUseBrandColors: (useBrandColors) => set({ useBrandColors }),

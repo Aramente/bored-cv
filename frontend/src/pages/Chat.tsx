@@ -142,7 +142,6 @@ export default function Chat() {
         }).then((res) => {
           if (res.id) {
             useStore.getState().setProjectId(res.id);
-            useStore.getState().setLastSaved(new Date().toISOString());
           }
         }).catch(() => {});
       }

@@ -14,8 +14,15 @@
   --gold-hover: #cc9400;
   --green: #2d9d3f;
   --red: #d93025;
+  --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 12px;
+  --radius-pill: 999px;
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --bg-muted: #f5f2ed;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -726,12 +733,6 @@ textarea.input { resize: vertical; min-height: 100px; }
   display: block;
   margin-bottom: 4px;
 }
-.save-indicator {
-  font-size: 10px;
-  color: var(--green);
-  font-weight: 500;
-}
-
 /* Projects */
 .projects-header {
   display: flex;

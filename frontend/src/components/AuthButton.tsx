@@ -5,9 +5,16 @@ import { API_URL } from "../services/api";
 
 export default function AuthButton() {
   const { user, setUser, reset } = useStore();
-  const lastSaved = useStore((s) => s.lastSaved);
+  const messages = useStore((s) => s.messages);
+  const cvData = useStore((s) => s.cvData);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const hasDirtyState = () => messages.length > 0 || cvData !== null;
+  const confirmReset = (label: string) => {
+    if (!hasDirtyState()) return true;
+    return window.confirm(label);
+  };
 
   useEffect(() => {
     // Check URL for token from OAuth callback (hash fragment or query string)
@@ -53,16 +60,20 @@ export default function AuthButton() {
             <button className="auth-reset" onClick={() => navigate("/projects")}>
               my projects
             </button>
-            <button className="auth-reset" onClick={() => { reset(); navigate("/"); }}>
+            <button className="auth-reset" onClick={() => {
+              if (!confirmReset("Start a new CV? Unsaved edits will be lost.")) return;
+              reset();
+              navigate("/");
+            }}>
               new CV
             </button>
           </>
         )}
-        {lastSaved && <span className="save-indicator">saved ✓</span>}
         <span className="auth-email">{user.email}</span>
         <button
           className="auth-logout"
           onClick={() => {
+            if (!confirmReset("Log out? Unsaved edits will be lost.")) return;
             localStorage.removeItem("bored-cv-token");
             setUser(null);
             reset();
@@ -78,7 +89,11 @@ export default function AuthButton() {
   return (
     <div className="auth-buttons">
       {showReset && (
-        <button className="auth-reset" onClick={() => { reset(); navigate("/"); }}>
+        <button className="auth-reset" onClick={() => {
+          if (!confirmReset("Start a new CV? Unsaved edits will be lost.")) return;
+          reset();
+          navigate("/");
+        }}>
           new CV
         </button>
       )}

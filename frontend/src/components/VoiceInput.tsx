@@ -61,8 +61,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
           localStorage.removeItem(MIC_PREF_KEY);
         }
       }
-    } catch (e) {
-      console.warn("[voice] enumerateDevices failed:", e);
+    } catch {
+      // enumerateDevices unavailable or denied — fall back to default device
     }
   }, [deviceId]);
 
@@ -147,13 +147,11 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
           localStorage.removeItem(MIC_PREF_KEY);
         } catch (e2) {
           const err = e2 as DOMException;
-          console.warn("[voice] getUserMedia fallback failed:", err.name);
-          onError?.(lang.startsWith("fr") ? "Pas de micro disponible" : "No microphone available");
+          onError?.(lang.startsWith("fr") ? `Pas de micro disponible (${err.name})` : `No microphone available (${err.name})`);
           return;
         }
       } else {
         const err = e as DOMException;
-        console.warn("[voice] getUserMedia failed:", err.name, err.message);
         const isFr = lang.startsWith("fr");
         if (err.name === "NotAllowedError" || err.name === "SecurityError") {
           onError?.(isFr ? "Accès micro refusé — autorise dans le navigateur + Réglages Système" : "Microphone access denied — allow mic in browser + OS settings");
@@ -171,10 +169,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     // Refresh again now that labels are guaranteed to be populated
     refreshDevices();
 
-    // Log which device we actually got (helps user + debugging)
     const activeTrack = stream.getAudioTracks()[0];
     const activeLabel = activeTrack?.label || "unknown";
-    console.warn("[voice] recording from:", activeLabel);
 
     streamRef.current = stream;
     const mime = pickMime();
@@ -183,8 +179,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
     let rec: MediaRecorder;
     try {
       rec = new MediaRecorder(stream, { mimeType: mime });
-    } catch (e) {
-      console.warn("[voice] MediaRecorder init failed:", e);
+    } catch {
       stream.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
       onError?.("Could not start recorder — unsupported audio format");
@@ -201,8 +196,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       source.connect(analyser);
       audioCtxRef.current = ctx;
       analyserRef.current = analyser;
-    } catch (e) {
-      console.warn("[voice] analyser setup failed:", e);
+    } catch {
+      // AudioContext blocked — silence detection degrades gracefully
     }
 
     chunksRef.current = [];
@@ -252,7 +247,6 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
           onError?.(isFr ? "Pas de parole détectée" : "No speech detected");
         }
       } catch (e) {
-        console.warn("[voice] transcribe failed:", e);
         const msg = (e as Error).message || "Transcription failed";
         onError?.(msg);
       } finally {
@@ -260,8 +254,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       }
     };
 
-    rec.onerror = (e: Event) => {
-      console.warn("[voice] recorder error:", e);
+    rec.onerror = () => {
       onError?.("Recorder error — try again");
       try { rec.stop(); } catch { /* */ }
     };
@@ -301,13 +294,12 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
       // After 3s of complete silence at the start, warn the user the mic may be wrong
       if (!soundSeenRef.current && silenceAccumRef.current >= 3) {
         onInterim?.(isFr
-          ? `🔇 micro silencieux (${activeLabel}) — change de source ?`
-          : `🔇 mic silent (${activeLabel}) — wrong source?`);
+          ? `Micro silencieux (${activeLabel}) — change de source ?`
+          : `Mic silent (${activeLabel}) — wrong source?`);
       } else if (remaining <= 20 && remaining > 0) {
-        onInterim?.(isFr ? `🎙️ ${remaining}s restantes (max 2 min)` : `🎙️ ${remaining}s left (2 min max)`);
+        onInterim?.(isFr ? `${remaining}s restantes (max 2 min)` : `${remaining}s left (2 min max)`);
       } else {
-        const bars = level > 0.15 ? "▮▮▮" : level > 0.05 ? "▮▮" : level > SILENCE_THRESHOLD ? "▮" : "·";
-        onInterim?.(isFr ? `🎙️ ${bars} j'écoute… ${fmt(secs)} / 2:00` : `🎙️ ${bars} listening… ${fmt(secs)} / 2:00`);
+        onInterim?.(isFr ? `J'écoute… ${fmt(secs)} / 2:00` : `Listening… ${fmt(secs)} / 2:00`);
       }
     };
     tick();
@@ -399,7 +391,7 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
                 right: 0,
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
-                borderRadius: 8,
+                borderRadius: "var(--radius)",
                 padding: 6,
                 minWidth: 240,
                 maxWidth: 320,
@@ -416,8 +408,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
                 onClick={() => chooseDevice("")}
                 style={{
                   display: "block", width: "100%", textAlign: "left",
-                  background: !deviceId ? "var(--bg-muted, #f5f5f5)" : "transparent",
-                  border: "none", padding: "6px 8px", cursor: "pointer", borderRadius: 4,
+                  background: !deviceId ? "var(--bg-muted)" : "transparent",
+                  border: "none", padding: "6px 8px", cursor: "pointer", borderRadius: "var(--radius-sm)",
                   color: "var(--text)",
                 }}
               >
@@ -433,8 +425,8 @@ export default function VoiceInput({ onResult, onInterim, onError, onListeningCh
                     onClick={() => chooseDevice(d.deviceId)}
                     style={{
                       display: "block", width: "100%", textAlign: "left",
-                      background: selected ? "var(--bg-muted, #f5f5f5)" : "transparent",
-                      border: "none", padding: "6px 8px", cursor: "pointer", borderRadius: 4,
+                      background: selected ? "var(--bg-muted)" : "transparent",
+                      border: "none", padding: "6px 8px", cursor: "pointer", borderRadius: "var(--radius-sm)",
                       color: risky ? "var(--text-muted)" : "var(--text)",
                       fontSize: 13,
                     }}
