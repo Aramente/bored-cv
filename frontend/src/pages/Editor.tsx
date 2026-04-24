@@ -163,90 +163,58 @@ export default function Editor() {
           gap: 24,
         }}
       >
-        {/* Toolbar — tone + continue. Stays small so the CV is the focus. */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 8,
-            alignItems: "center",
-            maxWidth: 794,
-            width: "100%",
-            background: "#ffffff",
-            padding: "10px 14px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--border)",
-            boxShadow: "0 2px 6px rgba(15, 23, 42, 0.04)",
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            {t("editor.tone_label")}
-          </span>
-          {[
-            { id: "startup", label: t("tone.startup") },
-            { id: "creative", label: t("tone.creative") },
-            { id: "minimal", label: t("tone.minimal") },
-          ].map((tn) => (
-            <button
-              key={tn.id}
-              className={tone === tn.id ? "btn-primary" : "btn-secondary"}
-              style={{ padding: "6px 12px", fontSize: 12 }}
-              onClick={() => handleToneChange(tn.id)}
-              disabled={regenerating}
-            >
-              {tn.label}
-            </button>
-          ))}
-          {regenerating && <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{t("editor.regenerating")}</span>}
-          <div style={{ flex: 1 }} />
-          <button className="btn-primary" onClick={() => navigate("/templates")}>
+        {/* Tone + continue — small utility toolbar */}
+        <div className="ed-toolbar">
+          <span className="ed-toolbar-label">{t("editor.tone_label")}</span>
+          <div className="ed-toolbar-chips">
+            {[
+              { id: "startup", label: t("tone.startup") },
+              { id: "creative", label: t("tone.creative") },
+              { id: "minimal", label: t("tone.minimal") },
+            ].map((tn) => (
+              <button
+                key={tn.id}
+                className={`chip ${tone === tn.id ? "is-active" : ""}`}
+                onClick={() => handleToneChange(tn.id)}
+                disabled={regenerating}
+              >
+                {tn.label}
+              </button>
+            ))}
+            {regenerating && (
+              <span style={{ fontSize: 11, color: "var(--text-dim)", marginLeft: 6 }}>{t("editor.regenerating")}</span>
+            )}
+          </div>
+          <button className="btn-primary" style={{ padding: "6px 14px", fontSize: 12, flexShrink: 0 }} onClick={() => navigate("/templates")}>
             {t("editor.continue")}
           </button>
         </div>
 
-        {/* Template switcher — pick the layout, edit inline below */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 6,
-            alignItems: "center",
-            maxWidth: 794,
-            width: "100%",
-            background: "#ffffff",
-            padding: "8px 14px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--border)",
-            boxShadow: "0 2px 6px rgba(15, 23, 42, 0.04)",
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            {t("templates.title", "Template")}
-          </span>
-          {templateIds.map((id) => (
-            <button
-              key={id}
-              className={selectedTemplate === id ? "btn-primary" : "btn-secondary"}
-              style={{ padding: "6px 12px", fontSize: 12 }}
-              onClick={() => setSelectedTemplate(id)}
-            >
-              {t(`templates.${id}`, id)}
-            </button>
-          ))}
-          {/* CV language toggle — swaps between cvData (original) and cvDataAlt
-              (translated). Disabled for the alt side when the translation
-              hasn't been produced yet. */}
-          <span style={{ flex: 1 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            CV
-          </span>
+        {/* Template picker + CV language. Chips are the single source of truth —
+            no more btn-primary/secondary rectangles that wrap into a cramped
+            three-row block. The inner strip scrolls horizontally when 10
+            templates overflow on narrower viewports. */}
+        <div className="ed-toolbar">
+          <span className="ed-toolbar-label">{t("templates.title", "Template")}</span>
+          <div className="ed-toolbar-chips">
+            {templateIds.map((id) => (
+              <button
+                key={id}
+                className={`chip ${selectedTemplate === id ? "is-active" : ""}`}
+                onClick={() => setSelectedTemplate(id)}
+              >
+                {t(`templates.${id}`, id)}
+              </button>
+            ))}
+          </div>
+          <div className="ed-toolbar-divider" aria-hidden />
+          <span className="ed-toolbar-label">CV</span>
           {(["fr", "en"] as const).map((lang) => {
             const hasLang = cvData?.language === lang || cvDataAlt?.language === lang;
             return (
               <button
                 key={lang}
-                className={cvLang === lang ? "btn-primary" : "btn-secondary"}
-                style={{ padding: "6px 10px", fontSize: 12, opacity: hasLang ? 1 : 0.4 }}
+                className={`chip ${cvLang === lang ? "is-active" : ""}`}
                 onClick={() => setCvLang(lang)}
                 disabled={!hasLang}
                 title={hasLang ? undefined : t("editor.translation_pending", "Translation not ready yet")}

@@ -1093,6 +1093,78 @@ textarea.input { resize: vertical; min-height: 100px; }
    every experience/education block (all 10 templates), so a visible seam in
    the preview only invites users to hand-tune a break that the export already
    handles correctly. */
+
+/* Editor toolbar — compact, horizontal-scrolling picker bar. The old version
+   stacked two boxy cards with btn-primary/secondary rectangles and wrap chaos;
+   this replaces them with thin pill chips on a single translucent strip. */
+.ed-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 794px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+.ed-toolbar-label {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ed-toolbar-chips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+.ed-toolbar-chips::-webkit-scrollbar { display: none; }
+.ed-toolbar-divider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 2px 4px;
+}
+.chip {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+  font-family: inherit;
+}
+.chip:hover:not(.is-active):not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.chip.is-active {
+  background: var(--accent-subtle);
+  color: var(--text);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 .cv-sidebar {
   width: 30%;
   background: #0c1f3d;
