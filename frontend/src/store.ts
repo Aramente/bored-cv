@@ -152,6 +152,11 @@ interface AppState {
   projectId: number | null;
   user: { email: string; provider: string } | null;
   cvHistory: CVData[];
+  // Last finalized CV, preserved across `reset()` so a user creating a second
+  // project can start from their previous content instead of re-uploading
+  // LinkedIn. Populated when a user downloads a PDF (that's our "I'm done"
+  // signal) and offered as a reuse option on the Upload page.
+  savedCvLibrary: CVData | null;
   coverLetterData: CoverLetterData | null;
   brandColors: { primary: string; secondary: string } | null;
   useBrandColors: boolean;
@@ -185,6 +190,8 @@ interface AppState {
   pushCvHistory: () => void;
   undo: () => void;
   setUser: (user: { email: string; provider: string } | null) => void;
+  saveCvToLibrary: (cv: CVData) => void;
+  clearCvLibrary: () => void;
   reset: () => void;
 }
 
@@ -203,6 +210,7 @@ const initialState = {
   projectId: null,
   user: null,
   cvHistory: [] as CVData[],
+  savedCvLibrary: null as CVData | null,
   coverLetterData: null,
   targetMarket: "france" as "france" | "europe" | "us" | "global",
   brandColors: null,
@@ -339,7 +347,10 @@ export const useStore = create<AppState>()(persist((set) => ({
       cvHistory: s.cvHistory.slice(0, -1),
     };
   }),
-  reset: () => set(initialState),
+  saveCvToLibrary: (cv) => set({ savedCvLibrary: sanitizeCv(cv) }),
+  clearCvLibrary: () => set({ savedCvLibrary: null }),
+  // Preserve savedCvLibrary across resets — it's cross-project state by design.
+  reset: () => set((s) => ({ ...initialState, savedCvLibrary: s.savedCvLibrary })),
 }), {
   name: "bored-cv-session",
   partialize: (state) => ({
@@ -357,6 +368,7 @@ export const useStore = create<AppState>()(persist((set) => ({
     selectedTemplate: state.selectedTemplate,
     tone: state.tone,
     toneChosen: state.toneChosen,
+    savedCvLibrary: state.savedCvLibrary,
     // user is intentionally excluded — session is server-side
     // cvHistory is intentionally excluded — too large for localStorage
   }),
@@ -364,6 +376,7 @@ export const useStore = create<AppState>()(persist((set) => ({
     const p = persisted as Partial<AppState> | undefined;
     const merged = { ...current, ...p };
     if (merged.cvData) merged.cvData = sanitizeCv(merged.cvData);
+    if (merged.savedCvLibrary) merged.savedCvLibrary = sanitizeCv(merged.savedCvLibrary);
     return merged;
   },
 }));

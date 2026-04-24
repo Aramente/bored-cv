@@ -25,7 +25,7 @@ const templateComponents = {
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, selectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal } = useStore();
+  const { cvData, cvDataAlt, cvLang, selectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal, saveCvToLibrary } = useStore();
   const [beforeAfterOpen, setBeforeAfterOpen] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "creating" | "copied" | "auth" | "network" | "error">("idle");
   const [shareUrl, setShareUrl] = useState<string>("");
@@ -180,7 +180,16 @@ export default function Templates() {
 
         <PDFDownloadLink document={pdfDocument} fileName={`${displayCv.name.replace(/\s+/g, "_")}_CV.pdf`}>
           {({ loading: pdfLoading }) => (
-            <button className="btn-primary" style={{ width: "100%" }} disabled={pdfLoading}>
+            <button
+              className="btn-primary"
+              style={{ width: "100%" }}
+              disabled={pdfLoading}
+              onClick={() => {
+                // Persist finalized CV so the user's next project can reuse it.
+                // Downloading is the strongest "I'm done" signal we have.
+                if (!pdfLoading) saveCvToLibrary(displayCv);
+              }}
+            >
               {pdfLoading ? <span className="spinner" /> : t("editor.download")}
             </button>
           )}
@@ -207,6 +216,7 @@ export default function Templates() {
               });
               const url = `${window.location.origin}/bored-cv/v/${slug}`;
               setShareUrl(url);
+              saveCvToLibrary(displayCv);
               await navigator.clipboard.writeText(url).catch(() => {});
               setShareState("copied");
               setTimeout(() => setShareState("idle"), 4000);

@@ -11,7 +11,7 @@ import RememberedCard from "../components/RememberedCard";
 export default function Upload() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, profile: storedProfile } = useStore();
+  const { setProfile, setOffer, setCvData, setCvOriginal, targetMarket, profile: storedProfile, savedCvLibrary, clearCvLibrary } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -22,6 +22,9 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
   const [error, setError] = useState("");
+  // When true, skip LinkedIn parsing and seed the new project from the user's
+  // last finalized CV. Requires savedCvLibrary to be populated.
+  const [reuseMode, setReuseMode] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -35,16 +38,56 @@ export default function Upload() {
     if (f) setFile(f);
   };
 
-  const canSubmit = file && (offerUrl || offerText);
+  const canSubmit = (reuseMode ? !!savedCvLibrary : !!file) && (offerUrl || offerText);
 
   const handleSubmit = async () => {
-    if (!file || (!offerUrl && !offerText)) return;
+    if (reuseMode ? !savedCvLibrary : !file) return;
+    if (!offerUrl && !offerText) return;
     setLoading(true);
     setError("");
 
     try {
       const captcha = "";
 
+      // Reuse path: skip LinkedIn parsing, seed from saved library.
+      if (reuseMode && savedCvLibrary) {
+        setLoadingStep(t("upload.step_parsing"));
+        let offer;
+        try {
+          offer = await scrapeOffer(offerTab === "url" ? offerUrl : "", offerTab === "text" ? offerText : "", captcha);
+        } catch {
+          if (offerTab === "url") {
+            setOfferTab("text");
+            setError(t("upload.scrape_failed"));
+            setLoading(false);
+            setLoadingStep("");
+            return;
+          }
+          throw new Error("Could not parse job description");
+        }
+        setOffer(offer);
+
+        if (offerTab === "url" && offerUrl) {
+          extractColors(offerUrl)
+            .then((colors) => {
+              if (colors.colors.length >= 2) {
+                useStore.getState().setBrandColors({ primary: colors.primary, secondary: colors.secondary });
+              }
+            })
+            .catch(() => {});
+        }
+
+        // Seed both cvOriginal and cvData from the saved library. We don't
+        // have the raw Profile object — skip analyzeProfile/draftCV. The user
+        // can tweak bullets via chat just like any other session.
+        setCvOriginal(savedCvLibrary);
+        setCvData(savedCvLibrary);
+        setLoadingStep(t("upload.step_ready"));
+        navigate("/chat");
+        return;
+      }
+
+      if (!file) return;
       setLoadingStep(t("upload.step_parsing"));
       const profile = await parseLinkedIn(file, captcha);
       setProfile(profile);
@@ -158,6 +201,57 @@ export default function Upload() {
 
         <RememberedCard />
 
+        {savedCvLibrary && (
+          <section style={{ marginBottom: 24 }}>
+            <div style={{
+              background: "var(--accent-subtle)",
+              border: "1px solid var(--accent)",
+              borderRadius: "var(--radius-lg)",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
+                    {i18n.language.startsWith("fr") ? "Réutiliser votre dernier CV" : "Reuse your last CV"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                    {savedCvLibrary.name}{savedCvLibrary.title ? ` — ${savedCvLibrary.title}` : ""}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                    {i18n.language.startsWith("fr")
+                      ? "Passez l'import LinkedIn et collez directement la nouvelle offre."
+                      : "Skip the LinkedIn upload and paste the new job offer below."}
+                  </div>
+                </div>
+                <button
+                  className="btn-secondary"
+                  style={{ fontSize: 11, padding: "4px 8px", whiteSpace: "nowrap" }}
+                  onClick={() => {
+                    if (confirm(i18n.language.startsWith("fr") ? "Oublier ce CV ?" : "Forget this CV?")) {
+                      clearCvLibrary();
+                      setReuseMode(false);
+                    }
+                  }}
+                >
+                  {i18n.language.startsWith("fr") ? "Oublier" : "Forget"}
+                </button>
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, marginTop: 4 }}>
+                <input
+                  type="checkbox"
+                  checked={reuseMode}
+                  onChange={(e) => setReuseMode(e.target.checked)}
+                />
+                <span>{i18n.language.startsWith("fr") ? "Utiliser ce CV comme base" : "Use this CV as a starting point"}</span>
+              </label>
+            </div>
+          </section>
+        )}
+
+        {!reuseMode && (
         <section style={{ marginBottom: 32 }}>
           <label className="label">{t("upload.linkedin_label")}</label>
           <div
@@ -220,6 +314,7 @@ export default function Upload() {
             </div>
           )}
         </section>
+        )}
 
         <section style={{ marginBottom: 32 }}>
           <label className="label">{t("upload.offer_label")}</label>
