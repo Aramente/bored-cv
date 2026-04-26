@@ -26,7 +26,7 @@ app = FastAPI(title="Bored CV API", version="0.1.0")
 # route enforces its own 5 MB limit; everything else is JSON and 1 MB is
 # already 10× a real CV.
 MAX_REQUEST_BYTES = 1_000_000
-PDF_UPLOAD_PATHS = {"/api/parse-linkedin", "/api/debug-parse-pdf", "/api/transcribe"}
+PDF_UPLOAD_PATHS = {"/api/parse-linkedin", "/api/transcribe"}
 
 
 class BodySizeLimitMiddleware(BaseHTTPMiddleware):
@@ -88,33 +88,10 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/api/debug-db")
-async def debug_db(x_admin_secret: str = Header("")):
-    """Debug: check DB status. Protected by ADMIN_SECRET header."""
-    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    from app.db import get_db, USE_TURSO, TURSO_URL
-    project_count = 0
-    user_count = 0
-    try:
-        with get_db() as conn:
-            row = conn.execute("SELECT COUNT(*) as cnt FROM projects").fetchone()
-            project_count = row["cnt"] if row else 0
-            row = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()
-            user_count = row["cnt"] if row else 0
-    except Exception as e:
-        return {"error": str(e), "turso": USE_TURSO, "turso_url": TURSO_URL[:30] + "..." if TURSO_URL else ""}
-    return {
-        "driver": "turso" if USE_TURSO else "sqlite",
-        "turso_url": TURSO_URL[:30] + "..." if TURSO_URL else "",
-        "users": user_count,
-        "projects": project_count,
-    }
-
-
 @app.get("/api/admin/users")
 async def admin_users(x_admin_secret: str = Header(""), consented_only: bool = False):
-    """List all registered users. Protected by ADMIN_SECRET header."""
+    """List all registered users. Protected by ADMIN_SECRET header. Kept around
+    because it's used by the marketing-consent export, not pure debug."""
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
     from app.db import get_db
@@ -124,40 +101,3 @@ async def admin_users(x_admin_secret: str = Header(""), consented_only: bool = F
         else:
             rows = conn.execute("SELECT id, email, provider, marketing_consent, created_at FROM users ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]
-
-
-@app.get("/api/debug-parse")
-async def debug_parse(x_admin_secret: str = Header("")):
-    """Debug: test full PDF parser pipeline. Protected by ADMIN_SECRET header."""
-    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    import logging
-    from mistralai.client import Mistral
-    key = os.environ.get("MISTRAL_API_KEY", "")
-    client = Mistral(api_key=key)
-
-    # Test with a small fake PDF text
-    test_text = "Coordonnées Kevin Duchier\n0033786626512\nkevin@gmail.com\nExpérience\nFounder\nSloow\nseptembre 2025 - Present\nBuilding stuff"
-
-    prompt = f"""Extract structured profile data from this LinkedIn PDF export.
-
-RAW TEXT:
-{test_text}
-
-Return valid JSON with: name, title, email, phone, linkedin, location, summary, experiences, education, skills, languages."""
-
-    try:
-        r = client.chat.complete(
-            model="mistral-small-latest",
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_tokens=2000,
-            temperature=0.1,
-        )
-        import json
-        data = json.loads(r.choices[0].message.content)
-        return {"ok": True, "name": data.get("name"), "experiences": len(data.get("experiences", [])), "provider": "mistral"}
-    except Exception as e:
-        # Log internally; return generic message — no traceback in response.
-        logging.exception("debug_parse failed")
-        return {"ok": False, "error": type(e).__name__, "provider": "mistral"}
