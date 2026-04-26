@@ -158,6 +158,27 @@ export async function auditCV(cvData: CVData, offer: Offer, lang: string, captch
   );
 }
 
+export interface ApplyGrammarFixesResult {
+  cv_data: CVData;
+  applied: number;
+  skipped: number;
+}
+
+export async function applyGrammarFixes(
+  cvData: CVData,
+  findings: AuditFinding[],
+  lang: string,
+  captchaToken: string,
+  signal?: AbortSignal,
+): Promise<ApplyGrammarFixesResult> {
+  return post<ApplyGrammarFixesResult>(
+    "/api/apply-grammar-fixes",
+    { cv_data: cvData, findings, ui_language: lang || "en" },
+    captchaToken,
+    signal,
+  );
+}
+
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
   const res = await fetch(`${API_URL}/api/auth/quota`, { headers: getAuthHeaders() });
   return res.json();

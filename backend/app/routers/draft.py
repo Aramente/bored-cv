@@ -2,6 +2,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 
 from app.middleware.security import verify_turnstile, check_rate_limit
 from app.models import (
+    ApplyGrammarFixesRequest, ApplyGrammarFixesResponse,
     AuditCvRequest, AuditCvResponse, CVData, GenerateRequest,
     ImproveBulletRequest, ImproveBulletResponse, ToneSamples, ToneSamplesRequest,
 )
@@ -57,6 +58,27 @@ async def audit_cv(req: AuditCvRequest, request: Request, x_captcha_token: str =
     try:
         out = llm.audit_cv(req.cv_data, req.offer, req.ui_language)
         return AuditCvResponse(**out)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+
+
+@router.post("/apply-grammar-fixes", response_model=ApplyGrammarFixesResponse)
+async def apply_grammar_fixes(req: ApplyGrammarFixesRequest, request: Request, x_captcha_token: str = Header("")):
+    """Apply only the grammar bucket of an audit. Returns the rewritten CV
+    plus how many substitutions actually landed (the LLM may hallucinate
+    paths or `old` strings that don't exist — those are skipped silently)."""
+    if not await verify_turnstile(x_captcha_token):
+        raise HTTPException(status_code=403, detail="Captcha verification failed")
+    check_rate_limit(request)
+    llm = get_llm()
+    try:
+        findings = [f.model_dump() for f in req.findings]
+        out = llm.apply_grammar_fixes(req.cv_data, findings, req.ui_language)
+        return ApplyGrammarFixesResponse(
+            cv_data=CVData(**out["cv_data"]),
+            applied=out.get("applied", 0),
+            skipped=out.get("skipped", 0),
+        )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")
 

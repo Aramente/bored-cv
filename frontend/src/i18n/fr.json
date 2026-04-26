@@ -181,7 +181,13 @@
     "audit_missing": "Manquant vs l'offre",
     "audit_advice": "Derniers conseils",
     "audit_empty_section": "Rien à signaler ici.",
-    "audit_failed": "L'audit a échoué — réessaie."
+    "audit_failed": "L'audit a échoué — réessaie.",
+    "audit_apply_grammar": "Appliquer les corrections de grammaire ({{count}})",
+    "audit_apply_running": "Application en cours…",
+    "audit_apply_done": "✓ {{count}} correction(s) appliquée(s)",
+    "audit_apply_skipped": "({{count}} ignorée(s))",
+    "audit_apply_undo": "Annuler",
+    "audit_apply_failed": "L'application a échoué — réessaie."
   },
   "projects": {
     "title": "tes projets",

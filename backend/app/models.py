@@ -211,6 +211,50 @@ class AuditCvResponse(BaseModel):
     advice: list[AuditFinding] = []          # more numbers, more bullets, more examples
 
 
+class ApplyGrammarFixesRequest(BaseModel):
+    """Apply only the grammar bucket of an audit to a CV. The LLM is asked to
+    return a list of (path, old, new) substitutions which the backend then
+    applies mechanically — that way nothing outside the listed fixes can drift,
+    and any field the LLM hallucinates a path for just gets skipped."""
+    cv_data: "CVData"
+    findings: list[AuditFinding] = []
+    ui_language: str = "en"
+
+
+class GrammarSubstitution(BaseModel):
+    path: str  # dot-path like "summary" or "experiences.2.bullets.3"
+    old: str
+    new: str
+
+
+class ApplyGrammarFixesResponse(BaseModel):
+    cv_data: "CVData"
+    applied: int = 0  # how many substitutions actually landed
+    skipped: int = 0  # paths the LLM returned that didn't resolve / didn't match
+
+
+class FieldTranslation(BaseModel):
+    """A single field to translate, identified by its dot-path within the CV
+    (e.g. 'summary', 'experiences.0.bullets.3'). The path is opaque to the
+    backend — it just round-trips back in the response so the frontend can
+    re-apply the translation to the right field."""
+    path: str
+    text: str
+
+
+class TranslateFieldsRequest(BaseModel):
+    """Per-field translation for the FR/EN sync flow in the editor. Sent when
+    the user toggles language and some fields on the now-active side are
+    stale because the user edited the other side."""
+    fields: list[FieldTranslation]
+    source_language: str  # "en" or "fr"
+    target_language: str  # "en" or "fr"
+
+
+class TranslateFieldsResponse(BaseModel):
+    translations: list[FieldTranslation]
+
+
 class OfferScrapeRequest(BaseModel):
     url: str = ""
     raw_text: str = ""

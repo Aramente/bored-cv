@@ -181,7 +181,13 @@
     "audit_missing": "Missing vs the job offer",
     "audit_advice": "Last advice",
     "audit_empty_section": "Nothing flagged here.",
-    "audit_failed": "Audit failed — please try again."
+    "audit_failed": "Audit failed — please try again.",
+    "audit_apply_grammar": "Apply grammar fixes ({{count}})",
+    "audit_apply_running": "Applying…",
+    "audit_apply_done": "✓ {{count}} fix(es) applied",
+    "audit_apply_skipped": "({{count}} skipped)",
+    "audit_apply_undo": "Undo",
+    "audit_apply_failed": "Apply failed — please try again."
   },
   "projects": {
     "title": "your projects",

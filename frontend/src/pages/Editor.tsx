@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { translateCV, auditCV, type AuditCvResult } from "../services/api";
+import { translateCV, auditCV, applyGrammarFixes, type AuditCvResult } from "../services/api";
+import type { CVData } from "../store";
 import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import CleanHtml from "../templates/CleanHtml";
@@ -34,12 +35,18 @@ const templateIds: TemplateId[] = ["clean", "contrast", "minimal", "retro", "con
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate, setCvDataAlt, offer } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate, setCvData, setCvDataAlt, offer } = useStore();
   const [translating, setTranslating] = useState(false);
   const translateAttempted = useRef(false);
   const [auditing, setAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<AuditCvResult | null>(null);
   const [auditError, setAuditError] = useState<string | null>(null);
+  // Grammar-fix apply flow — keeps a snapshot of the pre-apply CV so the user
+  // can roll back in one click without leaving the audit panel.
+  const [applyingGrammar, setApplyingGrammar] = useState(false);
+  const [grammarSnapshot, setGrammarSnapshot] = useState<CVData | null>(null);
+  const [grammarApplied, setGrammarApplied] = useState<{ count: number; skipped: number } | null>(null);
+  const [grammarError, setGrammarError] = useState<string | null>(null);
 
   // Legacy-project backfill: projects created before the auto-translate flow
   // existed have cvData but no cvDataAlt, which leaves the FR/EN toggle stuck.
@@ -92,6 +99,10 @@ export default function Editor() {
     if (!audCv || !offer || auditDisabled) return;
     setAuditing(true);
     setAuditError(null);
+    // Reset any prior apply state — the new audit may have different findings.
+    setGrammarApplied(null);
+    setGrammarSnapshot(null);
+    setGrammarError(null);
     try {
       const res = await auditCV(audCv, offer, cvLang || "en", "");
       setAuditResult(res);
@@ -101,6 +112,43 @@ export default function Editor() {
     } finally {
       setAuditing(false);
     }
+  };
+
+  const runApplyGrammar = async () => {
+    if (!cvData || !auditResult || auditResult.grammar.length === 0 || applyingGrammar) return;
+    // Apply fixes to the CV that was audited (the active language). We snapshot
+    // BEFORE the swap so the rollback button in the panel can restore it.
+    const target = cvLang === (cvData.language || "en") ? cvData : (cvDataAlt || cvData);
+    setApplyingGrammar(true);
+    setGrammarError(null);
+    try {
+      const res = await applyGrammarFixes(target, auditResult.grammar, cvLang || "en", "");
+      setGrammarSnapshot(target);
+      // The applied CV is in the active language. If it matches cvData's
+      // language, swap cvData; otherwise it came from cvDataAlt.
+      if (cvLang === (cvData.language || "en")) {
+        setCvData(res.cv_data);
+      } else {
+        setCvDataAlt(res.cv_data);
+      }
+      setGrammarApplied({ count: res.applied, skipped: res.skipped });
+    } catch (e) {
+      console.error("apply grammar failed", e);
+      setGrammarError(t("editor.audit_apply_failed"));
+    } finally {
+      setApplyingGrammar(false);
+    }
+  };
+
+  const undoApplyGrammar = () => {
+    if (!grammarSnapshot) return;
+    if (cvLang === (cvData?.language || "en")) {
+      setCvData(grammarSnapshot);
+    } else {
+      setCvDataAlt(grammarSnapshot);
+    }
+    setGrammarSnapshot(null);
+    setGrammarApplied(null);
   };
 
   return (
@@ -202,6 +250,43 @@ export default function Editor() {
                       {f.text}
                     </div>
                   ))}
+                  {/* Grammar-only auto-apply CTA. Lives inside the grammar
+                      section so the user knows exactly which bucket the
+                      button acts on (vs the missing/advice buckets, which
+                      need human judgment and can't be auto-applied). */}
+                  {bucket === "grammar" && items.length > 0 && (
+                    <div className="cv-audit-apply-row">
+                      {grammarApplied ? (
+                        <>
+                          <span className="cv-audit-apply-status">
+                            {t("editor.audit_apply_done", { count: grammarApplied.count })}
+                            {grammarApplied.skipped > 0 && (
+                              <span className="cv-audit-apply-skipped">
+                                {" "}{t("editor.audit_apply_skipped", { count: grammarApplied.skipped })}
+                              </span>
+                            )}
+                          </span>
+                          <button type="button" className="cv-audit-apply-undo" onClick={undoApplyGrammar}>
+                            {t("editor.audit_apply_undo")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="cv-audit-apply-btn"
+                          onClick={runApplyGrammar}
+                          disabled={applyingGrammar}
+                        >
+                          {applyingGrammar
+                            ? t("editor.audit_apply_running")
+                            : t("editor.audit_apply_grammar", { count: items.length })}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {bucket === "grammar" && grammarError && (
+                    <p className="cv-audit-apply-error">{grammarError}</p>
+                  )}
                 </div>
               );
             })}

@@ -12,6 +12,55 @@ from app.models import (
 MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking, not output
 
 
+def _apply_substitution(cv_dict: dict, path: str, old: str, new: str) -> bool:
+    """Walk a dot-path like 'experiences.2.bullets.3' into cv_dict and do a
+    literal `old` → `new` replace on the string at that path. Returns True if
+    the path resolved to a string AND `old` was found verbatim in it.
+
+    Used by LLMService.apply_grammar_fixes to apply audit substitutions safely:
+    if the LLM hallucinates a path or an `old` substring that isn't actually
+    there, the swap is skipped instead of corrupting the CV."""
+    parts = path.split(".") if path else []
+    if not parts:
+        return False
+    node = cv_dict
+    for p in parts[:-1]:
+        if isinstance(node, list):
+            try:
+                idx = int(p)
+            except ValueError:
+                return False
+            if idx < 0 or idx >= len(node):
+                return False
+            node = node[idx]
+        elif isinstance(node, dict):
+            if p not in node:
+                return False
+            node = node[p]
+        else:
+            return False
+    last = parts[-1]
+    if isinstance(node, list):
+        try:
+            idx = int(last)
+        except ValueError:
+            return False
+        if idx < 0 or idx >= len(node):
+            return False
+        current = node[idx]
+        if not isinstance(current, str) or old not in current:
+            return False
+        node[idx] = current.replace(old, new, 1)
+        return True
+    if isinstance(node, dict):
+        current = node.get(last)
+        if not isinstance(current, str) or old not in current:
+            return False
+        node[last] = current.replace(old, new, 1)
+        return True
+    return False
+
+
 class LLMService:
     def __init__(self, api_key: str | None = None):
         self._api_key = api_key or os.environ.get("MISTRAL_API_KEY", "")
@@ -526,6 +575,52 @@ Respond in valid JSON only, same structure, translated to {lang_name}. Set "lang
         data = self._parse_json(text)
         return CVData(**data)
 
+    def translate_fields(self, fields: list[dict], source_language: str, target_language: str) -> list[dict]:
+        """Translate a small set of CV fields from one language to another.
+
+        Used by the editor's per-field FR/EN sync — when the user edits a
+        field on one side, that field is marked stale on the other side, and
+        toggling languages triggers this method to refresh just the stale
+        fields (not the whole CV). Each field is identified by an opaque
+        dot-path that round-trips back unchanged.
+
+        Returns a list of {path, text} dicts in the same order as input.
+        Falls back to the original text if a path goes missing in the model
+        output rather than dropping the field — better to leave a stale
+        translation than lose user content.
+        """
+        if not fields:
+            return []
+        src_name = "French" if source_language == "fr" else "English"
+        tgt_name = "French" if target_language == "fr" else "English"
+        # Indexed input — model echoes the same path back per item, makes
+        # response parsing trivial and order-independent.
+        items_json = json.dumps(fields, ensure_ascii=False)
+        prompt = f"""Translate each text below from {src_name} to {tgt_name}.
+
+Preserve numbers, company names, technical terms, proper nouns, and the same tone/style. Do NOT add information. Do NOT make it more "corporate" — match the original register exactly. If a string contains a placeholder like {{GAP: ...}}, keep it verbatim.
+
+INPUT (JSON array of {{path, text}} objects):
+{items_json}
+
+Respond with valid JSON only, in this exact shape — same order, same paths, only the `text` field translated:
+{{"translations": [{{"path": "...", "text": "..."}}]}}"""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=MAX_TOKENS_PER_CALL, temperature=0.2)
+        data = self._parse_json(text)
+        out_raw = data.get("translations", []) if isinstance(data, dict) else []
+        # Index by path so we can fall back gracefully if the model dropped one.
+        by_path = {item.get("path"): item.get("text", "") for item in out_raw if isinstance(item, dict)}
+        result = []
+        for f in fields:
+            p = f.get("path", "")
+            translated = by_path.get(p)
+            # Empty translation is suspicious — keep original rather than wipe.
+            if translated is None or (not translated and f.get("text")):
+                translated = f.get("text", "")
+            result.append({"path": p, "text": translated})
+        return result
+
     def generate_cover_letter(self, profile: Profile, offer: Offer, cv_data: CVData, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CoverLetterData:
         conversation = self._summarize_conversation(messages)
 
@@ -825,6 +920,80 @@ Respond ONLY in valid JSON:
 
         text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.3)
         return self._parse_json(text)
+
+    def apply_grammar_fixes(self, cv_data: "CVData", findings: list[dict], ui_language: str = "en") -> dict:
+        """Apply only the grammar bucket of an audit. Returns:
+            {"cv_data": <CVData>, "applied": int, "skipped": int}
+
+        Strategy: ask the LLM for a list of (path, old, new) substitutions —
+        NOT a full rewrite. Then apply each substitution mechanically by
+        looking up `path` in the CV and doing a literal `old` → `new` swap.
+        Anything the LLM hallucinates a path for, or where `old` doesn't
+        match the current text verbatim, is skipped silently. This makes the
+        operation safe-by-construction: the LLM cannot introduce content
+        outside the listed fixes."""
+        if not findings:
+            return {"cv_data": cv_data.model_dump(), "applied": 0, "skipped": 0}
+
+        lang_name = "French" if ui_language == "fr" else "English"
+
+        # Build a path-addressed view of every editable string field, so the
+        # LLM sees exactly which paths exist and what current text lives there.
+        path_view: list[str] = []
+        path_view.append(f'  "summary": {json.dumps(cv_data.summary, ensure_ascii=False)}')
+        path_view.append(f'  "title": {json.dumps(cv_data.title, ensure_ascii=False)}')
+        for i, exp in enumerate(cv_data.experiences):
+            path_view.append(f'  "experiences.{i}.title": {json.dumps(exp.title, ensure_ascii=False)}')
+            path_view.append(f'  "experiences.{i}.company": {json.dumps(exp.company, ensure_ascii=False)}')
+            for j, b in enumerate(exp.bullets):
+                path_view.append(f'  "experiences.{i}.bullets.{j}": {json.dumps(b, ensure_ascii=False)}')
+
+        findings_view = "\n".join(
+            f'  - [{f.get("where", "?")}] {f.get("text", "")}' for f in findings
+        )
+
+        prompt = f"""You are applying a list of pre-approved grammar / spelling / wording fixes to a CV. You may NOT rewrite anything outside these fixes. You may NOT add new ideas, new bullets, or new content.
+
+CV FIELDS BY PATH (you can only target these paths):
+{chr(10).join(path_view)}
+
+GRAMMAR FINDINGS TO APPLY (each one already approved by the user):
+{findings_view}
+
+For each finding, return ONE substitution: the exact substring currently in the field (`old`) and what it should become (`new`). Rules:
+- `old` MUST be a verbatim substring of the current text at `path`. If you can't find an exact match, skip the finding.
+- `new` is the corrected version of `old`. Keep the same register, same length where possible. Fix grammar/spelling/wording ONLY.
+- Stay in {lang_name}. Do NOT translate.
+- Do NOT add accents that change meaning. Do NOT change proper nouns, numbers, technical terms, or company names unless the finding explicitly says so.
+- One substitution per finding. If a finding is vague ("be more concise"), skip it — substitutions must be concrete.
+
+Respond ONLY in valid JSON:
+{{"substitutions": [{{"path": "summary", "old": "exact substring", "new": "fixed substring"}}]}}"""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.1)
+        data = self._parse_json(text)
+        subs = data.get("substitutions", []) if isinstance(data, dict) else []
+
+        # Apply mechanically. Work on a deep copy so we don't mutate the input.
+        cv_dict = json.loads(cv_data.model_dump_json())
+        applied = 0
+        skipped = 0
+        for s in subs:
+            if not isinstance(s, dict):
+                skipped += 1
+                continue
+            path = s.get("path", "")
+            old = s.get("old", "")
+            new = s.get("new", "")
+            if not path or not old or new is None:
+                skipped += 1
+                continue
+            if not _apply_substitution(cv_dict, path, old, new):
+                skipped += 1
+                continue
+            applied += 1
+
+        return {"cv_data": cv_dict, "applied": applied, "skipped": skipped}
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {
