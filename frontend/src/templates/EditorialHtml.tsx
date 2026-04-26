@@ -46,17 +46,17 @@ export default function EditorialHtml({ data, brandColors }: Props) {
       <p className="ed-contact">{joinContact([data.location, data.email, data.phone, data.linkedin])}</p>
 
       <section className="ed-section">
-        <h2 className="ed-section-title">{isFr ? "Chapitres" : "Chapters"}</h2>
+        <h2 className="ed-section-title">{isFr ? "Expériences" : "Experiences"}</h2>
         {data.experiences.map((exp, i) => (
           <article key={i} className="ed-exp">
             <button type="button" className="cv-exp-remove" onClick={() => { pushCvHistory(); removeCvExperience(i); }} title={isFr ? "Retirer" : "Remove"}>×</button>
+            <Editable as="h3" value={exp.title} onSave={(v) => save(`experiences.${i}.title`, v)} className="ed-exp-title" placeholder={isFr ? "Intitulé" : "Job title"} rich={false} />
             <div className="ed-exp-meta">
               <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="ed-exp-dates" style={{ color: accentColor }} placeholder="2022 — 2024" rich={false} />
               <Editable as="span" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="ed-exp-company" placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
               <ContractTypeSelect value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} isFr={isFr} />
               <HeadcountChip start={exp.headcountStart || ""} end={exp.headcountEnd || ""} onSaveStart={(v) => save(`experiences.${i}.headcountStart`, v)} onSaveEnd={(v) => save(`experiences.${i}.headcountEnd`, v)} isFr={isFr} />
             </div>
-            <Editable as="h3" value={exp.title} onSave={(v) => save(`experiences.${i}.title`, v)} className="ed-exp-title" placeholder={isFr ? "Intitulé" : "Job title"} rich={false} />
             <ul className="cv-bullets ed-bullets has-drop-tail">
               {exp.bullets.map((b, j) => (
                 <BulletRow

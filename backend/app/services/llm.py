@@ -949,7 +949,7 @@ Respond ONLY in valid JSON:
                 path_view.append(f'  "experiences.{i}.bullets.{j}": {json.dumps(b, ensure_ascii=False)}')
 
         findings_view = "\n".join(
-            f'  - [{f.get("where", "?")}] {f.get("text", "")}' for f in findings
+            f'  [{idx}] ({f.get("where", "?")}) {f.get("text", "")}' for idx, f in enumerate(findings)
         )
 
         prompt = f"""You are applying a list of pre-approved grammar / spelling / wording fixes to a CV. You may NOT rewrite anything outside these fixes. You may NOT add new ideas, new bullets, or new content.
@@ -957,10 +957,11 @@ Respond ONLY in valid JSON:
 CV FIELDS BY PATH (you can only target these paths):
 {chr(10).join(path_view)}
 
-GRAMMAR FINDINGS TO APPLY (each one already approved by the user):
+GRAMMAR FINDINGS TO APPLY (numbered — use the bracketed index in your response):
 {findings_view}
 
 For each finding, return ONE substitution: the exact substring currently in the field (`old`) and what it should become (`new`). Rules:
+- `finding_index` MUST be the bracketed number of the finding you're addressing.
 - `old` MUST be a verbatim substring of the current text at `path`. If you can't find an exact match, skip the finding.
 - `new` is the corrected version of `old`. Keep the same register, same length where possible. Fix grammar/spelling/wording ONLY.
 - Stay in {lang_name}. Do NOT translate.
@@ -968,32 +969,39 @@ For each finding, return ONE substitution: the exact substring currently in the 
 - One substitution per finding. If a finding is vague ("be more concise"), skip it — substitutions must be concrete.
 
 Respond ONLY in valid JSON:
-{{"substitutions": [{{"path": "summary", "old": "exact substring", "new": "fixed substring"}}]}}"""
+{{"substitutions": [{{"finding_index": 0, "path": "summary", "old": "exact substring", "new": "fixed substring"}}]}}"""
 
         text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.1)
         data = self._parse_json(text)
         subs = data.get("substitutions", []) if isinstance(data, dict) else []
 
         # Apply mechanically. Work on a deep copy so we don't mutate the input.
+        # Track which finding indices were applied vs skipped so the UI can mark
+        # the un-applied ones (LLM returned nothing for them, or the substring
+        # didn't match verbatim, or the path was bogus).
         cv_dict = json.loads(cv_data.model_dump_json())
-        applied = 0
-        skipped = 0
+        applied_indices: set[int] = set()
         for s in subs:
             if not isinstance(s, dict):
-                skipped += 1
                 continue
             path = s.get("path", "")
             old = s.get("old", "")
             new = s.get("new", "")
+            fi = s.get("finding_index")
             if not path or not old or new is None:
-                skipped += 1
                 continue
             if not _apply_substitution(cv_dict, path, old, new):
-                skipped += 1
                 continue
-            applied += 1
+            if isinstance(fi, int) and 0 <= fi < len(findings):
+                applied_indices.add(fi)
 
-        return {"cv_data": cv_dict, "applied": applied, "skipped": skipped}
+        skipped_indices = [i for i in range(len(findings)) if i not in applied_indices]
+        return {
+            "cv_data": cv_dict,
+            "applied": len(applied_indices),
+            "skipped": len(skipped_indices),
+            "skipped_indices": skipped_indices,
+        }
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {

@@ -231,6 +231,7 @@ class ApplyGrammarFixesResponse(BaseModel):
     cv_data: "CVData"
     applied: int = 0  # how many substitutions actually landed
     skipped: int = 0  # paths the LLM returned that didn't resolve / didn't match
+    skipped_indices: list[int] = []  # indices into the original findings list that were not applied
 
 
 class FieldTranslation(BaseModel):

@@ -78,6 +78,7 @@ async def apply_grammar_fixes(req: ApplyGrammarFixesRequest, request: Request, x
             cv_data=CVData(**out["cv_data"]),
             applied=out.get("applied", 0),
             skipped=out.get("skipped", 0),
+            skipped_indices=out.get("skipped_indices", []),
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")

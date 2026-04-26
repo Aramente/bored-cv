@@ -2351,6 +2351,38 @@ textarea.input { resize: vertical; min-height: 100px; }
 .cv-audit-section.is-grammar .cv-audit-finding { border-left-color: #f97316; }
 .cv-audit-section.is-missing .cv-audit-finding { border-left-color: #dc2626; }
 .cv-audit-section.is-advice .cv-audit-finding { border-left-color: #6366f1; }
+/* Skipped marker — for findings the LLM/path-resolver couldn't auto-apply.
+   The user can see exactly which two of "6 applied, 2 skipped" need manual
+   attention. Amber to read as "warning" without competing with red errors. */
+.cv-audit-finding.is-skipped {
+  background: #fffbeb;
+  border-left-color: #d97706 !important;
+}
+.cv-audit-skipped-mark {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 13px;
+  color: #d97706;
+  cursor: help;
+}
+/* Page-budget warning — surfaces above the preview when the editable CV
+   would render past the 2-page PDF cap. Amber, same family as the skipped
+   finding marker so the two read as related "watch this" signals. */
+.cv-page-warning {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 794px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  color: #78350f;
+}
+.cv-page-warning-icon { font-size: 18px; line-height: 1; margin-top: 2px; }
+.cv-page-warning strong { display: block; font-size: 13px; margin-bottom: 2px; }
+.cv-page-warning p { margin: 0; font-size: 12px; line-height: 1.5; }
 .cv-audit-empty {
   font-size: 12px;
   color: var(--text-muted);

@@ -46,7 +46,14 @@ export default function Editor() {
   const [applyingGrammar, setApplyingGrammar] = useState(false);
   const [grammarSnapshot, setGrammarSnapshot] = useState<CVData | null>(null);
   const [grammarApplied, setGrammarApplied] = useState<{ count: number; skipped: number } | null>(null);
+  // Indices into auditResult.grammar that the LLM/path-resolver couldn't apply,
+  // so we can flag those specific findings inline (vs only showing a count).
+  const [grammarSkippedIndices, setGrammarSkippedIndices] = useState<number[]>([]);
   const [grammarError, setGrammarError] = useState<string | null>(null);
+
+  // Page-budget watcher state (effect declared after activeCv resolves below).
+  const previewWrapRef = useRef<HTMLDivElement>(null);
+  const [pageCount, setPageCount] = useState(1);
 
   // Legacy-project backfill: projects created before the auto-translate flow
   // existed have cvData but no cvDataAlt, which leaves the FR/EN toggle stuck.
@@ -90,6 +97,27 @@ export default function Editor() {
   // EN-generated project meant you couldn't see the FR translation.
   const activeCv = cvData && cvLang === (cvData.language || "en") ? cvData : (cvDataAlt || cvData);
 
+  // Page-budget watcher — the PDF cap is 2 A4 pages. The cv-sheet preview is
+  // sized at A4 proportions (794×1123px at ~96dpi, see index.css). We measure
+  // the rendered sheet height and surface a banner when the user is about to
+  // overflow page 2. Threshold uses 1100px/page to leave breathing room for
+  // PDF font-metric drift between react-pdf and the HTML preview.
+  useEffect(() => {
+    const wrap = previewWrapRef.current;
+    if (!wrap) return;
+    const measure = () => {
+      const sheet = wrap.querySelector(".cv-sheet") as HTMLElement | null;
+      const h = sheet?.scrollHeight ?? 0;
+      setPageCount(Math.max(1, Math.ceil(h / 1100)));
+    };
+    measure();
+    const sheet = wrap.querySelector(".cv-sheet");
+    if (!sheet) return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(sheet);
+    return () => ro.disconnect();
+  }, [activeCv, selectedTemplate]);
+
   if (!cvData) {
     return (
       <div className="page">
@@ -122,6 +150,7 @@ export default function Editor() {
     // Reset any prior apply state — the new audit may have different findings.
     setGrammarApplied(null);
     setGrammarSnapshot(null);
+    setGrammarSkippedIndices([]);
     setGrammarError(null);
     try {
       const res = await auditCV(audCv, offer, cvLang || "en", "");
@@ -152,6 +181,7 @@ export default function Editor() {
         setCvDataAlt(res.cv_data);
       }
       setGrammarApplied({ count: res.applied, skipped: res.skipped });
+      setGrammarSkippedIndices(res.skipped_indices || []);
     } catch (e) {
       console.error("apply grammar failed", e);
       setGrammarError(t("editor.audit_apply_failed"));
@@ -169,6 +199,7 @@ export default function Editor() {
     }
     setGrammarSnapshot(null);
     setGrammarApplied(null);
+    setGrammarSkippedIndices([]);
   };
 
   return (
@@ -243,11 +274,25 @@ export default function Editor() {
           })}
         </div>
 
+        {/* Page-budget banner — surfaces when content overflows the 2-page PDF
+            cap. The PDF export does not auto-trim; users must shorten manually. */}
+        {pageCount > 2 && (
+          <div className="cv-page-warning" role="alert">
+            <span className="cv-page-warning-icon" aria-hidden>⚠</span>
+            <div>
+              <strong>{t("editor.page_limit_title", "Over the 2-page limit")}</strong>
+              <p>{t("editor.page_limit_body", "Your CV is currently {{count}} pages. Trim a few bullets or shorten the summary to bring it back to 2.", { count: pageCount })}</p>
+            </div>
+          </div>
+        )}
+
         {/* The editable CV itself — renders the currently selected template */}
-        {(() => {
-          const TemplateHtml = templateHtmlComponents[selectedTemplate] ?? CleanHtml;
-          return <TemplateHtml data={activeCv || cvData} brandColors={useBrandColors ? brandColors : null} />;
-        })()}
+        <div ref={previewWrapRef} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+          {(() => {
+            const TemplateHtml = templateHtmlComponents[selectedTemplate] ?? CleanHtml;
+            return <TemplateHtml data={activeCv || cvData} brandColors={useBrandColors ? brandColors : null} />;
+          })()}
+        </div>
 
         {/* AI audit panel — appears once the user clicks the audit button. */}
         {auditError && (
@@ -270,12 +315,18 @@ export default function Editor() {
                   <p className="cv-audit-section-title">{t(titleKey)}</p>
                   {items.length === 0 ? (
                     <p className="cv-audit-empty">{t("editor.audit_empty_section")}</p>
-                  ) : items.map((f, i) => (
-                    <div key={i} className="cv-audit-finding">
-                      {f.where && <span className="cv-audit-where">{f.where}</span>}
-                      {f.text}
-                    </div>
-                  ))}
+                  ) : items.map((f, i) => {
+                    const isSkipped = bucket === "grammar" && grammarApplied !== null && grammarSkippedIndices.includes(i);
+                    return (
+                      <div key={i} className={`cv-audit-finding${isSkipped ? " is-skipped" : ""}`}>
+                        {isSkipped && (
+                          <span className="cv-audit-skipped-mark" title={t("editor.audit_finding_skipped", "This one couldn't be auto-applied — fix manually")} aria-label="skipped">⚠</span>
+                        )}
+                        {f.where && <span className="cv-audit-where">{f.where}</span>}
+                        {f.text}
+                      </div>
+                    );
+                  })}
                   {/* Grammar-only auto-apply CTA. Lives inside the grammar
                       section so the user knows exactly which bucket the
                       button acts on (vs the missing/advice buckets, which

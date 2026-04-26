@@ -162,6 +162,7 @@ export interface ApplyGrammarFixesResult {
   cv_data: CVData;
   applied: number;
   skipped: number;
+  skipped_indices: number[];
 }
 
 export async function applyGrammarFixes(

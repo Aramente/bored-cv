@@ -189,7 +189,10 @@
     "audit_apply_undo": "Undo",
     "audit_apply_failed": "Apply failed — please try again.",
     "translation_click_to_translate": "Click to translate",
-    "translation_in_progress": "Translating…"
+    "translation_in_progress": "Translating…",
+    "page_limit_title": "Over the 2-page limit",
+    "page_limit_body": "Your CV is currently {{count}} pages. Trim a few bullets or shorten the summary to bring it back to 2.",
+    "audit_finding_skipped": "This one couldn't be auto-applied — fix manually"
   },
   "projects": {
     "title": "your projects",
