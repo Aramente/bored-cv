@@ -16,7 +16,6 @@ import ExecutiveHtml from "../templates/ExecutiveHtml";
 import EditorialHtml from "../templates/EditorialHtml";
 import CompactHtml from "../templates/CompactHtml";
 import type { TemplateId } from "../store";
-import type { TFunction } from "i18next";
 
 const templateHtmlComponents = {
   clean: CleanHtml,
@@ -31,60 +30,6 @@ const templateHtmlComponents = {
   compact: CompactHtml,
 } as const;
 const templateIds: TemplateId[] = ["clean", "contrast", "minimal", "retro", "consultant", "timeline", "mono", "executive", "editorial", "compact"];
-
-const RESPONSIBILITY_PATTERNS = /^(responsible for|helped with|worked on|assisted in|participated in|involved in|contributed to|supported the|managed the|in charge of)/i;
-const BUZZWORDS = /\b(dynamic|innovative|passionate|leveraged|synergies|spearheaded|orchestrated|cutting-edge|best-in-class|world-class|thought leader|proven track record|results-driven|detail-oriented|team player|strong background|eager to leverage)\b/i;
-const GAP_PATTERN = /\{GAP:\s*([^}]+)\}/g;
-
-function countGaps(text: string): number {
-  GAP_PATTERN.lastIndex = 0;
-  let n = 0;
-  while (GAP_PATTERN.exec(text) !== null) n++;
-  return n;
-}
-
-function validateCV(
-  cv: { summary: string; experiences: { bullets: string[]; company: string }[]; skills: string[] },
-  t: TFunction,
-) {
-  const issues: { type: "warn" | "error" | "info"; text: string }[] = [];
-  const allBullets = cv.experiences.flatMap((e) => e.bullets);
-  const bulletsWithNumbers = allBullets.filter((b) => /\d/.test(b));
-  const pctWithNumbers = allBullets.length > 0 ? Math.round((bulletsWithNumbers.length / allBullets.length) * 100) : 0;
-
-  if (pctWithNumbers < 50) issues.push({ type: "warn", text: t("editor.bullets_no_numbers", { pct: pctWithNumbers }) });
-  if (pctWithNumbers >= 60) issues.push({ type: "warn", text: t("editor.bullets_good", { pct: pctWithNumbers }) });
-
-  const responsibilityBullets = allBullets.filter((b) => RESPONSIBILITY_PATTERNS.test(b.trim()));
-  if (responsibilityBullets.length > 0) issues.push({ type: "error", text: t("editor.responsibility_voice") });
-
-  const buzzwordBullets = allBullets.filter((b) => BUZZWORDS.test(b));
-  if (buzzwordBullets.length > 0) {
-    const found = allBullets.flatMap((b) => {
-      const m = b.match(BUZZWORDS);
-      return m ? [m[0]] : [];
-    });
-    issues.push({ type: "error", text: t("editor.buzzwords_found", { words: [...new Set(found)].join(", ") }) });
-  }
-
-  if (cv.summary.length > 300) issues.push({ type: "warn", text: t("editor.summary_long") });
-  if (cv.summary.length === 0) issues.push({ type: "warn", text: t("editor.summary_missing") });
-
-  const noContextCompanies = cv.experiences.filter((e) => !e.company.includes("("));
-  if (noContextCompanies.length > 0) issues.push({ type: "warn", text: t("editor.no_company_context") });
-
-  const softSkills = cv.skills.filter((s) => /^(leadership|communication|teamwork|problem.solving|strategic thinking|creativity|adaptability)$/i.test(s.trim()));
-  if (softSkills.length > 0) issues.push({ type: "error", text: t("editor.soft_skills_found", { count: softSkills.length }) });
-
-  // Count GAP tokens across summary + bullets — these are placeholders the
-  // user needs to fill in before exporting.
-  const totalGaps = countGaps(cv.summary) + allBullets.reduce((acc, b) => acc + countGaps(b), 0);
-  if (totalGaps > 0) {
-    issues.push({ type: "info", text: `${totalGaps} placeholder${totalGaps > 1 ? "s" : ""} to fill in (highlighted in amber on the CV)` });
-  }
-
-  return issues;
-}
 
 export default function Editor() {
   const { t } = useTranslation();
@@ -131,8 +76,6 @@ export default function Editor() {
       </div>
     );
   }
-
-  const issues = validateCV(activeCv || cvData, t);
 
   // Audit gating — every experience must have a contractType picked AND at
   // least one headcount endpoint filled. Forces the user to give the LLM
@@ -195,7 +138,7 @@ export default function Editor() {
             three-row block. The inner strip scrolls horizontally when 10
             templates overflow on narrower viewports. */}
         <div className="ed-toolbar">
-          <span className="ed-toolbar-label">{t("templates.title", "Template")} · {templateIds.length}</span>
+          <span className="ed-toolbar-label">{t("templates.title", "Template")} <span className="ed-toolbar-scrollhint" aria-hidden>›</span></span>
           <div className="ed-toolbar-chips">
             {templateIds.map((id) => (
               <button
@@ -231,37 +174,6 @@ export default function Editor() {
           const TemplateHtml = templateHtmlComponents[selectedTemplate] ?? CleanHtml;
           return <TemplateHtml data={activeCv || cvData} brandColors={useBrandColors ? brandColors : null} />;
         })()}
-
-        {/* Validation panel below the sheet — non-blocking */}
-        {issues.length > 0 && (
-          <div
-            style={{
-              maxWidth: 794,
-              width: "100%",
-              padding: 14,
-              background: "#ffffff",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              boxShadow: "0 2px 6px rgba(15, 23, 42, 0.04)",
-            }}
-          >
-            <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>
-              {t("editor.validation_title")}
-            </p>
-            {issues.map((issue, i) => (
-              <p
-                key={i}
-                style={{
-                  fontSize: 12,
-                  color: issue.type === "error" ? "var(--error, #d32f2f)" : issue.type === "info" ? "#92400E" : "var(--text-muted)",
-                  marginBottom: 4,
-                }}
-              >
-                {issue.type === "error" ? "\u2717" : issue.type === "info" ? "\u25CF" : "\u25cb"} {issue.text}
-              </p>
-            ))}
-          </div>
-        )}
 
         {/* AI audit panel — appears once the user clicks the audit button. */}
         {auditError && (

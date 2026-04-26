@@ -1147,6 +1147,26 @@ textarea.input { resize: vertical; min-height: 100px; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+/* Scroll affordance next to the "Template" label — replaces the bare count
+   "· 10". A subtle right chevron with a gentle nudge animation hints that
+   the chip strip scrolls horizontally. */
+.ed-toolbar-scrollhint {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  opacity: 0.75;
+  animation: ed-scrollhint-nudge 1.8s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ed-scrollhint-nudge {
+  0%, 100% { transform: translateX(0); opacity: 0.55; }
+  50% { transform: translateX(3px); opacity: 0.95; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ed-toolbar-scrollhint { animation: none; opacity: 0.75; }
+}
 .ed-toolbar-chips {
   display: flex;
   align-items: center;
