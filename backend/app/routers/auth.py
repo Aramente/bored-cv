@@ -1,12 +1,62 @@
+import logging
 import os
 from urllib.parse import urlencode
 
+import httpx
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from itsdangerous import URLSafeTimedSerializer
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+# ntfy.sh topic for signup notifications. Set NTFY_TOPIC to a long random string
+# (it's the only auth — anyone who knows the topic can read the feed). Install
+# the ntfy app on iPhone, subscribe to the topic, get a push for every new user.
+# If NTFY_TOPIC is unset, signup notifications are silently skipped.
+NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "")
+
+
+def _notify_signup(email: str, provider: str) -> None:
+    """Fire a push notification when a new user signs up. Best-effort — never
+    raise (a notification failure must not break login)."""
+    if not NTFY_TOPIC:
+        return
+    try:
+        httpx.post(
+            f"https://ntfy.sh/{NTFY_TOPIC}",
+            content=f"{email} via {provider}".encode("utf-8"),
+            headers={
+                "Title": "Bored CV — new signup",
+                "Priority": "default",
+                "Tags": "tada",
+            },
+            timeout=5.0,
+        )
+    except Exception:
+        logging.exception("ntfy signup notification failed")
+
+
+def _record_signup_if_new(email: str, provider: str) -> None:
+    """Insert a fresh user row on first OAuth login and fire a push notification.
+    Idempotent — subsequent logins by the same user are a no-op. Best-effort:
+    never raise, never block the OAuth callback."""
+    if not email or not provider:
+        return
+    try:
+        from app.db import get_db
+        user_id = namespaced_user_id(email, provider)
+        with get_db() as conn:
+            row = conn.execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone()
+            if row:
+                return  # already signed up
+            conn.execute(
+                "INSERT OR IGNORE INTO users (id, email, provider) VALUES (?, ?, ?)",
+                (user_id, email, provider),
+            )
+        _notify_signup(email, provider)
+    except Exception:
+        logging.exception("signup recording failed")
 
 BASE_URL = os.environ.get("BASE_URL", "https://aramente-bored-cv-api.hf.space")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://aramente.github.io/bored-cv/")
@@ -86,6 +136,7 @@ async def google_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user_info = token.get("userinfo", {})
     email = user_info.get("email", "")
+    _record_signup_if_new(email, "google")
     auth_token = _make_token(email, "google")
     redirect = f"{FRONTEND_URL}#token={auth_token}&email={email}&provider=google"
     return RedirectResponse(url=redirect)
@@ -103,6 +154,7 @@ async def github_callback(request: Request):
     resp = await oauth.github.get("user", token=token)
     user_data = resp.json()
     email = user_data.get("login", "")
+    _record_signup_if_new(email, "github")
     auth_token = _make_token(email, "github")
     redirect = f"{FRONTEND_URL}#token={auth_token}&email={email}&provider=github"
     return RedirectResponse(url=redirect)
