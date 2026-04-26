@@ -138,7 +138,7 @@ export default function Editor() {
             three-row block. The inner strip scrolls horizontally when 10
             templates overflow on narrower viewports. */}
         <div className="ed-toolbar">
-          <span className="ed-toolbar-label">{t("templates.title", "Template")} <span className="ed-toolbar-scrollhint" aria-hidden>›</span></span>
+          <span className="ed-toolbar-label">{t("editor.style_label", "Style")} <span className="ed-toolbar-scrollhint" aria-hidden>›</span></span>
           <div className="ed-toolbar-chips">
             {templateIds.map((id) => (
               <button

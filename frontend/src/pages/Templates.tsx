@@ -25,7 +25,7 @@ const templateComponents = {
 export default function Templates() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, selectedTemplate, brandColors, useBrandColors, setUseBrandColors, offer, cvOriginal, saveCvToLibrary } = useStore();
+  const { cvData, cvDataAlt, cvLang, selectedTemplate, brandColors, useBrandColors, setUseBrandColors, cvOriginal, saveCvToLibrary } = useStore();
   const [beforeAfterOpen, setBeforeAfterOpen] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "creating" | "copied" | "auth" | "network" | "error">("idle");
   const [shareUrl, setShareUrl] = useState<string>("");
@@ -64,59 +64,6 @@ export default function Templates() {
       <div className="page-content">
         <h1>{t("templates.title")}</h1>
         <p className="subtitle">{t("templates.subtitle")}</p>
-
-        {displayCv.match_score > 0 && (
-          <div className="match-score-card">
-            <div className="match-score-header">
-              <div className="match-score-number">{displayCv.match_score}%</div>
-              <div className="match-score-label">ATS compatibility</div>
-            </div>
-            <div className="ats-bar">
-              <div className="ats-bar-fill" style={{ width: `${displayCv.match_score}%` }} />
-            </div>
-            <div className="match-score-details">
-              {displayCv.strengths.length > 0 && (
-                <div className="match-strengths">
-                  <span className="match-section-label">{t("templates.strengths_label")}</span>
-                  {displayCv.strengths.map((s, i) => <p key={i}>{s}</p>)}
-                </div>
-              )}
-              {displayCv.improvements.length > 0 && (
-                <div className="match-improvements">
-                  <span className="match-section-label">{t("templates.to_improve_label")}</span>
-                  {displayCv.improvements.map((s, i) => (
-                    <p key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span>{s}</span>
-                      <a
-                        onClick={(e) => { e.preventDefault(); navigate("/editor"); }}
-                        href="/editor"
-                        style={{ fontSize: 11, color: "var(--accent)", cursor: "pointer", whiteSpace: "nowrap", marginLeft: 8, textDecoration: "none", fontWeight: 600 }}
-                      >
-                        {t("templates.fix")}
-                      </a>
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button
-              className="btn-secondary share-score-btn"
-              onClick={() => {
-                const text = `My CV scored ${displayCv.match_score}% match for ${offer?.title || "this role"} at ${offer?.company || "the company"} — built with Bored CV \u{1F3AF}\nhttps://aramente.github.io/bored-cv/`;
-                navigator.clipboard.writeText(text).then(() => {
-                  const btn = document.querySelector('.share-score-btn');
-                  if (btn) {
-                    btn.textContent = t("templates.shared");
-                    setTimeout(() => { btn.textContent = t("templates.share_score"); }, 2000);
-                  }
-                });
-              }}
-              style={{ marginTop: 12, fontSize: 12 }}
-            >
-              {t("templates.share_score")}
-            </button>
-          </div>
-        )}
 
         {/* V2 — Before / After comparison */}
         {cvOriginal && cvOriginal.experiences.length > 0 && displayCv.experiences.length > 0 && (
@@ -233,11 +180,11 @@ export default function Templates() {
           }}
         >
           {shareState === "creating" ? <span className="spinner" />
-            : shareState === "copied" ? `✓ Link copied — ${shareUrl}`
-            : shareState === "auth" ? "Sign in to share a public link"
-            : shareState === "network" ? "Network error — check connection"
-            : shareState === "error" ? "Share failed — try again"
-            : "Share public link"}
+            : shareState === "copied" ? t("templates.share_copied", { url: shareUrl })
+            : shareState === "auth" ? t("templates.share_auth_required")
+            : shareState === "network" ? t("templates.share_network_error")
+            : shareState === "error" ? t("templates.share_failed")
+            : t("templates.share_public_link")}
         </button>
       </div>
     </div>
