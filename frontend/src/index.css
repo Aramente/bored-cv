@@ -2345,3 +2345,37 @@ textarea.input { resize: vertical; min-height: 100px; }
   cursor: not-allowed;
   opacity: 0.85;
 }
+
+/* Hero variant of the audit CTA — larger, gradient, with a leading sparkle.
+   Pulled out of the bottom-row buttons because the audit was getting lost
+   next to "Continue to download". This is the most-impactful action on the
+   page now that contract/headcount metadata is filled. */
+.cv-audit-btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #ec4899 100%);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.32), 0 1px 3px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+.cv-audit-btn-hero:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.4), 0 2px 4px rgba(15, 23, 42, 0.08);
+  filter: brightness(1.05);
+}
+.cv-audit-btn-hero:active:not([disabled]) { transform: translateY(0); }
+.cv-audit-btn-hero[disabled] {
+  background: #cbd5e1;
+  color: #64748b;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.cv-audit-btn-icon { font-size: 17px; line-height: 1; }

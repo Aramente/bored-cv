@@ -296,21 +296,26 @@ export default function Editor() {
           </div>
         )}
 
-        {/* Bottom CTAs — audit + advance to download. Audit is gated until
-            every experience has contract type + headcount filled, because
-            without that structured metadata the audit can't reliably
-            distinguish role contexts. */}
-        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+        {/* Audit CTA — promoted to its own row above the navigation. The
+            sparkle icon + indigo gradient + larger padding make it the most
+            visible action on the page so users actually notice the AI audit
+            exists before clicking Continue. Gated until every experience has
+            contract type + headcount filled. */}
+        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", marginTop: 8 }}>
           <button
             type="button"
-            className="btn-secondary cv-audit-btn"
-            style={{ padding: "10px 20px", fontSize: 14 }}
+            className="cv-audit-btn-hero"
             onClick={runAudit}
             disabled={auditDisabled}
             title={incompleteCount > 0 ? t("editor.audit_gated_tip", { count: incompleteCount }) : undefined}
           >
-            {auditing ? t("editor.audit_running") : t("editor.audit_button")}
+            <span className="cv-audit-btn-icon" aria-hidden>{auditing ? "⏳" : "✨"}</span>
+            <span>{auditing ? t("editor.audit_running") : t("editor.audit_button")}</span>
           </button>
+        </div>
+
+        {/* Continue to download — secondary action below the audit CTA. */}
+        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", marginTop: 4 }}>
           <button
             className="btn-primary"
             style={{ padding: "10px 20px", fontSize: 14 }}
