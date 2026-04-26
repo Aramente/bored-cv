@@ -213,7 +213,8 @@ const initialState = {
   cvData: null,
   cvOriginal: null,
   cvDataAlt: null,
-  cvLang: "fr" as "fr" | "en",
+  // Default to English; App.tsx syncs this to i18n.language on mount.
+  cvLang: "en" as "fr" | "en",
   selectedTemplate: "clean" as TemplateId,
   tone: "startup",
   toneChosen: false,
