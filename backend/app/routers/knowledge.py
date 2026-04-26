@@ -8,12 +8,17 @@ from app.routers.auth import get_user_from_request
 router = APIRouter(prefix="/api/knowledge", tags=["knowledge"])
 
 
-def _get_user_id(request: Request) -> str:
+def _get_user(request: Request) -> dict:
+    """Return the authenticated user dict (with provider-namespaced ``user_id``)."""
     auth_header = request.headers.get("authorization", "")
     user = get_user_from_request(authorization=auth_header)
-    if user:
-        return user.get("email", "")
+    if user and user.get("user_id"):
+        return user
     raise HTTPException(status_code=401, detail="Sign in to access knowledge base")
+
+
+def _get_user_id(request: Request) -> str:
+    return _get_user(request)["user_id"]
 
 
 @router.get("", response_model=KnowledgeBase)
@@ -49,17 +54,18 @@ async def get_knowledge(request: Request):
 @router.post("/enrich")
 async def enrich_knowledge(request: Request):
     """After a chat session, extract and store new knowledge from the conversation."""
-    user_id = _get_user_id(request)
+    user = _get_user(request)
+    user_id = user["user_id"]
     body = await request.json()
     profile = body.get("profile", {})
     messages = body.get("messages", [])
     project_id = body.get("project_id")
 
     with get_db() as conn:
-        # Ensure user exists
+        # Ensure user exists with real email/provider from verified token.
         conn.execute(
             "INSERT OR IGNORE INTO users (id, email, provider) VALUES (?, ?, ?)",
-            (user_id, user_id, request.session.get("user", {}).get("provider", "")),
+            (user_id, user.get("email", ""), user.get("provider", "")),
         )
 
         # Upsert experiences from profile

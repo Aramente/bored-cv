@@ -17,17 +17,37 @@ export default function AuthButton() {
   };
 
   useEffect(() => {
-    // Check URL for token from OAuth callback (hash fragment or query string)
-    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = hashParams.get("token") || searchParams.get("token");
-    const email = hashParams.get("email") || searchParams.get("email");
-    const provider = hashParams.get("provider") || searchParams.get("provider");
+    // Drain the OAuth handoff stashed by main.tsx. main.tsx grabs the token
+    // out of the URL synchronously (so it never lingers in history) and parks
+    // it in sessionStorage for us to consume here. Falling back to URL parsing
+    // covers the edge case where sessionStorage was disabled.
+    let token: string | null = null;
+    let email: string | null = null;
+    let provider: string | null = null;
+    try {
+      const pending = sessionStorage.getItem("bored-cv-oauth-pending");
+      if (pending) {
+        const parsed = JSON.parse(pending);
+        token = parsed.token || null;
+        email = parsed.email || null;
+        provider = parsed.provider || null;
+        sessionStorage.removeItem("bored-cv-oauth-pending");
+      }
+    } catch {
+      // ignore — fall through to URL parsing below
+    }
+    if (!token) {
+      const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+      const searchParams = new URLSearchParams(window.location.search);
+      token = hashParams.get("token") || searchParams.get("token");
+      email = hashParams.get("email") || searchParams.get("email");
+      provider = hashParams.get("provider") || searchParams.get("provider");
+    }
 
     if (token && email && provider) {
       localStorage.setItem("bored-cv-token", token);
       setUser({ email, provider });
-      // Clean URL
+      // Belt-and-braces: clean URL again in case main.tsx's pass missed it.
       window.history.replaceState({}, "", window.location.pathname);
       return;
     }

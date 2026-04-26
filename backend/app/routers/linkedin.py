@@ -2,8 +2,9 @@ import json
 import os
 import traceback
 
-from fastapi import APIRouter, File, Header, UploadFile, HTTPException
+from fastapi import APIRouter, File, Header, Request, UploadFile, HTTPException
 
+from app.middleware.security import check_rate_limit
 from app.models import Profile
 from app.services.pdf_parser import parse_linkedin_pdf, extract_pdf_text
 
@@ -13,7 +14,11 @@ router = APIRouter(prefix="/api", tags=["linkedin"])
 
 
 @router.post("/parse-linkedin", response_model=Profile)
-async def parse_linkedin(file: UploadFile = File(...)):
+async def parse_linkedin(request: Request, file: UploadFile = File(...)):
+    # Rate limit before doing any expensive work — this endpoint hits the LLM
+    # and burns Mistral tokens. Anonymous: 50/day per IP. Authenticated: 500.
+    check_rate_limit(request)
+
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File must be a PDF")
 

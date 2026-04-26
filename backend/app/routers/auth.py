@@ -50,11 +50,29 @@ def verify_token(token: str) -> dict | None:
 
 
 def get_user_from_request(request: Request = None, authorization: str = "") -> dict | None:
-    """Extract user from Bearer token header."""
+    """Extract user from Bearer token header.
+
+    Returns dict with email, provider, and a derived ``user_id`` of the form
+    ``provider:email``. ``user_id`` is the namespaced primary key — it
+    prevents OAuth account collision (a GitHub user with login ``foo@bar.com``
+    can't impersonate the Google user with the same email).
+    """
     token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
     if not token:
         return None
-    return verify_token(token)
+    data = verify_token(token)
+    if not data:
+        return None
+    email = data.get("email", "")
+    provider = data.get("provider", "")
+    if email and provider:
+        data["user_id"] = f"{provider}:{email}"
+    return data
+
+
+def namespaced_user_id(email: str, provider: str) -> str:
+    """Build the namespaced user id used as users.id and FK target."""
+    return f"{provider}:{email}"
 
 
 @router.get("/google/login")
@@ -110,9 +128,9 @@ async def update_consent(authorization: str = Header("")):
     if not user:
         return {"status": "unauthenticated"}
     from app.db import get_db
-    email = user.get("email", "")
+    user_id = user.get("user_id") or namespaced_user_id(user.get("email", ""), user.get("provider", ""))
     with get_db() as conn:
-        conn.execute("UPDATE users SET marketing_consent = 1 WHERE id = ?", (email,))
+        conn.execute("UPDATE users SET marketing_consent = 1 WHERE id = ?", (user_id,))
     return {"status": "ok"}
 
 
@@ -123,9 +141,9 @@ async def get_consent(authorization: str = Header("")):
     if not user:
         return {"consented": False, "asked": False}
     from app.db import get_db
-    email = user.get("email", "")
+    user_id = user.get("user_id") or namespaced_user_id(user.get("email", ""), user.get("provider", ""))
     with get_db() as conn:
-        row = conn.execute("SELECT marketing_consent FROM users WHERE id = ?", (email,)).fetchone()
+        row = conn.execute("SELECT marketing_consent FROM users WHERE id = ?", (user_id,)).fetchone()
     if not row:
         return {"consented": False, "asked": False}
     consent = row["marketing_consent"]

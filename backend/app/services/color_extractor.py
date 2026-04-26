@@ -1,13 +1,67 @@
+import ipaddress
 import re
+import socket
+from urllib.parse import urlparse
+
 import httpx
+
+
+_DEFAULT_PALETTE = {"primary": "#3B82F6", "secondary": "#1A365D", "colors": []}
+
+
+def _is_safe_public_url(url: str) -> bool:
+    """Block SSRF: reject non-HTTP(S) schemes and private/loopback/link-local hosts.
+
+    Specifically blocks the AWS metadata endpoint (169.254.169.254) and any
+    RFC1918 / loopback / link-local / multicast / reserved range. Done by
+    resolving the hostname and checking every returned A/AAAA record — a DNS
+    rebinding attempt that resolves to a private IP still fails.
+    """
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False
+    if parsed.scheme not in ("http", "https"):
+        return False
+    host = parsed.hostname
+    if not host:
+        return False
+    # Reject literal IPs in private ranges before DNS lookup.
+    try:
+        ip = ipaddress.ip_address(host)
+        return ip.is_global
+    except ValueError:
+        pass  # Not a literal IP — resolve below.
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return False
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except (ValueError, IndexError):
+            return False
+        if not ip.is_global:
+            return False
+    return True
 
 
 async def extract_company_colors(url: str) -> dict:
     """Scrape a company website and extract dominant brand colors."""
+    if not _is_safe_public_url(url):
+        return dict(_DEFAULT_PALETTE)
     try:
-        # Try the company's main domain
-        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+        # Try the company's main domain. ``follow_redirects`` is intentionally
+        # OFF — a public URL can 30x to a private IP, bypassing the SSRF check.
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
             resp = await client.get(url)
+            if resp.status_code in (301, 302, 303, 307, 308):
+                # Follow one hop manually, but only if the new location is also safe.
+                location = resp.headers.get("location", "")
+                if location and _is_safe_public_url(location):
+                    resp = await client.get(location)
+                else:
+                    return dict(_DEFAULT_PALETTE)
             html = resp.text
 
         # Extract colors from CSS

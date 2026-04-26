@@ -8,13 +8,22 @@ from app.routers.auth import get_user_from_request
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
-def _get_user_id(request: Request) -> str:
-    # Try token auth first
+def _get_user(request: Request) -> dict:
+    """Return the authenticated user dict (with provider-namespaced ``user_id``).
+
+    Raises 401 if not authenticated. Use ``user["user_id"]`` for DB queries —
+    that ID is ``provider:email`` so a GitHub login can't collide with a
+    Google account on the same email.
+    """
     auth_header = request.headers.get("authorization", "")
     user = get_user_from_request(authorization=auth_header)
-    if user:
-        return user.get("email", "")
+    if user and user.get("user_id"):
+        return user
     raise HTTPException(status_code=401, detail="Sign in to save projects")
+
+
+def _get_user_id(request: Request) -> str:
+    return _get_user(request)["user_id"]
 
 
 @router.get("", response_model=list[ProjectSummary])
@@ -31,12 +40,14 @@ async def list_projects(request: Request):
 
 @router.post("", response_model=ProjectDetail)
 async def create_project(request: Request, name: str = "", offer_title: str = "", offer_url: str = ""):
-    user_id = _get_user_id(request)
+    user = _get_user(request)
+    user_id = user["user_id"]
     with get_db() as conn:
-        # Ensure user exists
+        # Ensure user exists. Use the verified token's email/provider — never
+        # request.session, which is unauthenticated context here.
         conn.execute(
             "INSERT OR IGNORE INTO users (id, email, provider) VALUES (?, ?, ?)",
-            (user_id, user_id, request.session.get("user", {}).get("provider", "")),
+            (user_id, user.get("email", ""), user.get("provider", "")),
         )
         cursor = conn.execute(
             "INSERT INTO projects (user_id, name, offer_title, offer_url) VALUES (?, ?, ?, ?)",
@@ -106,15 +117,16 @@ async def delete_project(project_id: int, request: Request):
 
 @router.post("/save")
 async def save_project(request: Request):
-    user_id = _get_user_id(request)
+    user = _get_user(request)
+    user_id = user["user_id"]
     body = await request.json()
     project_id = body.get("id")
 
     with get_db() as conn:
-        # Ensure user exists
+        # Ensure user exists with real email/provider from verified token.
         conn.execute(
             "INSERT OR IGNORE INTO users (id, email, provider) VALUES (?, ?, ?)",
-            (user_id, user_id, ""),
+            (user_id, user.get("email", ""), user.get("provider", "")),
         )
 
         if project_id:

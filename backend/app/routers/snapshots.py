@@ -80,7 +80,7 @@ async def create_snapshot(request: Request, payload: CreateSnapshotRequest):
     """
     auth_header = request.headers.get("authorization", "")
     user = get_user_from_request(authorization=auth_header)
-    user_id = user.get("email", "") if user else None
+    user_id = user.get("user_id") if user else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Sign in to share a CV publicly")
 
@@ -139,7 +139,7 @@ async def delete_snapshot(slug: str, request: Request):
     """Revoke a shared link. Only the creator can delete."""
     auth_header = request.headers.get("authorization", "")
     user = get_user_from_request(authorization=auth_header)
-    user_id = user.get("email", "") if user else None
+    user_id = user.get("user_id") if user else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Sign in required")
 

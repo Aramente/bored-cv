@@ -2,6 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Content Security Policy. The Bearer token lives in localStorage (kept
+      there because we need cross-tab persistence — sessionStorage would log
+      users out per tab). The downside is that any successful XSS exfils the
+      token. This CSP is the primary mitigation: ``script-src 'self'`` blocks
+      inline/injected scripts, ``object-src 'none'`` kills plugin-based
+      exfil, and ``base-uri 'self'`` stops <base> hijack. Together they remove
+      the common XSS vectors that would otherwise read localStorage.
+
+      Notes:
+      - ``style-src 'unsafe-inline'`` is required by Vite, react-pdf, and
+        every CSS-in-JS library; tightening it would break the app.
+      - ``connect-src https:`` is broad on purpose — API_URL is env-driven
+        and we'd otherwise need build-time CSP injection. fetch/XHR isn't an
+        XSS vector on its own; the script-src lock is what matters.
+      - ``img-src https: data:`` lets us render CV photos (data URIs from
+        FileReader) and company logos.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https: http://localhost:* ws://localhost:*; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bored CV</title>

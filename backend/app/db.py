@@ -230,6 +230,68 @@ def init_db():
         except Exception:
             pass  # Column already exists
 
+    _migrate_namespace_user_ids()
+
+
+def _migrate_namespace_user_ids():
+    """Rewrite users.id from raw email to ``provider:email``.
+
+    Why: the old schema used the email as primary key, which means a GitHub
+    login with username ``foo@bar.com`` would land on the same row as the
+    Google account for ``foo@bar.com`` — full account takeover via OAuth
+    collision. Namespacing by provider closes that.
+
+    Idempotent — uses ``LIKE '%:%'`` to detect already-migrated rows. Safe
+    to call on every boot. Inserts new user row first, repoints all FK
+    children, then deletes the old row, so no FK constraint is ever
+    violated mid-migration.
+    """
+    with get_db() as conn:
+        try:
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM users WHERE id NOT LIKE '%:%'"
+            ).fetchone()
+            count = row["cnt"] if row else 0
+            if count == 0:
+                return
+        except Exception:
+            return  # users table missing — schema init will handle on next call
+
+        rows = conn.execute(
+            "SELECT id, email, provider, marketing_consent, created_at "
+            "FROM users WHERE id NOT LIKE '%:%'"
+        ).fetchall()
+
+        for r in rows:
+            old_id = r["id"]
+            provider = r["provider"] or ""
+            if not provider:
+                # No provider — can't safely namespace. Skip and let manual
+                # cleanup handle it.
+                continue
+            new_id = f"{provider}:{old_id}"
+
+            # 1. Create new user row before any FK repoint, so children always
+            #    have a valid parent to point at.
+            conn.execute(
+                "INSERT OR IGNORE INTO users (id, email, provider, marketing_consent, created_at) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (new_id, r["email"], provider, r["marketing_consent"], r["created_at"]),
+            )
+
+            # 2. Repoint FK children.
+            conn.execute("UPDATE knowledge SET user_id = ? WHERE user_id = ?", (new_id, old_id))
+            conn.execute("UPDATE projects SET user_id = ? WHERE user_id = ?", (new_id, old_id))
+            conn.execute("UPDATE facts SET user_id = ? WHERE user_id = ?", (new_id, old_id))
+            # snapshots has user_id but no FK constraint — repoint anyway for consistency.
+            try:
+                conn.execute("UPDATE snapshots SET user_id = ? WHERE user_id = ?", (new_id, old_id))
+            except Exception:
+                pass  # snapshots table may not exist yet
+
+            # 3. Drop the old row.
+            conn.execute("DELETE FROM users WHERE id = ?", (old_id,))
+
 
 # Initialize on import
 init_db()
