@@ -107,6 +107,25 @@ export async function draftCV(profile: Profile, offer: Offer, gapAnalysis: GapAn
   return post("/api/draft-cv", { profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en", target_market: market || "france" }, captchaToken, signal);
 }
 
+export async function improveBullet(
+  text: string,
+  role: string,
+  company: string,
+  offerTitle: string,
+  lang: string,
+  tone: string,
+  captchaToken: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  const res = await post<{ text: string }>(
+    "/api/improve-bullet",
+    { text, role, company, offer_title: offerTitle, ui_language: lang, tone },
+    captchaToken,
+    signal,
+  );
+  return res.text;
+}
+
 export interface ToneSamples {
   source: string;
   company: string;

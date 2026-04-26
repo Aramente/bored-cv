@@ -727,6 +727,46 @@ Return valid JSON only:
             minimal=(data.get("minimal") or "").strip(),
         )
 
+    def improve_bullet(self, text: str, role: str = "", company: str = "", offer_title: str = "", ui_language: str = "en", tone: str = "startup") -> str:
+        """Notion-style "improve wording" rewrite for a single CV bullet.
+
+        Keeps every fact and number — just sharpens phrasing toward the chosen
+        tone and tilts wording toward the offer when one is provided. Returns
+        plain text (no JSON wrapping) for a fast inline-edit UX."""
+        clean = (text or "").strip()
+        if not clean:
+            return clean
+        lang_name = "French" if ui_language == "fr" else "English"
+        tone_instr = self._get_tone_instruction(tone)
+        offer_line = f"\nTARGET ROLE: {offer_title}" if offer_title else ""
+        ctx = f"{role} at {company}".strip(" at ") if (role or company) else "their experience"
+
+        prompt = f"""Rewrite ONE CV bullet point. Keep every fact, number, company name, and outcome — only the wording changes.
+
+CURRENT BULLET (from {ctx}):
+{clean}
+{offer_line}
+
+VOICE:
+{tone_instr}
+
+RULES:
+- Same language as input. Write in {lang_name}.
+- One line. Max ~25 words.
+- Never invent metrics, dates, headcounts, or outcomes that aren't in the source.
+- Keep specific numbers exactly as-is.
+- No leading bullet character, no surrounding quotes.
+
+Return ONLY the rewritten bullet text — no JSON, no preamble, no explanation."""
+
+        text_out = self._call(prompt, model="mistral-small-latest", max_tokens=200, temperature=0.7, json_mode=False)
+        out = (text_out or "").strip().strip('"').strip("'")
+        # Strip a leading dash/bullet character if the model adds one despite instructions.
+        if out[:2] in ("- ", "• ", "* "):
+            out = out[2:].strip()
+        # Defensive: if model returned an empty string, fall back to the original.
+        return out or clean
+
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {
             "startup": """Direct, confident, action-oriented. Short punchy dashes, implied first-person, informal. Show scrappiness and ownership.

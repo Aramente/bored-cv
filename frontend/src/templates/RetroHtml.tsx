@@ -1,6 +1,6 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
-import { Editable, HeadcountChip, joinContact } from "./EditableCV";
+import { BulletRow, BulletsTail, Editable, HeadcountChip, joinContact } from "./EditableCV";
 import PhotoSlot from "./PhotoSlot";
 
 interface Props {
@@ -14,7 +14,6 @@ export default function RetroHtml({ data, brandColors }: Props) {
   const updateCvField = useStore((s) => s.updateCvField);
   const pushCvHistory = useStore((s) => s.pushCvHistory);
   const addCvBullet = useStore((s) => s.addCvBullet);
-  const removeCvBullet = useStore((s) => s.removeCvBullet);
   const addCvExperience = useStore((s) => s.addCvExperience);
   const removeCvExperience = useStore((s) => s.removeCvExperience);
   const addCvEducation = useStore((s) => s.addCvEducation);
@@ -62,13 +61,22 @@ export default function RetroHtml({ data, brandColors }: Props) {
               <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
               <HeadcountChip start={exp.headcountStart || ""} end={exp.headcountEnd || ""} onSaveStart={(v) => save(`experiences.${i}.headcountStart`, v)} onSaveEnd={(v) => save(`experiences.${i}.headcountEnd`, v)} isFr={isFr} />
             </div>
-            <ul className="rt-bullets">
+            <ul className="rt-bullets has-drop-tail">
               {exp.bullets.map((b, j) => (
-                <li key={j} className="cv-bullet-row">
-                  <Editable as="div" value={b} onSave={(v) => save(`experiences.${i}.bullets.${j}`, v)} className="rt-bullet" placeholder={isFr ? "Réalisation avec chiffres" : "Achievement with numbers"} />
-                  <button type="button" className="cv-bullet-remove" onClick={() => { pushCvHistory(); removeCvBullet(i, j); }} title={isFr ? "Retirer" : "Remove"}>×</button>
-                </li>
+                <BulletRow
+                  key={j}
+                  expIndex={i}
+                  bulletIndex={j}
+                  value={b}
+                  onSave={(v) => save(`experiences.${i}.bullets.${j}`, v)}
+                  placeholder={isFr ? "Réalisation avec chiffres" : "Achievement with numbers"}
+                  isFr={isFr}
+                  contextRole={exp.title}
+                  contextCompany={exp.company}
+                  bulletClassName="rt-bullet"
+                />
               ))}
+              <BulletsTail expIndex={i} bulletsLength={exp.bullets.length} />
             </ul>
             <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "raison du départ (optionnel)" : "reason for leaving (optional)"} rich={false} />
             <button type="button" className="cv-add-bullet" onClick={() => { pushCvHistory(); addCvBullet(i); }}>+ {isFr ? "Ajouter une puce" : "Add bullet"}</button>

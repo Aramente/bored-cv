@@ -167,6 +167,20 @@ class ToneSamples(BaseModel):
     minimal: str = ""
 
 
+class ImproveBulletRequest(BaseModel):
+    """Per-bullet AI rewrite — Notion-style "improve wording" hover button."""
+    text: str
+    role: str = ""              # job title for context
+    company: str = ""           # company name for context
+    offer_title: str = ""       # target job title (helps tilt rewrites toward what matters)
+    ui_language: str = "en"
+    tone: str = "startup"
+
+
+class ImproveBulletResponse(BaseModel):
+    text: str
+
+
 class OfferScrapeRequest(BaseModel):
     url: str = ""
     raw_text: str = ""

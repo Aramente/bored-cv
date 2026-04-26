@@ -187,6 +187,12 @@ interface AppState {
   removeCvExperience: (index: number) => void;
   addCvBullet: (expIndex: number) => void;
   removeCvBullet: (expIndex: number, bulletIndex: number) => void;
+  // Drag-to-reorder (within an experience or across two experiences). The
+  // editor uses native HTML5 DnD so the indices are resolved at drop-time.
+  moveCvBullet: (fromExp: number, fromIdx: number, toExp: number, toIdx: number) => void;
+  // Replace a single bullet wholesale — used by the "improve with AI" button so
+  // we don't fight the contentEditable diff path of `updateCvField`.
+  replaceCvBullet: (expIndex: number, bulletIndex: number, value: string) => void;
   addCvEducation: () => void;
   removeCvEducation: (index: number) => void;
   addCvLanguage: (lang: string) => void;
@@ -312,6 +318,32 @@ export const useStore = create<AppState>()(persist((set) => ({
     if (!s.cvData) return s;
     const cv = sanitizeCv(structuredClone(s.cvData));
     cv.experiences[expIndex]?.bullets.splice(bulletIndex, 1);
+    return { cvData: cv };
+  }),
+  moveCvBullet: (fromExp, fromIdx, toExp, toIdx) => set((s) => {
+    if (!s.cvData) return s;
+    if (fromExp === toExp && fromIdx === toIdx) return s;
+    const cv = sanitizeCv(structuredClone(s.cvData));
+    const src = cv.experiences[fromExp];
+    const dst = cv.experiences[toExp];
+    if (!src || !dst) return s;
+    if (fromIdx < 0 || fromIdx >= src.bullets.length) return s;
+    const [moved] = src.bullets.splice(fromIdx, 1);
+    // When moving inside the same list and the target sits after the source,
+    // the splice above shifts everything down by one — compensate so the bullet
+    // lands where the user actually dropped it.
+    let insertAt = toIdx;
+    if (fromExp === toExp && toIdx > fromIdx) insertAt = toIdx - 1;
+    insertAt = Math.max(0, Math.min(insertAt, dst.bullets.length));
+    dst.bullets.splice(insertAt, 0, moved);
+    return { cvData: cv };
+  }),
+  replaceCvBullet: (expIndex, bulletIndex, value) => set((s) => {
+    if (!s.cvData) return s;
+    const cv = sanitizeCv(structuredClone(s.cvData));
+    const exp = cv.experiences[expIndex];
+    if (!exp || bulletIndex < 0 || bulletIndex >= exp.bullets.length) return s;
+    exp.bullets[bulletIndex] = value;
     return { cvData: cv };
   }),
   addCvEducation: () => set((s) => {
