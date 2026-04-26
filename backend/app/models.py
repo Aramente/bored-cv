@@ -76,7 +76,11 @@ class GapAnalysis(BaseModel):
 
 class ChatMessage(BaseModel):
     role: str
-    content: str
+    # Cap chat content. A realistic answer is a paragraph; 8 KB is already
+    # several pages. The cap is the structural defence against
+    # "ignore-previous-instructions"-style prompt injections that try to bury
+    # the override in a wall of text.
+    content: str = Field(default="", max_length=8000)
 
 
 class ChatRequest(BaseModel):
@@ -178,10 +182,10 @@ class ToneSamples(BaseModel):
 
 class ImproveBulletRequest(BaseModel):
     """Per-bullet AI rewrite — Notion-style "improve wording" hover button."""
-    text: str
-    role: str = ""              # job title for context
-    company: str = ""           # company name for context
-    offer_title: str = ""       # target job title (helps tilt rewrites toward what matters)
+    text: str = Field(default="", max_length=2000)
+    role: str = Field(default="", max_length=200)
+    company: str = Field(default="", max_length=200)
+    offer_title: str = Field(default="", max_length=200)
     ui_language: str = "en"
     tone: str = "startup"
 

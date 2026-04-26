@@ -19,5 +19,7 @@ async def generate_cover_letter(req: CoverLetterRequest, request: Request, x_cap
     llm = get_llm()
     try:
         return llm.generate_cover_letter(req.profile, req.offer, req.cv_data, req.messages, req.ui_language, req.tone, req.target_market)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")

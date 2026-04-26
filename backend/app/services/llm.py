@@ -12,6 +12,22 @@ from app.models import (
 MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking, not output
 
 
+# Whitelist of CV paths the LLM is allowed to substitute into. Anything off
+# this list is rejected before traversal — a defence against an attacker
+# convincing the LLM to write into arbitrary fields (e.g. `language` to flip
+# locale, `match_score` to pin a perfect rating). The fields below are the only
+# ones a grammar pass should ever touch.
+_ALLOWED_SUBSTITUTION_PATH = re.compile(
+    r"^("
+    r"name|title|summary|location|"
+    r"experiences\.\d+\.(title|company|dates|exitReason|contractType|bullets\.\d+)|"
+    r"education\.\d+\.(degree|school|year)|"
+    r"skills\.\d+|languages\.\d+|"
+    r"strengths\.\d+|improvements\.\d+"
+    r")$"
+)
+
+
 def _apply_substitution(cv_dict: dict, path: str, old: str, new: str) -> bool:
     """Walk a dot-path like 'experiences.2.bullets.3' into cv_dict and do a
     literal `old` → `new` replace on the string at that path. Returns True if
@@ -19,7 +35,11 @@ def _apply_substitution(cv_dict: dict, path: str, old: str, new: str) -> bool:
 
     Used by LLMService.apply_grammar_fixes to apply audit substitutions safely:
     if the LLM hallucinates a path or an `old` substring that isn't actually
-    there, the swap is skipped instead of corrupting the CV."""
+    there, the swap is skipped instead of corrupting the CV. Paths must match
+    the allowlist above — non-grammar fields (match_score, email, language…)
+    are off-limits even if the LLM tries to target them."""
+    if not path or not _ALLOWED_SUBSTITUTION_PATH.match(path):
+        return False
     parts = path.split(".") if path else []
     if not parts:
         return False

@@ -2,7 +2,7 @@ import os
 from urllib.parse import urlencode
 
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from itsdangerous import URLSafeTimedSerializer
 
@@ -159,3 +159,42 @@ async def get_quota(authorization: str = Header("")):
         "daily_limit": 20 if is_auth else 10,
         "provider": user.get("provider") if user else None,
     }
+
+
+@router.delete("/account")
+async def delete_account(authorization: str = Header("")):
+    """GDPR delete-my-account. Wipes the user row and every FK child
+    (knowledge, projects, facts, snapshots) in one transaction. The Bearer
+    token remains valid until expiry — the client must drop it locally — but
+    every authenticated lookup will 401 because the user row is gone.
+
+    Idempotent: deleting an already-deleted account returns ok. Returns the
+    counts of each entity type removed so the client can show a summary.
+    """
+    user = get_user_from_request(authorization=authorization)
+    if not user or not user.get("user_id"):
+        raise HTTPException(status_code=401, detail="Sign in required")
+    user_id = user["user_id"]
+    from app.db import get_db
+    counts = {"projects": 0, "knowledge": 0, "facts": 0, "snapshots": 0}
+    with get_db() as conn:
+        # Order matters for FK: children first, then parent.
+        for table in ("facts", "knowledge", "projects"):
+            try:
+                row = conn.execute(
+                    f"SELECT COUNT(*) as cnt FROM {table} WHERE user_id = ?", (user_id,)
+                ).fetchone()
+                counts[table] = row["cnt"] if row else 0
+                conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+            except Exception:
+                pass  # table may not exist (snapshots is created lazily)
+        try:
+            row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM snapshots WHERE user_id = ?", (user_id,)
+            ).fetchone()
+            counts["snapshots"] = row["cnt"] if row else 0
+            conn.execute("DELETE FROM snapshots WHERE user_id = ?", (user_id,))
+        except Exception:
+            pass
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    return {"status": "deleted", "removed": counts}

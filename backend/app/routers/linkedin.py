@@ -1,6 +1,5 @@
 import json
 import os
-import traceback
 
 from fastapi import APIRouter, File, Header, Request, UploadFile, HTTPException
 
@@ -28,8 +27,12 @@ async def parse_linkedin(request: Request, file: UploadFile = File(...)):
 
     try:
         profile = parse_linkedin_pdf(contents)
-    except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Could not parse PDF: {e}")
+    except Exception:
+        # Don't echo internal exception text — could leak file path / library
+        # version / stack details. Log internally, return generic to caller.
+        import logging
+        logging.exception("parse_linkedin_pdf failed")
+        raise HTTPException(status_code=422, detail="Could not parse PDF")
 
     if not profile.name:
         raise HTTPException(status_code=422, detail="Could not extract profile data from PDF")
@@ -48,6 +51,7 @@ async def debug_parse_pdf(file: UploadFile = File(...), x_admin_secret: str = He
     """Debug: show exactly what happens when parsing a PDF. Protected by ADMIN_SECRET header."""
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
+    import logging
     contents = await file.read()
     raw_text = extract_pdf_text(contents)
 
@@ -81,4 +85,6 @@ Return valid JSON with: name, title, email, phone, linkedin, location, summary, 
             "provider": "mistral",
         }
     except Exception as e:
-        return {"ok": False, "error": str(e), "traceback": traceback.format_exc()[:1000], "text_length": len(raw_text)}
+        # Log internally; return error class only — no traceback in HTTP response.
+        logging.exception("debug_parse_pdf failed")
+        return {"ok": False, "error": type(e).__name__, "text_length": len(raw_text)}

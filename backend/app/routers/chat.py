@@ -19,8 +19,10 @@ async def analyze(req: AnalyzeRequest, request: Request, x_captcha_token: str = 
     llm = get_llm()
     try:
         return llm.analyze(req.profile, req.offer, req.ui_language)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -35,5 +37,7 @@ async def chat(req: ChatRequest, request: Request, x_captcha_token: str = Header
             known_facts=req.known_facts, contradictions=req.contradictions,
             cv_draft=req.cv_draft,
         )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")

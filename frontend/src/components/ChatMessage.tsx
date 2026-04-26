@@ -7,6 +7,16 @@ interface Props {
   content: string;
 }
 
+// Only allow safe link schemes inside assistant markdown. The default
+// react-markdown allowlist already covers most cases, but we want a tight
+// belt-and-braces in case the LLM emits a `javascript:` or `data:` URL —
+// those are dropped to an empty href so the link is rendered inert.
+const SAFE_URL_SCHEMES = /^(https?:|mailto:|#|\/)/i;
+function safeUrl(url: string): string {
+  if (!url) return "";
+  return SAFE_URL_SCHEMES.test(url) ? url : "";
+}
+
 export default function ChatMessage({ role, content }: Props) {
   const [copied, setCopied] = useState(false);
 
@@ -26,6 +36,7 @@ export default function ChatMessage({ role, content }: Props) {
           <div className="md-body">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
+              urlTransform={safeUrl}
               components={{
                 a: ({ ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
               }}

@@ -23,8 +23,10 @@ async def draft_cv(req: GenerateRequest, request: Request, x_captcha_token: str 
     llm = get_llm()
     try:
         return llm.draft_cv(req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language, target_market=req.target_market)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 @router.post("/improve-bullet", response_model=ImproveBulletResponse)
@@ -44,8 +46,10 @@ async def improve_bullet(req: ImproveBulletRequest, request: Request, x_captcha_
             tone=req.tone,
         )
         return ImproveBulletResponse(text=out)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 @router.post("/audit-cv", response_model=AuditCvResponse)
@@ -58,8 +62,10 @@ async def audit_cv(req: AuditCvRequest, request: Request, x_captcha_token: str =
     try:
         out = llm.audit_cv(req.cv_data, req.offer, req.ui_language)
         return AuditCvResponse(**out)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 @router.post("/apply-grammar-fixes", response_model=ApplyGrammarFixesResponse)
@@ -80,8 +86,10 @@ async def apply_grammar_fixes(req: ApplyGrammarFixesRequest, request: Request, x
             skipped=out.get("skipped", 0),
             skipped_indices=out.get("skipped_indices", []),
         )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 @router.post("/tone-samples", response_model=ToneSamples)
@@ -95,5 +103,7 @@ async def tone_samples(req: ToneSamplesRequest, request: Request, x_captcha_toke
     llm = get_llm()
     try:
         return llm.tone_samples(req.profile, req.offer, req.ui_language)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")

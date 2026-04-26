@@ -21,8 +21,10 @@ async def generate_cv(req: GenerateRequest, request: Request, x_captcha_token: s
     llm = get_llm()
     try:
         return llm.generate_cv(req.profile, req.offer, req.gap_analysis, req.messages, req.ui_language, req.tone, target_market=req.target_market)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")
 
 
 class TranslateRequest(BaseModel):
@@ -34,8 +36,13 @@ class TranslateRequest(BaseModel):
 async def translate_cv(req: TranslateRequest, request: Request, x_captcha_token: str = Header("")):
     if not await verify_turnstile(x_captcha_token):
         raise HTTPException(status_code=403, detail="Captcha verification failed")
+    # Was missing rate limit — translate-cv burns LLM tokens like every other
+    # endpoint in this module. 50/day anonymous, 500/day signed in.
+    check_rate_limit(request)
     llm = get_llm()
     try:
         return llm.translate_cv(req.cv_data, req.target_language)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+    except Exception:
+        import logging
+        logging.exception("LLM call failed")
+        raise HTTPException(status_code=502, detail="AI service error")

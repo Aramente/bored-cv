@@ -28,6 +28,11 @@ router = APIRouter(prefix="/api/snapshots", tags=["snapshots"])
 
 SLUG_ALPHABET_BYTES = 12  # token_urlsafe(12) → ~16 chars
 
+# Cap on serialized snapshot payload (cv_data + brand_colors). A real CV is
+# under 30 KB; a 500 KB ceiling lets data-URI photos through but blocks an
+# attacker from filling Turso with multi-MB rows by repeatedly sharing.
+MAX_SNAPSHOT_BYTES = 500_000
+
 
 def _ensure_schema() -> None:
     """Create the snapshots table on first use. Idempotent."""
@@ -84,9 +89,13 @@ async def create_snapshot(request: Request, payload: CreateSnapshotRequest):
     if not user_id:
         raise HTTPException(status_code=401, detail="Sign in to share a CV publicly")
 
-    slug = secrets.token_urlsafe(SLUG_ALPHABET_BYTES)
     cv_json = json.dumps(payload.cv_data)
     colors_json = json.dumps(payload.brand_colors) if payload.brand_colors else ""
+    # Block oversized payloads before allocating a slug or hitting the DB.
+    if len(cv_json) + len(colors_json) > MAX_SNAPSHOT_BYTES:
+        raise HTTPException(status_code=413, detail="Snapshot payload too large")
+
+    slug = secrets.token_urlsafe(SLUG_ALPHABET_BYTES)
 
     with get_db() as conn:
         conn.execute(

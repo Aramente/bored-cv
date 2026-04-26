@@ -1,7 +1,9 @@
 import os
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.routers import linkedin, offer, chat, generate, auth, draft, projects, knowledge, cover_letter, transcribe, snapshots
@@ -17,6 +19,32 @@ if not SESSION_SECRET:
 
 app = FastAPI(title="Bored CV API", version="0.1.0")
 
+
+# Cap body size on every request. Prevents (a) memory DoS via gigabyte JSON
+# bodies and (b) mega-payload prompt injection where an attacker stuffs many
+# KB of "ignore previous instructions" into a free-text field. The PDF upload
+# route enforces its own 5 MB limit; everything else is JSON and 1 MB is
+# already 10× a real CV.
+MAX_REQUEST_BYTES = 1_000_000
+PDF_UPLOAD_PATHS = {"/api/parse-linkedin", "/api/debug-parse-pdf", "/api/transcribe"}
+
+
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in PDF_UPLOAD_PATHS:
+            # Multipart upload routes enforce their own per-file caps; skip the
+            # JSON-tier limit so a 4 MB PDF isn't blocked here.
+            return await call_next(request)
+        cl = request.headers.get("content-length")
+        if cl and cl.isdigit() and int(cl) > MAX_REQUEST_BYTES:
+            return JSONResponse(
+                status_code=413,
+                content={"detail": "Request body too large"},
+            )
+        return await call_next(request)
+
+
+app.add_middleware(BodySizeLimitMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 app.add_middleware(
@@ -103,9 +131,8 @@ async def debug_parse(x_admin_secret: str = Header("")):
     """Debug: test full PDF parser pipeline. Protected by ADMIN_SECRET header."""
     if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
-    import traceback
+    import logging
     from mistralai.client import Mistral
-    from app.services.pdf_parser import extract_pdf_text
     key = os.environ.get("MISTRAL_API_KEY", "")
     client = Mistral(api_key=key)
 
@@ -131,4 +158,6 @@ Return valid JSON with: name, title, email, phone, linkedin, location, summary, 
         data = json.loads(r.choices[0].message.content)
         return {"ok": True, "name": data.get("name"), "experiences": len(data.get("experiences", [])), "provider": "mistral"}
     except Exception as e:
-        return {"ok": False, "error": str(e), "traceback": traceback.format_exc(), "provider": "mistral"}
+        # Log internally; return generic message — no traceback in response.
+        logging.exception("debug_parse failed")
+        return {"ok": False, "error": type(e).__name__, "provider": "mistral"}
