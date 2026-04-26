@@ -10,9 +10,13 @@
   --accent: #1e293b;
   --accent-hover: #0f172a;
   --accent-subtle: rgba(30, 41, 59, 0.06);
-  --gold: #1e293b;
-  --gold-hover: #0f172a;
-  --amber: #e8a800;
+  /* Vibrant amber accent — bright enough to pop on the cream background but
+     warm/saturated enough to read as deliberate, not the muddy #e8a800 of v1.
+     Kept under the --gold name because it ties back to all the existing
+     border/highlight uses across the codebase. */
+  --gold: #fbbf24;
+  --gold-hover: #f59e0b;
+  --amber: #fbbf24;
   --green: #2d9d3f;
   --red: #d93025;
   --radius-sm: 4px;
@@ -141,9 +145,9 @@ body {
   letter-spacing: -0.01em;
 }
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--gold-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.35);
 }
 .btn-primary:active {
   transform: translateY(0);
