@@ -59,9 +59,29 @@ export default function Editor() {
     setTranslating(true);
     translateCV(cvData, altLang)
       .then((alt) => setCvDataAlt(alt))
-      .catch(() => { /* swallow — toggle will just remain disabled */ })
+      .catch(() => { /* swallow — chip stays click-to-translate */ })
       .finally(() => setTranslating(false));
   }, [cvData, cvDataAlt, translating, setCvDataAlt]);
+
+  // Manual translation trigger — fires when the user clicks a language chip
+  // that has no data yet (auto-translate failed or never ran). Resets the
+  // attempt-ref so subsequent failures don't permanently brick the chip.
+  const triggerTranslation = (target: "fr" | "en") => {
+    if (!cvData || translating) return;
+    const source = cvData;
+    setTranslating(true);
+    translateAttempted.current = true;
+    translateCV(source, target)
+      .then((alt) => {
+        setCvDataAlt(alt);
+        setCvLang(target);
+      })
+      .catch((err) => {
+        console.error("manual translation failed", err);
+        translateAttempted.current = false;
+      })
+      .finally(() => setTranslating(false));
+  };
 
   // Language resolution — matches Templates.tsx. If the user toggled cvLang to
   // the opposite of the stored CV language, show the translated alt (falling
@@ -207,9 +227,15 @@ export default function Editor() {
               <button
                 key={lang}
                 className={`chip ${cvLang === lang ? "is-active" : ""}`}
-                onClick={() => setCvLang(lang)}
-                disabled={!hasLang}
-                title={hasLang ? undefined : isPending ? t("editor.translation_in_progress", "Translating…") : t("editor.translation_pending", "Translation not ready yet")}
+                onClick={() => (hasLang ? setCvLang(lang) : triggerTranslation(lang))}
+                disabled={isPending}
+                title={
+                  hasLang
+                    ? undefined
+                    : isPending
+                      ? t("editor.translation_in_progress", "Translating…")
+                      : t("editor.translation_click_to_translate", "Click to translate")
+                }
               >
                 {lang.toUpperCase()}{isPending ? " …" : ""}
               </button>

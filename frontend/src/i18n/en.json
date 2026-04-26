@@ -187,7 +187,9 @@
     "audit_apply_done": "✓ {{count}} fix(es) applied",
     "audit_apply_skipped": "({{count}} skipped)",
     "audit_apply_undo": "Undo",
-    "audit_apply_failed": "Apply failed — please try again."
+    "audit_apply_failed": "Apply failed — please try again.",
+    "translation_click_to_translate": "Click to translate",
+    "translation_in_progress": "Translating…"
   },
   "projects": {
     "title": "your projects",

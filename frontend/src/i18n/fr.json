@@ -187,7 +187,9 @@
     "audit_apply_done": "✓ {{count}} correction(s) appliquée(s)",
     "audit_apply_skipped": "({{count}} ignorée(s))",
     "audit_apply_undo": "Annuler",
-    "audit_apply_failed": "L'application a échoué — réessaie."
+    "audit_apply_failed": "L'application a échoué — réessaie.",
+    "translation_click_to_translate": "Cliquer pour traduire",
+    "translation_in_progress": "Traduction en cours…"
   },
   "projects": {
     "title": "tes projets",
