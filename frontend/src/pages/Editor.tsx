@@ -93,6 +93,24 @@ export default function Editor() {
   // EN-generated project meant you couldn't see the FR translation.
   const activeCv = cvData && cvLang === (cvData.language || "en") ? cvData : (cvDataAlt || cvData);
 
+  // 2-page heuristic — calibrated against Kevin's exported CV (~1.6 pages in
+  // Editorial post-2026-04-26 tightening: 21 bullets, ~4000 chars of body
+  // content). Linear extrapolation to the 2-page line gives ~26 bullets or
+  // ~5000 chars. Cheap to compute, no PDF re-render. False positives over
+  // false negatives — if it warns, the user can still export and verify.
+  const audit = activeCv || cvData;
+  const contentWeight = audit ? (
+    (audit.summary?.length || 0) +
+    audit.experiences.reduce((sum, e) => sum +
+      (e.title?.length || 0) +
+      (e.company?.length || 0) +
+      (e.exitReason?.length || 0) +
+      e.bullets.reduce((s, b) => s + b.length, 0)
+    , 0)
+  ) : 0;
+  const bulletCount = audit ? audit.experiences.reduce((s, e) => s + e.bullets.length, 0) : 0;
+  const overTwoPages = contentWeight > 5000 || bulletCount > 26;
+
   if (!cvData) {
     return (
       <div className="page">
@@ -248,6 +266,18 @@ export default function Editor() {
             );
           })}
         </div>
+
+        {/* Soft 2-page warning — heuristic only (chars + bullets), no PDF
+            re-render. Fires when the user is at/past the calibrated cap. */}
+        {overTwoPages && (
+          <div className="cv-page-warning" role="alert">
+            <span className="cv-page-warning-icon" aria-hidden>⚠</span>
+            <div>
+              <strong>{t("editor.page_limit_title", "Approaching the 2-page limit")}</strong>
+              <p>{t("editor.page_limit_body", "Your CV is getting long — trim a few bullets or shorten the summary before adding more, or it'll spill onto a 3rd page.")}</p>
+            </div>
+          </div>
+        )}
 
         {/* The editable CV itself — renders the currently selected template */}
         {(() => {
