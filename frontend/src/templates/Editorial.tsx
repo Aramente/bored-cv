@@ -63,7 +63,15 @@ export default function Editorial({ data, brandColors }: TemplateProps) {
               <Text style={[styles.expDates, { color: accent }]}>{exp.dates}</Text>
               <Text style={styles.expCompany}>— {exp.company}</Text>
             </View>
-            {(exp.headcountStart || exp.headcountEnd) ? <Text style={styles.headcount}>{isFr ? "équipe" : "team"}: {exp.headcountStart || "?"} → {exp.headcountEnd || "?"}</Text> : null}
+            {(() => {
+              // Suppress headcount when it's "team: 1 → 1" — solo gigs (founder,
+              // freelance) shouldn't waste a line saying they worked alone.
+              const s = String(exp.headcountStart || "").trim();
+              const e = String(exp.headcountEnd || "").trim();
+              if (!s && !e) return null;
+              if (s === "1" && e === "1") return null;
+              return <Text style={styles.headcount}>{isFr ? "équipe" : "team"}: {s || "?"} → {e || "?"}</Text>;
+            })()}
             {exp.bullets.map((b, j) => <BoldMetrics key={j} text={`· ${b}`} style={styles.bullet} />)}
             {exp.exitReason ? <Text style={styles.exitReason}>{exp.exitReason}</Text> : null}
           </View>
