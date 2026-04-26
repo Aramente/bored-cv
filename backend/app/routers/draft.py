@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from app.middleware.security import verify_turnstile, check_rate_limit
-from app.models import CVData, GenerateRequest, ImproveBulletRequest, ImproveBulletResponse, ToneSamples, ToneSamplesRequest
+from app.models import (
+    AuditCvRequest, AuditCvResponse, CVData, GenerateRequest,
+    ImproveBulletRequest, ImproveBulletResponse, ToneSamples, ToneSamplesRequest,
+)
 from app.services.llm import LLMService
 
 router = APIRouter(prefix="/api", tags=["draft"])
@@ -40,6 +43,20 @@ async def improve_bullet(req: ImproveBulletRequest, request: Request, x_captcha_
             tone=req.tone,
         )
         return ImproveBulletResponse(text=out)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI service error: {e}")
+
+
+@router.post("/audit-cv", response_model=AuditCvResponse)
+async def audit_cv(req: AuditCvRequest, request: Request, x_captcha_token: str = Header("")):
+    """End-of-edit CV audit — grammar, missing-vs-offer, and last-mile advice."""
+    if not await verify_turnstile(x_captcha_token):
+        raise HTTPException(status_code=403, detail="Captcha verification failed")
+    check_rate_limit(request)
+    llm = get_llm()
+    try:
+        out = llm.audit_cv(req.cv_data, req.offer, req.ui_language)
+        return AuditCvResponse(**out)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {e}")
 

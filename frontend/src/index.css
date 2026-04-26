@@ -2235,3 +2235,113 @@ textarea.input { resize: vertical; min-height: 100px; }
 .compact-tpl .co-edu { margin-bottom: 7px; }
 .compact-tpl .co-edu-degree { font-size: 11.5px; font-weight: 700; margin: 0; color: #0a0f1f; }
 .compact-tpl .co-edu-school { font-size: 10.5px; color: #475569; margin: 0; }
+
+/* Contract type dropdown — replaces the old free-text chip with a constrained
+   <select> so users pick from Permanent / Founder / Freelance / etc. instead
+   of typing arbitrary strings. Inherits the chip pill look so it sits next
+   to .cv-headcount-chip without visual disruption. */
+.cv-contract-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(30, 41, 59, 0.08);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path fill='%23475569' d='M0 0l4 5 4-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  border: none;
+  padding-right: 18px !important;
+  cursor: pointer;
+  font-family: inherit;
+}
+.cv-contract-select:focus { outline: 2px solid rgba(99, 102, 241, 0.4); outline-offset: 1px; }
+.cv-sidebar .cv-contract-select {
+  background-color: rgba(255, 255, 255, 0.14);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path fill='%23cbd5e1' d='M0 0l4 5 4-5z'/></svg>");
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Tiny "size " prefix label that sits inside the headcount chip to make it
+   self-explanatory ("size 12 → 80" instead of just "12 → 80"). */
+.cv-headcount-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-right: 2px;
+}
+.cv-sidebar .cv-headcount-label { color: rgba(255, 255, 255, 0.55); }
+
+/* AI audit panel — appears below the editable CV when the user clicks
+   "Audit my CV". Three collapsible sections (grammar, missing-from-offer,
+   advice). Each finding shows a "where" hint + the actual text. */
+.cv-audit-panel {
+  max-width: 794px;
+  width: 100%;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cv-audit-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cv-audit-panel-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 0; }
+.cv-audit-panel-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.cv-audit-section { display: flex; flex-direction: column; gap: 6px; }
+.cv-audit-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0;
+}
+.cv-audit-finding {
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.5;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-left: 3px solid #cbd5e1;
+  border-radius: 4px;
+}
+.cv-audit-finding .cv-audit-where {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6366f1;
+  margin-bottom: 2px;
+}
+.cv-audit-section.is-grammar .cv-audit-finding { border-left-color: #f97316; }
+.cv-audit-section.is-missing .cv-audit-finding { border-left-color: #dc2626; }
+.cv-audit-section.is-advice .cv-audit-finding { border-left-color: #6366f1; }
+.cv-audit-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Audit CTA button — disabled state explains via tooltip what's still missing.
+   Uses .btn-primary base styles but overrides for the gated look. */
+.cv-audit-btn[disabled] {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.85;
+}

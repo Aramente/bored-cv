@@ -343,9 +343,11 @@ export function BulletsTail({ expIndex, bulletsLength }: { expIndex: number; bul
 }
 
 /**
- * Headcount chip — "120 → 450". Each endpoint is independently editable; the
- * chip itself hides only when both endpoints are empty so the user can still
- * click in to fill either side. Shared across all 10 HTML templates.
+ * Headcount chip — "120 people → 450 people". Each endpoint is independently
+ * editable; the chip itself hides only when both endpoints are empty so the
+ * user can still click in to fill either side. Shared across all 10 HTML
+ * templates. Tooltip + clearer placeholder so it's self-explanatory without
+ * having to remember what "size → size" meant.
  */
 export function HeadcountChip({
   start,
@@ -361,13 +363,17 @@ export function HeadcountChip({
   isFr: boolean;
 }) {
   const hasAny = !!(start || end);
+  const tooltip = isFr
+    ? "Effectif de l'entreprise quand tu es arrivé → quand tu es parti (ou aujourd'hui). Ex. 12 → 45."
+    : "Company size when you joined → when you left (or now). E.g. 12 → 45.";
   return (
-    <span className="cv-headcount-chip" style={!hasAny ? { opacity: 0.55 } : undefined}>
+    <span className="cv-headcount-chip" title={tooltip} style={!hasAny ? { opacity: 0.55 } : undefined}>
+      <span className="cv-headcount-label" aria-hidden>{isFr ? "effectif " : "size "}</span>
       <Editable
         as="span"
         value={start || ""}
         onSave={onSaveStart}
-        placeholder={isFr ? "effectif" : "size"}
+        placeholder={isFr ? "à l'arrivée" : "when joined"}
         rich={false}
       />
       <span className="cv-headcount-arrow" aria-hidden>→</span>
@@ -375,9 +381,74 @@ export function HeadcountChip({
         as="span"
         value={end || ""}
         onSave={onSaveEnd}
-        placeholder={isFr ? "effectif" : "size"}
+        placeholder={isFr ? "au départ" : "when left"}
         rich={false}
       />
     </span>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Contract type — dropdown (was a free-text chip). Bilingual options. Renders
+ * as a styled <select> matching the existing meta-chip aesthetic so it slots
+ * into every template without per-template CSS work.
+ *
+ * Accepts an existing free-text value from legacy CVs: it's shown as the
+ * current selection even if it doesn't match an option exactly.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+const CONTRACT_OPTIONS_EN = [
+  { value: "", label: "Contract type" }, // placeholder option
+  { value: "Permanent", label: "Permanent" },
+  { value: "Founder", label: "Founder" },
+  { value: "Freelance", label: "Freelance" },
+  { value: "Contract", label: "Contract" },
+  { value: "Internship", label: "Internship" },
+  { value: "Apprenticeship", label: "Apprenticeship" },
+  { value: "Part-time", label: "Part-time" },
+];
+
+const CONTRACT_OPTIONS_FR = [
+  { value: "", label: "Type de contrat" },
+  { value: "CDI", label: "CDI" },
+  { value: "Fondateur", label: "Fondateur" },
+  { value: "Freelance", label: "Freelance" },
+  { value: "CDD", label: "CDD" },
+  { value: "Stage", label: "Stage" },
+  { value: "Alternance", label: "Alternance" },
+  { value: "Temps partiel", label: "Temps partiel" },
+];
+
+export function ContractTypeSelect({
+  value,
+  onSave,
+  isFr,
+}: {
+  value: string;
+  onSave: (v: string) => void;
+  isFr: boolean;
+}) {
+  const options = isFr ? CONTRACT_OPTIONS_FR : CONTRACT_OPTIONS_EN;
+  const known = options.some((o) => o.value === value);
+  const tooltip = isFr
+    ? "Type de contrat — utilisé par l'audit final et masqué sur le CV exporté si vide."
+    : "Contract type — used by the final audit, hidden on the exported CV when empty.";
+  return (
+    <select
+      className={`cv-meta-chip cv-contract-select${value ? "" : " is-empty"}`}
+      value={known ? value : ""}
+      onChange={(e) => onSave(e.target.value)}
+      title={tooltip}
+      aria-label={isFr ? "Type de contrat" : "Contract type"}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+      {/* If the legacy value isn't in the dropdown, still surface it so we
+          don't silently drop user data. */}
+      {!known && value ? <option value={value}>{value}</option> : null}
+    </select>
   );
 }

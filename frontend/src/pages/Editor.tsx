@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { translateCV } from "../services/api";
+import { translateCV, auditCV, type AuditCvResult } from "../services/api";
 import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import CleanHtml from "../templates/CleanHtml";
@@ -89,9 +89,12 @@ function validateCV(
 export default function Editor() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate, setCvDataAlt } = useStore();
+  const { cvData, cvDataAlt, cvLang, setCvLang, brandColors, useBrandColors, selectedTemplate, setSelectedTemplate, setCvDataAlt, offer } = useStore();
   const [translating, setTranslating] = useState(false);
   const translateAttempted = useRef(false);
+  const [auditing, setAuditing] = useState(false);
+  const [auditResult, setAuditResult] = useState<AuditCvResult | null>(null);
+  const [auditError, setAuditError] = useState<string | null>(null);
 
   // Legacy-project backfill: projects created before the auto-translate flow
   // existed have cvData but no cvDataAlt, which leaves the FR/EN toggle stuck.
@@ -130,6 +133,32 @@ export default function Editor() {
   }
 
   const issues = validateCV(activeCv || cvData, t);
+
+  // Audit gating — every experience must have a contractType picked AND at
+  // least one headcount endpoint filled. Forces the user to give the LLM
+  // structured metadata to audit against, instead of inferring it from prose.
+  const audCv = activeCv || cvData;
+  const incompleteCount = (audCv?.experiences || []).filter((e) => {
+    const hasContract = !!(e.contractType && String(e.contractType).trim());
+    const hasHeadcount = !!((e.headcountStart && String(e.headcountStart).trim()) || (e.headcountEnd && String(e.headcountEnd).trim()));
+    return !hasContract || !hasHeadcount;
+  }).length;
+  const auditDisabled = incompleteCount > 0 || auditing || !offer;
+
+  const runAudit = async () => {
+    if (!audCv || !offer || auditDisabled) return;
+    setAuditing(true);
+    setAuditError(null);
+    try {
+      const res = await auditCV(audCv, offer, cvLang || "en", "");
+      setAuditResult(res);
+    } catch (e) {
+      console.error("audit failed", e);
+      setAuditError(t("editor.audit_failed"));
+    } finally {
+      setAuditing(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -234,10 +263,54 @@ export default function Editor() {
           </div>
         )}
 
-        {/* Bottom CTA — advance to the finalize/download step. Moved from the
-            top because surfacing "continue" before the user sees what they're
-            reviewing was confusing. */}
-        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", marginTop: 8 }}>
+        {/* AI audit panel — appears once the user clicks the audit button. */}
+        {auditError && (
+          <div className="cv-audit-panel" style={{ borderColor: "#dc2626" }}>
+            <p style={{ fontSize: 12, color: "#dc2626", margin: 0 }}>{auditError}</p>
+          </div>
+        )}
+        {auditResult && (
+          <div className="cv-audit-panel">
+            <div className="cv-audit-panel-header">
+              <h3 className="cv-audit-panel-title">{t("editor.audit_panel_title")}</h3>
+              <button type="button" className="cv-audit-panel-close" onClick={() => setAuditResult(null)} aria-label="Close">×</button>
+            </div>
+            {(["grammar", "missing_from_offer", "advice"] as const).map((bucket) => {
+              const items = auditResult[bucket] || [];
+              const titleKey = bucket === "grammar" ? "editor.audit_grammar" : bucket === "missing_from_offer" ? "editor.audit_missing" : "editor.audit_advice";
+              const sectionClass = bucket === "grammar" ? "is-grammar" : bucket === "missing_from_offer" ? "is-missing" : "is-advice";
+              return (
+                <div key={bucket} className={`cv-audit-section ${sectionClass}`}>
+                  <p className="cv-audit-section-title">{t(titleKey)}</p>
+                  {items.length === 0 ? (
+                    <p className="cv-audit-empty">{t("editor.audit_empty_section")}</p>
+                  ) : items.map((f, i) => (
+                    <div key={i} className="cv-audit-finding">
+                      {f.where && <span className="cv-audit-where">{f.where}</span>}
+                      {f.text}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Bottom CTAs — audit + advance to download. Audit is gated until
+            every experience has contract type + headcount filled, because
+            without that structured metadata the audit can't reliably
+            distinguish role contexts. */}
+        <div style={{ maxWidth: 794, width: "100%", display: "flex", justifyContent: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="btn-secondary cv-audit-btn"
+            style={{ padding: "10px 20px", fontSize: 14 }}
+            onClick={runAudit}
+            disabled={auditDisabled}
+            title={incompleteCount > 0 ? t("editor.audit_gated_tip", { count: incompleteCount }) : undefined}
+          >
+            {auditing ? t("editor.audit_running") : t("editor.audit_button")}
+          </button>
           <button
             className="btn-primary"
             style={{ padding: "10px 20px", fontSize: 14 }}

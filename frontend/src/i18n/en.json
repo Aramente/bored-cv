@@ -180,7 +180,16 @@
     "remove_experience": "Remove",
     "remove_bullet": "Remove",
     "inline_buzzword": "Buzzword detected — consider rephrasing",
-    "inline_responsibility": "Avoid starting with passive voice"
+    "inline_responsibility": "Avoid starting with passive voice",
+    "audit_button": "Audit my CV",
+    "audit_running": "Auditing…",
+    "audit_gated_tip": "Fill contract type and company size on every experience first ({{count}} left)",
+    "audit_panel_title": "AI audit",
+    "audit_grammar": "Grammar & wording",
+    "audit_missing": "Missing vs the job offer",
+    "audit_advice": "Last advice",
+    "audit_empty_section": "Nothing flagged here.",
+    "audit_failed": "Audit failed — please try again."
   },
   "projects": {
     "title": "your projects",

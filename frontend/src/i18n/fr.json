@@ -180,7 +180,16 @@
     "remove_experience": "Supprimer",
     "remove_bullet": "Supprimer",
     "inline_buzzword": "Buzzword détecté — reformule",
-    "inline_responsibility": "Évite de commencer par une voix passive"
+    "inline_responsibility": "Évite de commencer par une voix passive",
+    "audit_button": "Auditer mon CV",
+    "audit_running": "Audit en cours…",
+    "audit_gated_tip": "Remplis le type de contrat et la taille de l'entreprise pour chaque expérience ({{count}} restant·e·s)",
+    "audit_panel_title": "Audit IA",
+    "audit_grammar": "Grammaire & formulation",
+    "audit_missing": "Manquant vs l'offre",
+    "audit_advice": "Derniers conseils",
+    "audit_empty_section": "Rien à signaler ici.",
+    "audit_failed": "L'audit a échoué — réessaie."
   },
   "projects": {
     "title": "tes projets",

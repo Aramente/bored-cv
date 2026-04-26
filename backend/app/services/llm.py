@@ -484,7 +484,11 @@ STRICT RULES — VIOLATING THESE IS A FAILURE:
 - NEVER write "Dynamic and entrepreneurial", "proven ability", "strong background", "eager to leverage", "passionate about", "proven track record", "results-driven", "fostering", "exceptional employee experiences", "people-centric", "fast-paced"
 - THE JUNIOR COLLEAGUE TEST: read every sentence out loud. If you can't imagine someone saying it to a junior colleague at the startup — someone who gets the work but doesn't need posturing — rewrite it.
 - NEVER start bullets with: "Responsible for", "Helped with", "Worked on", "Assisted in", "Managed the", "In charge of". These describe a job description, not an outcome. Rewrite as actions with results.
-- STAGE CONTEXT: for each company, include headcount/stage transition: "Company (sector, seed→Series A, 5→45 people)"
+- STAGE CONTEXT: do NOT cram contract type, headcount, or stage into the title or company string anymore. Those have dedicated fields:
+  - `contractType` per experience: "Permanent" / "CDI" / "Founder" / "Freelance" / "Contract" / "Internship" — leave "" if unknown, the user fills it in the editor.
+  - `headcountStart` / `headcountEnd` per experience: numeric strings, e.g. "12" → "45". Leave "" if unknown.
+  - `exitReason` per experience: short reason for leaving, optional. Leave "" if unknown.
+  Title stays clean ("Head of People Ops"), company stays clean ("Mindflow"). Sector/stage may still appear inside parentheses on the company line if the source profile mentions them.
 - Summary: 2 short sentences. First = what they do + proof (years, companies, scale). Second = what they bring to THIS role.
   ✅ "6 ans en People Ops, 3 startups (Germinal, Mindflow, Figures), scaling 5→80 personnes. Payroll multi-pays, onboarding from scratch, HRIS Deel."
   ❌ "Dynamic People Operations leader with a strong background in talent acquisition and fostering exceptional employee experiences"
@@ -500,7 +504,7 @@ STRICT RULES — VIOLATING THESE IS A FAILURE:
 - LANGUAGE: Write ALL CV content in {"French" if ui_language == "fr" else "English"}. The summary, bullets, skills — everything must be in {"French" if ui_language == "fr" else "English"}.
 
 Respond in valid JSON:
-{{"name": "{profile.name}", "title": "operational title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 short operational sentences", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["concrete action + number"]}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["concrete skill (proof)"], "languages": [], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["specific strength"], "improvements": ["specific gap"]}}"""
+{{"name": "{profile.name}", "title": "operational title matching the offer", "email": "{profile.email}", "location": "{profile.location}", "summary": "2 short operational sentences", "experiences": [{{"title": "title", "company": "company (context)", "dates": "dates", "bullets": ["concrete action + number"], "contractType": "", "headcountStart": "", "headcountEnd": "", "exitReason": ""}}], "education": [{{"degree": "...", "school": "...", "year": "..."}}], "skills": ["concrete skill (proof)"], "languages": [], "language": "{'fr' if ui_language == 'fr' else 'en'}", "match_score": 65, "strengths": ["specific strength"], "improvements": ["specific gap"]}}"""
 
         text = self._call(prompt, model="mistral-small-latest", max_tokens=8000, temperature=0.3)
         data = self._parse_json(text)
@@ -766,6 +770,61 @@ Return ONLY the rewritten bullet text — no JSON, no preamble, no explanation."
             out = out[2:].strip()
         # Defensive: if model returned an empty string, fall back to the original.
         return out or clean
+
+    def audit_cv(self, cv_data: "CVData", offer: Offer, ui_language: str = "en") -> dict:
+        """End-of-edit CV audit. Returns three buckets:
+          - grammar: spelling/grammar/awkward phrasing fixes
+          - missing_from_offer: requirements from the offer not addressed in the CV
+          - advice: last-mile coaching (more numbers, more bullets, more examples)
+
+        Each finding is `{where, text}` so the UI can render it as a list with a
+        human pointer (Summary / Experience N / bullet M)."""
+        lang_name = "French" if ui_language == "fr" else "English"
+
+        # Compact CV view for the prompt — JSON to keep field names predictable.
+        exp_lines = []
+        for i, exp in enumerate(cv_data.experiences):
+            bullets = "\n".join(f"    {j+1}. {b}" for j, b in enumerate(exp.bullets))
+            exp_lines.append(f"  Experience {i+1} — {exp.title} @ {exp.company} ({exp.dates})\n{bullets}")
+        cv_view = (
+            f"NAME: {cv_data.name}\n"
+            f"TITLE: {cv_data.title}\n"
+            f"SUMMARY: {cv_data.summary}\n"
+            f"EXPERIENCES:\n" + "\n".join(exp_lines) + "\n"
+            f"SKILLS: {', '.join(cv_data.skills)}\n"
+        )
+        offer_reqs = self._format_requirements(offer)
+
+        prompt = f"""You are a senior recruiter doing a final pass on a CV before the candidate sends it. Your job is to surface the small things that will hurt this candidacy and the missing items that the target offer specifically asks for.
+
+CV TO AUDIT:
+{cv_view}
+
+TARGET JOB OFFER:
+Title: {offer.title}
+Company: {offer.company}
+Description: {offer.description[:1500]}
+Key requirements: {offer_reqs}
+
+Return THREE lists. For each item, set `where` to a short pointer like "Summary", "Experience 2 title", "Experience 1 / bullet 3", "Skills".
+
+1) **grammar** — spelling, grammar, typos, awkward phrasing, capitalization, missing accents in {lang_name}, run-on sentences. Be specific: quote the offending fragment in the `text` field and say what to change. Skip stylistic preferences. Keep to 0–8 items, only real issues.
+
+2) **missing_from_offer** — requirements from the offer that the CV does NOT address. Don't repeat what's already covered. Be concrete: "Offer asks for X, no mention in CV — could you add it under Experience N?". Keep to 0–6 items, ranked by importance.
+
+3) **advice** — last-mile coaching. Examples:
+  - "Bullet has no numbers — can you quantify the result?"
+  - "Experience N only has 1 bullet — add a context bullet so it doesn't read as a side gig"
+  - "Summary doesn't mention the role you're targeting"
+  Keep to 0–6 items.
+
+Write all `where` and `text` fields in {lang_name}. Be direct, no filler ("Great CV overall!"). Empty lists are fine if there's nothing to flag.
+
+Respond ONLY in valid JSON:
+{{"grammar": [{{"where": "...", "text": "..."}}], "missing_from_offer": [{{"where": "...", "text": "..."}}], "advice": [{{"where": "...", "text": "..."}}]}}"""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.3)
+        return self._parse_json(text)
 
     def _get_tone_instruction(self, tone: str) -> str:
         tones = {

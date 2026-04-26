@@ -142,6 +142,22 @@ export async function translateCV(cvData: CVData, targetLanguage: string): Promi
   return post("/api/translate-cv", { cv_data: cvData, target_language: targetLanguage });
 }
 
+export interface AuditFinding { where: string; text: string; }
+export interface AuditCvResult {
+  grammar: AuditFinding[];
+  missing_from_offer: AuditFinding[];
+  advice: AuditFinding[];
+}
+
+export async function auditCV(cvData: CVData, offer: Offer, lang: string, captchaToken: string, signal?: AbortSignal): Promise<AuditCvResult> {
+  return post<AuditCvResult>(
+    "/api/audit-cv",
+    { cv_data: cvData, offer, ui_language: lang || "en" },
+    captchaToken,
+    signal,
+  );
+}
+
 export async function getQuota(): Promise<{ authenticated: boolean; daily_limit: number }> {
   const res = await fetch(`${API_URL}/api/auth/quota`, { headers: getAuthHeaders() });
   return res.json();

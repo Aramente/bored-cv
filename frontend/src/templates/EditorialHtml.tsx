@@ -1,6 +1,6 @@
 import type { CVData } from "../store";
 import { useStore } from "../store";
-import { BulletRow, BulletsTail, Editable, HeadcountChip, joinContact } from "./EditableCV";
+import { BulletRow, BulletsTail, ContractTypeSelect, Editable, HeadcountChip, joinContact } from "./EditableCV";
 import PhotoSlot from "./PhotoSlot";
 
 interface Props {
@@ -53,7 +53,7 @@ export default function EditorialHtml({ data, brandColors }: Props) {
             <div className="ed-exp-meta">
               <Editable as="span" value={exp.dates} onSave={(v) => save(`experiences.${i}.dates`, v)} className="ed-exp-dates" style={{ color: accentColor }} placeholder="2022 — 2024" rich={false} />
               <Editable as="span" value={exp.company} onSave={(v) => save(`experiences.${i}.company`, v)} className="ed-exp-company" placeholder={isFr ? "Entreprise (contexte)" : "Company (context)"} rich={false} />
-              <Editable as="span" value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} className="cv-meta-chip" placeholder={isFr ? "contrat" : "type"} rich={false} />
+              <ContractTypeSelect value={exp.contractType || ""} onSave={(v) => save(`experiences.${i}.contractType`, v)} isFr={isFr} />
               <HeadcountChip start={exp.headcountStart || ""} end={exp.headcountEnd || ""} onSaveStart={(v) => save(`experiences.${i}.headcountStart`, v)} onSaveEnd={(v) => save(`experiences.${i}.headcountEnd`, v)} isFr={isFr} />
             </div>
             <Editable as="h3" value={exp.title} onSave={(v) => save(`experiences.${i}.title`, v)} className="ed-exp-title" placeholder={isFr ? "Intitulé" : "Job title"} rich={false} />
@@ -74,7 +74,7 @@ export default function EditorialHtml({ data, brandColors }: Props) {
               ))}
               <BulletsTail expIndex={i} bulletsLength={exp.bullets.length} />
             </ul>
-            <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "raison du départ (optionnel)" : "reason for leaving (optional)"} rich={false} />
+            <Editable as="p" value={exp.exitReason || ""} onSave={(v) => save(`experiences.${i}.exitReason`, v)} className="cv-meta-line" placeholder={isFr ? "Pourquoi j'ai quitté ce poste (optionnel — aide à expliquer une transition)" : "Why I left this role (optional — helps explain a transition)"} rich={false} />
             <button type="button" className="cv-add-bullet" onClick={() => { pushCvHistory(); addCvBullet(i); }}>+ {isFr ? "Ajouter une puce" : "Add bullet"}</button>
           </article>
         ))}

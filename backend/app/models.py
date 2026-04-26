@@ -118,6 +118,15 @@ class RewrittenExperience(BaseModel):
     dates: str
     bullets: list[str]
     context: CompanyContext | None = None
+    # Dedicated UI slots so the chat/LLM stops cramming this into the title.
+    # All optional — empty string means "user hasn't filled this yet".
+    # camelCase field names so JSON keys match the frontend store directly
+    # (the rest of CVData uses snake_case for backwards-compat with persisted
+    # client state — only these new fields are camelCase on both sides).
+    contractType: str = ""           # "Permanent", "CDI", "Founder", "Freelance"…
+    headcountStart: str = ""         # company size when joined, e.g. "12"
+    headcountEnd: str = ""           # company size when left / now, e.g. "45"
+    exitReason: str = ""             # short reason for leaving (optional)
 
 
 class CVData(BaseModel):
@@ -179,6 +188,27 @@ class ImproveBulletRequest(BaseModel):
 
 class ImproveBulletResponse(BaseModel):
     text: str
+
+
+class AuditCvRequest(BaseModel):
+    """End-of-edit CV audit — grammar pass + offer-fit gaps + last-mile advice."""
+    cv_data: "CVData"
+    offer: Offer
+    ui_language: str = "en"
+
+
+class AuditFinding(BaseModel):
+    """One actionable item the user can act on. `where` is a human pointer
+    (e.g. 'Summary' or 'Experience 2 / bullet 3') so the UI can render it
+    without needing structured paths."""
+    where: str = ""
+    text: str
+
+
+class AuditCvResponse(BaseModel):
+    grammar: list[AuditFinding] = []         # spelling, grammar, awkward phrasing
+    missing_from_offer: list[AuditFinding] = []  # requirements not addressed in the CV
+    advice: list[AuditFinding] = []          # more numbers, more bullets, more examples
 
 
 class OfferScrapeRequest(BaseModel):
