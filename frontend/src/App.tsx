@@ -11,6 +11,7 @@ import Projects from "./pages/Projects";
 import CoverLetter from "./pages/CoverLetter";
 import SharedView from "./pages/SharedView";
 import ConsentBanner from "./components/ConsentBanner";
+import GuestSaveNotice from "./components/GuestSaveNotice";
 import { useStore } from "./store";
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/v/:slug" element={<SharedView />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <GuestSaveNotice />
       <ConsentBanner />
     </BrowserRouter>
   );

@@ -725,6 +725,20 @@ textarea.input { resize: vertical; min-height: 100px; }
   border-radius: var(--radius);
   font-size: 13px;
 }
+.login-success {
+  background: #e7f8ee;
+  color: #1a7a3a;
+  border: 1px solid #b9e6c8;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  animation: login-success-in 240ms ease-out;
+}
+@keyframes login-success-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .login-toggle {
   font-size: 13px;
   color: var(--text-muted);
@@ -2598,3 +2612,48 @@ textarea.input { resize: vertical; min-height: 100px; }
   cursor: not-allowed;
 }
 .cv-audit-btn-icon { font-size: 17px; line-height: 1; }
+
+/* Guest save notice — persistent reminder for unauthenticated users that
+   their work is ephemeral. Sticks to the top of every app page (skipped on
+   landing/login). Dismissible per-session. */
+.guest-save-notice {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: #fff7d6;
+  border-bottom: 1px solid #f0d878;
+  color: #6b4f00;
+  font-size: 13px;
+  font-weight: 500;
+}
+.guest-save-notice__text { line-height: 1.4; }
+.guest-save-notice__cta {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.guest-save-notice__close {
+  background: none;
+  border: none;
+  color: #6b4f00;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.6;
+}
+.guest-save-notice__close:hover { opacity: 1; }
+@media (max-width: 600px) {
+  .guest-save-notice {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    text-align: center;
+  }
+}

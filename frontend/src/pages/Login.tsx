@@ -17,6 +17,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Brief success state so signup/login doesn't feel like the page just blinked
+  // — without it the form submits and we redirect instantly, with no feedback.
+  const [success, setSuccess] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +31,16 @@ export default function Login() {
         : await loginWithEmail(email.trim(), password);
       localStorage.setItem("bored-cv-token", res.token);
       setUser({ email: res.email, provider: res.provider });
-      navigate("/");
+      setSuccess(
+        mode === "signup"
+          ? t("login.signup_ok", "Account created — you're signed in.")
+          : t("login.login_ok", "Signed in — welcome back.")
+      );
+      // Hold the confirmation for a moment so the user sees it land before we
+      // redirect them home.
+      setTimeout(() => navigate("/"), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
       setBusy(false);
     }
   };
@@ -76,13 +85,16 @@ export default function Login() {
           </label>
 
           {error && <div className="login-error">{error}</div>}
+          {success && <div className="login-success">✓ {success}</div>}
 
-          <button type="submit" className="btn-primary btn-lg" disabled={busy}>
-            {busy
-              ? t("login.busy", "Working…")
-              : mode === "signup"
-                ? t("login.signup_cta", "Sign up")
-                : t("login.login_cta", "Log in")}
+          <button type="submit" className="btn-primary btn-lg" disabled={busy || !!success}>
+            {success
+              ? t("login.redirecting", "Redirecting…")
+              : busy
+                ? t("login.busy", "Working…")
+                : mode === "signup"
+                  ? t("login.signup_cta", "Sign up")
+                  : t("login.login_cta", "Log in")}
           </button>
         </form>
 
