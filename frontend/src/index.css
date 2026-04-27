@@ -2624,7 +2624,7 @@ textarea.input { resize: vertical; min-height: 100px; }
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 10px 16px;
+  padding: 10px 48px 10px 16px;
   background: #fff7d6;
   border-bottom: 1px solid #f0d878;
   color: #6b4f00;
@@ -2638,22 +2638,50 @@ textarea.input { resize: vertical; min-height: 100px; }
   font-weight: 600;
   white-space: nowrap;
 }
+/* Close button is absolute-positioned so wrapping text/CTA never orphans it
+   on its own line. 44px tap target meets iOS minimum. */
 .guest-save-notice__close {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   color: #6b4f00;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  padding: 0 4px;
   opacity: 0.6;
+  -webkit-tap-highlight-color: transparent;
 }
-.guest-save-notice__close:hover { opacity: 1; }
+.guest-save-notice__close:hover,
+.guest-save-notice__close:focus-visible { opacity: 1; }
 @media (max-width: 600px) {
   .guest-save-notice {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 8px 12px;
+    padding: 8px 40px 8px 12px;
     font-size: 12px;
-    text-align: center;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .guest-save-notice__text { flex: 1 1 100%; }
+  .guest-save-notice__cta {
+    padding: 8px 14px;
+    min-height: 36px;
+    font-size: 13px;
+  }
+  .guest-save-notice__close {
+    top: 4px;
+    right: 0;
+    transform: none;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
   }
 }
