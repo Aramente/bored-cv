@@ -35,7 +35,7 @@ def _notify_signup(email: str, provider: str) -> None:
             f"https://ntfy.sh/{topic}",
             content=f"{email} via {provider}".encode("utf-8"),
             headers={
-                "Title": "Bored CV — new signup",
+                "Title": "Bored CV - new signup",
                 "Priority": "default",
                 "Tags": "tada",
             },
@@ -180,37 +180,6 @@ async def get_user(authorization: str = Header("")):
 @router.post("/logout")
 async def logout():
     return {"status": "ok"}
-
-
-@router.get("/_ntfy-debug")
-async def ntfy_debug():
-    """Temporary diagnostic for the signup-notification path. Returns whether
-    NTFY_TOPIC is set (length only — never the value) and the result of an
-    actual POST to ntfy.sh with a test message. Remove once notifications are
-    confirmed working in production."""
-    topic = os.environ.get("NTFY_TOPIC", "").strip()
-    if not topic:
-        return {"topic_set": False, "topic_length": 0, "post_status": None, "error": "NTFY_TOPIC unset on this Space"}
-    try:
-        resp = httpx.post(
-            f"https://ntfy.sh/{topic}",
-            content=b"debug ping from /api/auth/_ntfy-debug",
-            headers={"Title": "Bored CV — debug", "Priority": "default", "Tags": "wrench"},
-            timeout=5.0,
-        )
-        return {
-            "topic_set": True,
-            "topic_length": len(topic),
-            "post_status": resp.status_code,
-            "response_snippet": (resp.text or "")[:200],
-        }
-    except Exception as e:
-        return {
-            "topic_set": True,
-            "topic_length": len(topic),
-            "post_status": None,
-            "error": f"{type(e).__name__}: {e}",
-        }
 
 
 @router.post("/consent")
