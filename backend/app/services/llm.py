@@ -28,6 +28,89 @@ _ALLOWED_SUBSTITUTION_PATH = re.compile(
 )
 
 
+# Stopwords filtered out before grounding a gap against the offer text. These
+# are words that appear in nearly every job posting and would let any gap pass
+# the substring check (e.g. "team", "experience", "skills") — we want the
+# grounding to fire on domain-specific tokens, not connective tissue.
+_GAP_GROUNDING_STOPWORDS = frozenset({
+    "ability", "across", "areas", "based", "being", "build", "building",
+    "candidate", "challenges", "company", "context", "culture", "deliver",
+    "delivery", "design", "developing", "different", "drive", "driven",
+    "ensure", "every", "experience", "experiences", "expertise", "field",
+    "focus", "fully", "future", "great", "growth", "help", "high", "hire",
+    "hiring", "including", "industry", "internal", "join", "knowledge",
+    "level", "looking", "manage", "manager", "managers", "managing",
+    "market", "matter", "needs", "offer", "offers", "operate", "opportunity",
+    "people", "performance", "person", "process", "processes", "product",
+    "production", "professional", "project", "projects", "quality", "really",
+    "results", "review", "right", "role", "roles", "shape", "skills",
+    "specific", "stakeholder", "stakeholders", "strong", "support",
+    "system", "systems", "talent", "talents", "teams", "their",
+    "things", "thinking", "throughout", "together", "tools", "topics",
+    "track", "understand", "various", "where", "which", "while", "within",
+    "working", "world", "years", "yourself",
+})
+
+
+def _drop_ungrounded_gaps(
+    gaps: list[str], questions: list[str], offer_description: str
+) -> tuple[list[str], list[str]]:
+    """Drop gaps whose content words don't appear anywhere in the offer text.
+
+    A gap is "grounded" if it shares at least one ≥6-character content word
+    (alphabetic, not in the stopword list) with the offer description, matched
+    case-insensitively as a substring. This catches LLM hallucinations where
+    the model invents a theme that isn't anywhere in the requirements — most
+    famously DEI/diversity asks on roles whose only DEI mention is in the
+    "About Company" boilerplate (or, post-#1 fix, isn't even there at all).
+    Questions whose text overlaps with a dropped gap are also removed so the
+    chat doesn't open on the phantom theme.
+    """
+    text = (offer_description or "").lower()
+    if not text:
+        return gaps, questions
+
+    def _content_words(s: str) -> list[str]:
+        return [
+            w for w in re.findall(r"[a-zA-Zàâäéèêëïîôöùûüÿç]+", s.lower())
+            if len(w) >= 6 and w not in _GAP_GROUNDING_STOPWORDS
+        ]
+
+    kept_gaps: list[str] = []
+    dropped_gaps: list[str] = []
+    for gap in gaps:
+        words = _content_words(gap)
+        if not words:
+            # Gap is all stopwords / fragments — keep it (the model gave us
+            # something terse but it might still be valid). Conservative.
+            kept_gaps.append(gap)
+            continue
+        if any(w in text for w in words):
+            kept_gaps.append(gap)
+        else:
+            dropped_gaps.append(gap)
+
+    if not dropped_gaps:
+        return gaps, questions
+
+    # Strip questions tied to a dropped gap. We treat a question as "tied" if
+    # it shares a content word with the dropped gap and that word is NOT in
+    # any kept gap — otherwise the question is ambiguous and we keep it.
+    kept_words = {w for g in kept_gaps for w in _content_words(g)}
+    kept_questions: list[str] = []
+    for q in questions:
+        q_words = set(_content_words(q))
+        contaminating = False
+        for dg in dropped_gaps:
+            shared = q_words & set(_content_words(dg))
+            if shared and not (shared & kept_words):
+                contaminating = True
+                break
+        if not contaminating:
+            kept_questions.append(q)
+    return kept_gaps, kept_questions
+
+
 def _apply_substitution(cv_dict: dict, path: str, old: str, new: str) -> bool:
     """Walk a dot-path like 'experiences.2.bullets.3' into cv_dict and do a
     literal `old` → `new` replace on the string at that path. Returns True if
@@ -127,7 +210,7 @@ Description: {offer.description}
 Requirements: {self._format_requirements(offer)}
 
 YOUR TASK:
-1. Read the job offer and pick the 2-3 MOST DIFFERENTIATING requirements — the ones that will make or break a candidacy. Ignore generic filler ("team player", "good communication"). Focus on what makes THIS role specific.
+1. Read the job offer and pick the 2-3 MOST DIFFERENTIATING requirements — the ones that will make or break a candidacy. A "differentiating requirement" must name a CONCRETE skill, technology, metric, system, domain, market, seniority level, or process. IGNORE generic culture/values/about-the-company language: phrases like "diverse workforce", "team player", "passion for X", "fast-paced environment", "low-ego", "collaborative", "mission-driven", "innovative", or any sentence that comes from an "About <company>" preamble are NOT differentiating requirements — skip them entirely. If the offer's only mention of a theme is in a culture/values sentence, that theme is OFF-LIMITS for gaps and questions.
 2. For each differentiating requirement, find ALL experiences from the profile where the candidate plausibly did related work. Often 2-3 past roles touch the same theme (e.g. employer branding at startup A AND scale-up B; quota attainment in two different sales roles).
 3. Write 3-4 SHORT questions. Each question targets the SINGLE highest-leverage gap for the offer. When the same theme applies to multiple relevant experiences, BUNDLE them into one question — the candidate recalls the mental mode once and answers for both roles in the same breath.
 
@@ -192,6 +275,17 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         data["matched_skills"] = _flatten_strs(data.get("matched_skills"))
         data["gaps"] = _flatten_strs(data.get("gaps"))
         data["questions"] = _flatten_strs(data.get("questions"))
+
+        # Grounding backstop: drop any gap that can't be tied back to a content
+        # word actually present in the offer. Even with the prompt directive,
+        # the model occasionally invents themes ("diversity sourcing" on a pure
+        # tech-recruiting role) that have no anchor in the requirements text.
+        # If a gap shares no ≥6-char content word with the offer, it's a
+        # hallucination and gets dropped — this also auto-removes the matching
+        # questions so the chat never opens on a phantom theme.
+        data["gaps"], data["questions"] = _drop_ungrounded_gaps(
+            data["gaps"], data["questions"], offer.description
+        )
         return GapAnalysis(**data)
 
     def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:

@@ -129,11 +129,31 @@ async def _scrape_lever(org: str, job_id: str) -> Offer | None:
                 return None
             data = resp.json()
 
-            description = data.get("descriptionPlain", "")
+            # Lever splits a posting into:
+            #   descriptionPlain: free-form prose — almost always opens with an
+            #     "About <company>" marketing preamble (mission, values, "diverse
+            #     workforce", etc.) that bleeds into the gap-analysis prompt and
+            #     causes the LLM to hallucinate fake requirements (e.g. asking
+            #     about diversity-sourcing on a pure-tech recruiter role).
+            #   lists: structured "What you will do", "About you", "Benefits"
+            #     bullets — i.e. the actual job spec.
+            # Whenever lists exist, prefer them and drop descriptionPlain so the
+            # company-marketing copy can't contaminate the requirements.
             lists = data.get("lists", [])
-            for lst in lists:
-                description += f"\n\n{lst.get('text', '')}:\n"
-                description += "\n".join(f"- {item}" for item in lst.get("content", "").split("\n") if item.strip())
+            description_parts: list[str] = []
+            if lists:
+                for lst in lists:
+                    label = (lst.get("text") or "").strip()
+                    if label:
+                        description_parts.append(f"{label}:")
+                    description_parts.extend(
+                        f"- {item}" for item in (lst.get("content") or "").split("\n") if item.strip()
+                    )
+            else:
+                # No structured lists — fall back to the prose. Better to keep
+                # the about-company preamble than to ship an empty offer.
+                description_parts.append(data.get("descriptionPlain", ""))
+            description = "\n".join(description_parts).strip()
 
             offer = parse_offer_text(description)
             offer.title = data.get("text", offer.title)
