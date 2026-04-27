@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 
@@ -8,6 +9,7 @@ from app.models import (
     CoverLetterData, CVData, ChatMessage, ChatResponse, Education,
     GapAnalysis, Offer, Profile, RewrittenExperience, ToneSamples,
 )
+from app.services.mistral_usage import notify_quota_hit, record_usage
 
 MAX_TOKENS_PER_CALL = 8000  # Reduced from 16K — Flash spends most on thinking, not output
 
@@ -176,7 +178,9 @@ class LLMService:
         return self._client
 
     def _call(self, prompt: str, *, model: str = "mistral-small-latest", max_tokens: int = 3000, temperature: float = 0.7, json_mode: bool = True) -> str:
-        """Unified Mistral chat completion call."""
+        """Unified Mistral chat completion call. Tracks monthly token usage and
+        fires ntfy alerts at 50/75/90% of MISTRAL_MONTHLY_TOKEN_BUDGET (default 1B).
+        Surfaces a separate ntfy on 429 (per-minute throttle or quota exhausted)."""
         kwargs = dict(
             model=model,
             messages=[{"role": "user", "content": prompt}],
@@ -185,7 +189,21 @@ class LLMService:
         )
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
-        response = self.client.chat.complete(**kwargs)
+        try:
+            response = self.client.chat.complete(**kwargs)
+        except Exception as exc:
+            # Mistral SDK exception types vary; the cheapest reliable detection
+            # is the status code if surfaced, falling back to a substring check.
+            status = getattr(exc, "status_code", None) or getattr(getattr(exc, "response", None), "status_code", None)
+            if status == 429 or "429" in str(exc):
+                notify_quota_hit(str(exc))
+            raise
+        try:
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                record_usage(int(getattr(usage, "total_tokens", 0) or 0))
+        except Exception:
+            logging.exception("mistral_usage: usage extraction failed")
         content = response.choices[0].message.content
         if not content:
             raise ValueError(f"Mistral returned empty response for model={model}")
