@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
@@ -48,6 +48,16 @@ export default function Templates() {
 
   const displayCv = activeCv || cvData;
   const PreviewComponent = templateComponents[selectedTemplate];
+
+  // Persist the CV to the cross-project library as soon as the user reaches
+  // Templates — i.e. they've finished editing and are picking a layout. The
+  // earlier rule of "only save on PDF download / share" missed every user
+  // who finalized a CV but didn't export, leaving the "Reuse your last CV"
+  // card absent on their next job offer. Templates is the strongest "this
+  // is my CV" signal short of an explicit download.
+  useEffect(() => {
+    if (displayCv) saveCvToLibrary(displayCv);
+  }, [displayCv, saveCvToLibrary]);
 
   // R2 — memoize PDF document for PDFDownloadLink
   const pdfDocument = useMemo(
