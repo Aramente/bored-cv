@@ -7,3 +7,4 @@ dist/
 .pytest_cache/
 backend/data/
 frontend/screenshots/
+product-hunt/
