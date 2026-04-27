@@ -26,6 +26,20 @@ async function post<T>(path: string, body: unknown, captchaToken?: string, signa
   return res.json();
 }
 
+export interface AuthTokenResponse {
+  token: string;
+  email: string;
+  provider: string;
+}
+
+export async function signupWithEmail(email: string, password: string, captchaToken: string): Promise<AuthTokenResponse> {
+  return post<AuthTokenResponse>("/api/auth/signup", { email, password }, captchaToken);
+}
+
+export async function loginWithEmail(email: string, password: string): Promise<AuthTokenResponse> {
+  return post<AuthTokenResponse>("/api/auth/login", { email, password });
+}
+
 export async function parseLinkedIn(file: File, captchaToken: string): Promise<Profile> {
   const form = new FormData();
   form.append("file", file);

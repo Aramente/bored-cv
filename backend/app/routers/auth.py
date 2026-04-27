@@ -2,11 +2,15 @@ import logging
 import os
 from urllib.parse import urlencode
 
+import bcrypt
 import httpx
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from itsdangerous import URLSafeTimedSerializer
+from pydantic import BaseModel, EmailStr, Field
+
+from app.middleware.security import check_rate_limit, verify_turnstile
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -250,3 +254,93 @@ async def delete_account(authorization: str = Header("")):
             pass
         conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
     return {"status": "deleted", "removed": counts}
+
+
+# ---------------------------------------------------------------------------
+# Email + password auth — alongside Google/GitHub OAuth, not replacing it
+# ---------------------------------------------------------------------------
+
+class EmailSignupRequest(BaseModel):
+    email: EmailStr
+    # Modern password guidance: prefer length over complexity rules. 8 chars min
+    # blocks the obvious brute-force candidates without nagging users about
+    # mixed case / digits / symbols.
+    password: str = Field(min_length=8, max_length=200)
+
+
+class EmailLoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=200)
+
+
+class AuthTokenResponse(BaseModel):
+    token: str
+    email: str
+    provider: str = "email"
+
+
+def _hash_password(password: str) -> str:
+    """bcrypt with default 12 rounds. Returns the encoded hash as a string for
+    column storage — bcrypt embeds salt + cost factor in the output, so we
+    don't need separate columns."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_password(password: str, stored_hash: str) -> bool:
+    if not stored_hash:
+        return False
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+    except Exception:
+        return False
+
+
+@router.post("/signup", response_model=AuthTokenResponse)
+async def email_signup(payload: EmailSignupRequest, request: Request, x_captcha_token: str = Header("")):
+    """Create an account with email + password. Captcha-gated to keep bots out."""
+    if not await verify_turnstile(x_captcha_token):
+        raise HTTPException(status_code=403, detail="Captcha verification failed")
+    check_rate_limit(request)
+
+    email = payload.email.lower().strip()
+    user_id = namespaced_user_id(email, "email")
+
+    from app.db import get_db
+    with get_db() as conn:
+        existing = conn.execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone()
+        if existing:
+            raise HTTPException(status_code=409, detail="An account with this email already exists. Try logging in.")
+        password_hash = _hash_password(payload.password)
+        conn.execute(
+            "INSERT INTO users (id, email, provider, password_hash) VALUES (?, ?, ?, ?)",
+            (user_id, email, "email", password_hash),
+        )
+
+    _notify_signup(email, "email")
+    return AuthTokenResponse(token=_make_token(email, "email"), email=email, provider="email")
+
+
+@router.post("/login", response_model=AuthTokenResponse)
+async def email_login(payload: EmailLoginRequest, request: Request):
+    """Log in with email + password. No captcha — use rate limiting alone so the
+    flow stays one-tap for returning users; brute-force cost is bounded by the
+    per-IP limit + bcrypt's cost factor (~250 ms/check)."""
+    check_rate_limit(request)
+
+    email = payload.email.lower().strip()
+    user_id = namespaced_user_id(email, "email")
+
+    from app.db import get_db
+    with get_db() as conn:
+        row = conn.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
+
+    # Constant-ish-time response: always run bcrypt against *something* so a
+    # missing email doesn't return measurably faster than a wrong password.
+    stored = row["password_hash"] if row else ""
+    if not stored or not _verify_password(payload.password, stored):
+        # Run a dummy bcrypt check on the absent path so timing is comparable.
+        if not stored:
+            _verify_password(payload.password, _hash_password("decoy"))
+        raise HTTPException(status_code=401, detail="Wrong email or password")
+
+    return AuthTokenResponse(token=_make_token(email, "email"), email=email, provider="email")

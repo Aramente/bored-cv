@@ -656,6 +656,114 @@ textarea.input { resize: vertical; min-height: 100px; }
   background: var(--accent);
   color: white;
 }
+.auth-btn-signin {
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.auth-btn-signin:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  filter: brightness(1.05);
+}
+
+/* Login page */
+.login-page {
+  max-width: 380px;
+  margin: 60px auto 80px;
+  padding: 0 20px;
+  text-align: center;
+}
+.login-page h1 {
+  margin-bottom: 8px;
+}
+.login-page .subtitle {
+  margin-bottom: 28px;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 18px;
+  text-align: left;
+}
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.login-form input {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+}
+.login-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.login-form .hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.login-form .btn-primary {
+  margin-top: 6px;
+}
+.login-error {
+  background: #fee;
+  color: #c00;
+  border: 1px solid #fcc;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.login-toggle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 16px 0;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.login-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.login-providers .auth-btn {
+  justify-content: center;
+  padding: 10px 14px;
+}
 
 /* Match Score */
 .match-score-card {

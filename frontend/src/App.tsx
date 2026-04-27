@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
+import Login from "./pages/Login";
 import Upload from "./pages/Upload";
 import Chat from "./pages/Chat";
 import Templates from "./pages/Templates";
@@ -29,6 +30,7 @@ export default function App() {
     <BrowserRouter basename="/bored-cv">
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/templates" element={<Templates />} />

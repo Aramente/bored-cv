@@ -230,6 +230,13 @@ def init_db():
         except Exception:
             pass  # Column already exists
 
+        # Migration: add password_hash column for email/password auth.
+        # NULL means "no local password" — those users only auth via OAuth.
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT NULL")
+        except Exception:
+            pass  # Column already exists
+
     _migrate_namespace_user_ids()
 
 
