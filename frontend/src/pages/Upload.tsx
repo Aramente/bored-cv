@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
@@ -18,6 +18,18 @@ export default function Upload() {
   const [offerTab, setOfferTab] = useState<"url" | "text">("url");
   const [offerUrl, setOfferUrl] = useState("");
   const [offerText, setOfferText] = useState("");
+
+  // Pre-fill offer URL from `?offer_url=` query param — used by the deep-link
+  // CTA on eu-tech-jobs per-job pages (and any other referrer that wants to
+  // hand off a job URL).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("offer_url");
+    if (fromQuery) {
+      setOfferUrl(fromQuery);
+      setOfferTab("url");
+    }
+  }, []);
   const [showTutorial, setShowTutorial] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
