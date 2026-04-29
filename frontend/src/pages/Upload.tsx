@@ -351,6 +351,17 @@ export default function Upload() {
               onChange={(e) => setOfferText(e.target.value)}
             />
           )}
+          <p style={{ fontSize: 13, color: "var(--muted, #6b6b6b)", marginTop: 8, marginBottom: 0 }}>
+            {t("upload.offer_browse_prefix")}{" "}
+            <a
+              href="https://aramente.github.io/eu-tech-jobs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: "underline" }}
+            >
+              {t("upload.offer_browse_link", { count: "19,000+" })}
+            </a>
+          </p>
         </section>
 
         <button

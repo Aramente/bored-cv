@@ -39,6 +39,8 @@
     "offer_text_placeholder": "ou colle le texte de l'annonce...",
     "offer_tab_url": "URL",
     "offer_tab_text": "Texte",
+    "offer_browse_prefix": "Pas encore d'offre ?",
+    "offer_browse_link": "Parcours {{count}} jobs AI/tech en Europe →",
     "next": "analyse ça",
     "step_parsing": "je lis tes trucs...",
     "step_analyzing": "je regarde ce qui compte... (~1 min, va te chercher un café ☕)",

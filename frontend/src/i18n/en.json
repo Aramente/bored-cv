@@ -39,6 +39,8 @@
     "offer_text_placeholder": "or just paste the job description...",
     "offer_tab_url": "URL",
     "offer_tab_text": "Text",
+    "offer_browse_prefix": "Don't have one yet?",
+    "offer_browse_link": "Browse {{count}} EU AI/tech jobs →",
     "next": "analyze this",
     "step_parsing": "reading your stuff...",
     "step_analyzing": "figuring out what matters... (~1 min, grab a coffee ☕)",
