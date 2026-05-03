@@ -52,6 +52,11 @@ export interface GapAnalysis {
 export interface ChatMessage {
   role: "assistant" | "user";
   content: string;
+  // Optional: assistant-only marker that this turn is a pushback (verdict-
+  // routed challenge to a generic/underselling/evasive answer). Frontend
+  // renders a small "challenged" chip when true. Backend uses it for
+  // deterministic slot tracking (no substring heuristic).
+  is_pushback?: boolean;
 }
 
 export interface CvAction {
@@ -67,6 +72,7 @@ export interface ChatResponse {
   is_complete: boolean;
   cv_actions: CvAction[];
   progress: number;  // 0-100
+  is_pushback?: boolean;
 }
 
 // Agent Brief — drives the recruiter+agent chat. Generated once after

@@ -81,6 +81,11 @@ class ChatMessage(BaseModel):
     # "ignore-previous-instructions"-style prompt injections that try to bury
     # the override in a wall of text.
     content: str = Field(default="", max_length=8000)
+    # True when this assistant message is a pushback (verdict-routed sharp
+    # follow-up on a generic/underselling/evasive answer). Used by the
+    # frontend to render a small "challenged" chip and by the backend to
+    # drive slot tracking deterministically (no substring heuristic).
+    is_pushback: bool = False
 
 
 class StrongestExistingMatch(BaseModel):
@@ -195,6 +200,11 @@ class ChatResponse(BaseModel):
     is_complete: bool = False
     cv_actions: list[CvAction] = []
     progress: int = 0  # 0-100, percentage of key points covered
+    # True when this turn is a pushback (verdict-routed challenge on a
+    # generic/underselling/evasive answer). Frontend persists the flag on
+    # the assistant message and renders a "challenged" chip — so the user
+    # sees they're being pressed deliberately, not getting a buggy reply.
+    is_pushback: bool = False
 
 
 class CompanyContext(BaseModel):

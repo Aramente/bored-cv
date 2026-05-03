@@ -1,0 +1,15 @@
+{
+  "title": "Staff Engineer, Payments Platform",
+  "company": "Pennylane",
+  "location": "Paris",
+  "description": "Pennylane is hiring a Staff Engineer to lead the payments platform team. You will own the architecture of the payment-collection rail (SEPA + cards), partner with product and finance leads to scope new payment products, and mentor a team of 6 engineers. Series C company, ~400 employees, ~25 engineers on the platform side. The role is hands-on: ~50% coding, ~30% architecture and design reviews, ~20% mentorship and hiring.",
+  "requirements": [
+    {"text": "8+ years of backend engineering experience", "category": "required"},
+    {"text": "Strong distributed-systems background — event-driven architectures, queueing, idempotency", "category": "required"},
+    {"text": "Experience leading or co-leading a team of mid-to-senior engineers", "category": "required"},
+    {"text": "Direct experience with payment platforms (cards, SEPA, ACH, or similar)", "category": "required"},
+    {"text": "Comfortable with on-call ownership for a critical financial system", "category": "required"},
+    {"text": "Experience with Ruby/Rails (we run a Rails monolith with Go services on the side)", "category": "nice_to_have"}
+  ],
+  "nice_to_have": []
+}

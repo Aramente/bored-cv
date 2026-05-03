@@ -208,7 +208,11 @@ export default function Chat() {
       const currentBrief = useStore.getState().agentBrief;
       const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv, controller.signal, currentBrief);
 
-      addMessage({ role: "assistant", content: response.message });
+      addMessage({
+        role: "assistant",
+        content: response.message,
+        is_pushback: response.is_pushback === true,
+      });
 
       // R6: Clamp progress so it never goes backward
       if (response.progress !== undefined) {
@@ -490,7 +494,12 @@ export default function Chat() {
 
         <div className="chat-messages">
           {messages.map((msg, i) => (
-            <ChatMessage key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`} role={msg.role} content={msg.content} />
+            <ChatMessage
+              key={`${i}-${msg.role}-${msg.content.slice(0, 20)}`}
+              role={msg.role}
+              content={msg.content}
+              isPushback={msg.is_pushback === true}
+            />
           ))}
           {loading && (
             <div className="chat-msg assistant">

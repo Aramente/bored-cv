@@ -686,13 +686,14 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
             # No questions in brief — bail to let caller fall through
             return ChatResponse(message="", is_complete=True, cv_actions=[], progress=100)
 
-        asst = [m.content for m in messages if m.role == "assistant" and not m.content.startswith("⚠️")]
+        # Slot tracking uses ChatMessage.is_pushback (deterministic) plus a
+        # substring fallback (for older sessions where messages were stored
+        # before the flag existed).
+        asst_msgs = [m for m in messages if m.role == "assistant" and not m.content.startswith("⚠️")]
         user = [m.content for m in messages if m.role == "user"]
 
-        # Find the highest brief-slot whose question text matches an assistant
-        # message (case-insensitive prefix match — the LLM may reformat slightly).
-        def _slot_for_msg(msg: str) -> int:
-            ml = (msg or "").lower()
+        def _substring_slot(content: str) -> int:
+            ml = (content or "").lower()
             best = -1
             for i, q in enumerate(qs):
                 key = q.strip()[:50].lower()
@@ -700,21 +701,38 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
                     best = max(best, i)
             return best
 
-        slot_marks = [_slot_for_msg(a) for a in asst]
-        last_fresh_slot = max(slot_marks) if slot_marks else -1
-        last_msg = asst[-1] if asst else ""
-        last_was_fresh_q = _slot_for_msg(last_msg) >= 0
-        # Did we already push back at the current slot? (i.e. there's an
-        # assistant message AFTER the most recent fresh-Q that doesn't itself
-        # match a brief Q.)
-        already_pushed = False
-        if last_fresh_slot >= 0:
-            for a in asst[asst.index(next(a for a in asst if _slot_for_msg(a) == last_fresh_slot)) + 1:]:
-                if _slot_for_msg(a) < 0:
-                    already_pushed = True
-                    break
+        # Count fresh-Q assistant messages (non-pushback). The k-th fresh-Q
+        # message corresponds to slot k. This replaces the prior substring-
+        # only heuristic with the explicit is_pushback flag when present.
+        last_fresh_slot = -1
+        for m in asst_msgs:
+            if not m.is_pushback:
+                last_fresh_slot += 1
 
-        user_just_answered = len(user) >= len(asst) and bool(asst)
+        last_msg_obj = asst_msgs[-1] if asst_msgs else None
+        last_msg = last_msg_obj.content if last_msg_obj else ""
+        last_was_fresh_q = bool(last_msg_obj) and not last_msg_obj.is_pushback
+        # Backward compatibility: if the last assistant message has the
+        # default is_pushback=False but its content does NOT match any brief
+        # question (i.e. it was a pushback in a session that pre-dates the
+        # flag), treat it as a pushback.
+        if last_msg_obj and not last_msg_obj.is_pushback and last_fresh_slot >= 0 and last_fresh_slot < len(qs):
+            if _substring_slot(last_msg) < 0:
+                last_was_fresh_q = False
+                # And this means we already pushed back at the current slot.
+
+        # Already pushed back at the current slot? = there's an assistant
+        # message AFTER the most recent fresh-Q whose is_pushback is True OR
+        # which has no brief-Q substring match (legacy sessions).
+        already_pushed = False
+        if last_fresh_slot >= 0 and asst_msgs:
+            # walk backwards from the end up to the last fresh-Q
+            for m in reversed(asst_msgs):
+                if not m.is_pushback and _substring_slot(m.content) >= 0:
+                    break
+                already_pushed = True
+
+        user_just_answered = len(user) >= len(asst_msgs) and bool(asst_msgs)
         latest_user_answer = user[-1] if user else ""
 
         # Classify the latest user answer (only if there is one and last assistant
@@ -853,10 +871,20 @@ Write in {lang_instruction}. First name only. Be warm but direct."""
 
         text = self._call(prompt, model="mistral-small-latest", max_tokens=900, temperature=0.55)
         data = self._parse_json(text)
+        # Backend authoritatively marks pushback turns regardless of what the
+        # LLM returned — the frontend reads this flag to render a chip and to
+        # round-trip is_pushback on the persisted ChatMessage.
+        data["is_pushback"] = (mode == "pushback")
         try:
             return ChatResponse(**data)
         except Exception:
-            return ChatResponse(message=qs[target_slot], is_complete=False, cv_actions=[], progress=int(((target_slot + 1) / len(qs)) * 100))
+            return ChatResponse(
+                message=qs[target_slot],
+                is_complete=False,
+                cv_actions=[],
+                progress=int(((target_slot + 1) / len(qs)) * 100),
+                is_pushback=(mode == "pushback"),
+            )
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
         # Override the frontend-supplied locale with what the user actually wrote

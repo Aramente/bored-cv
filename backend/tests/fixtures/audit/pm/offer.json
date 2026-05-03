@@ -1,0 +1,15 @@
+{
+  "title": "Senior Product Manager, Merchant Onboarding",
+  "company": "Lemonway",
+  "location": "Paris",
+  "description": "Lemonway is hiring a Senior PM to own the merchant onboarding product. You will lead the activation funnel from KYC submission to first transaction. The team is 5 engineers + 1 designer + 1 PM (you). Series C, ~250 employees, payments licensee in EU. Reporting to the CPO. The role is hands-on — you write the specs, you run the discovery, you partner with compliance and risk.",
+  "requirements": [
+    {"text": "5+ years PM experience in B2B SaaS or fintech", "category": "required"},
+    {"text": "Owned an activation / onboarding product surface end-to-end", "category": "required"},
+    {"text": "Comfortable working with compliance/risk for KYC and AML constraints", "category": "required"},
+    {"text": "Has shipped to multiple geographies and dealt with localization", "category": "required"},
+    {"text": "Direct payments domain experience (cards, SEPA, PSPs)", "category": "nice_to_have"},
+    {"text": "Has hired or coached a junior PM", "category": "nice_to_have"}
+  ],
+  "nice_to_have": []
+}

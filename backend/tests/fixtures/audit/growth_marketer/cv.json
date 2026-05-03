@@ -1,0 +1,38 @@
+{
+  "name": "Théo Lambert",
+  "title": "Growth Marketer",
+  "location": "Paris",
+  "email": "theo.lambert@example.com",
+  "phone": "",
+  "linkedin": "linkedin.com/in/theo-lambert-growth",
+  "summary": "5 years across two scale-ups. Owned acquisition channels end to end. Strong on paid + content; lighter on lifecycle.",
+  "experiences": [
+    {
+      "title": "Senior Growth Marketer",
+      "company": "Spendesk",
+      "dates": "Apr 2022 - Present",
+      "description": "Owned paid acquisition + content for the SMB segment.",
+      "bullets": [
+        "Drove growth across SEM, LinkedIn Ads, and content",
+        "Optimized landing-page conversion",
+        "Managed agency relationships and budget"
+      ]
+    },
+    {
+      "title": "Growth Marketer",
+      "company": "Alan",
+      "dates": "Jan 2020 - Mar 2022",
+      "description": "First growth hire — built the channel mix from scratch.",
+      "bullets": [
+        "Helped launch the first paid acquisition campaign on Google Ads",
+        "Improved lead-to-MQL rate over time",
+        "Contributed to content production with the brand team"
+      ]
+    }
+  ],
+  "education": [
+    {"degree": "Bachelor of Marketing", "school": "EM Lyon", "year": "2019"}
+  ],
+  "skills": ["Google Ads", "LinkedIn Ads", "SEO", "Content", "Landing Pages"],
+  "languages": ["French (native)", "English (fluent)"]
+}

@@ -396,3 +396,87 @@ def test_brief_driven_falls_through_to_legacy_when_brief_empty(mock_mistral_cls,
 
     out = llm.generate_next_question(cv, offer, gap, [], agent_brief=AgentBrief())
     assert out.message == "legacy q"
+
+
+# --- pushback chip flag ------------------------------------------------------
+
+
+@patch("app.services.llm.Mistral")
+def test_pushback_response_has_is_pushback_true(mock_mistral_cls, cv, offer, gap):
+    """The ChatResponse for a pushback turn carries is_pushback=True even if
+    the LLM didn't include it in the JSON (backend authoritative)."""
+    client = MagicMock()
+    # classify → generic; pushback prompt returns a message without is_pushback
+    client.chat.complete.side_effect = [
+        _mock_mistral(json.dumps({"verdict": "generic", "reason": "x"})),
+        _mock_mistral(json.dumps({"message": "be specific.", "is_complete": False, "cv_actions": [], "progress": 16})),
+    ]
+    mock_mistral_cls.return_value = client
+    llm = LLMService(api_key="test")
+    llm._client = client
+
+    brief = _brief([
+        ("deepen the bet", "Q1: tell me more"),
+        ("address the fear", "Q2: payments?"),
+        ("surface unspoken evidence", "Q3: did you?"),
+    ])
+    msgs = [
+        ChatMessage(role="assistant", content="Q1: tell me more", is_pushback=False),
+        ChatMessage(role="user", content="I led the team."),
+    ]
+    out = llm.generate_next_question(cv, offer, gap, msgs, agent_brief=brief)
+    assert out.is_pushback is True
+
+
+@patch("app.services.llm.Mistral")
+def test_fresh_q_response_has_is_pushback_false(mock_mistral_cls, cv, offer, gap):
+    """Fresh-question turns carry is_pushback=False."""
+    client = MagicMock()
+    client.chat.complete.return_value = _mock_mistral(
+        json.dumps({"message": "fresh q", "is_complete": False, "cv_actions": [], "progress": 33})
+    )
+    mock_mistral_cls.return_value = client
+    llm = LLMService(api_key="test")
+    llm._client = client
+
+    brief = _brief([
+        ("deepen the bet", "Q1"),
+        ("address the fear", "Q2"),
+        ("surface unspoken evidence", "Q3"),
+    ])
+    out = llm.generate_next_question(cv, offer, gap, [], agent_brief=brief)
+    assert out.is_pushback is False
+
+
+@patch("app.services.llm.Mistral")
+def test_slot_tracking_uses_is_pushback_flag(mock_mistral_cls, cv, offer, gap):
+    """Slot tracking uses ChatMessage.is_pushback to count fresh-Q turns,
+    not substring matching. After a pushback marked is_pushback=True, the
+    next assistant turn must advance to slot 1 (Q2)."""
+    client = MagicMock()
+    # No classify call (last assistant was pushback). One ask_fresh call.
+    client.chat.complete.return_value = _mock_mistral(
+        json.dumps({"message": "Q2 fresh", "is_complete": False, "cv_actions": [], "progress": 66})
+    )
+    mock_mistral_cls.return_value = client
+    llm = LLMService(api_key="test")
+    llm._client = client
+
+    brief = _brief([
+        ("deepen the bet", "Q1: short"),
+        ("address the fear", "Q2: short"),
+        ("surface unspoken evidence", "Q3: short"),
+    ])
+    msgs = [
+        ChatMessage(role="assistant", content="Q1: short", is_pushback=False),
+        ChatMessage(role="user", content="generic answer"),
+        # Pushback content is rephrased — doesn't substring-match Q1, but the
+        # is_pushback flag is the source of truth.
+        ChatMessage(role="assistant", content="be specific please", is_pushback=True),
+        ChatMessage(role="user", content="ok — owned end-to-end, 31% activation."),
+    ]
+    out = llm.generate_next_question(cv, offer, gap, msgs, agent_brief=brief)
+    assert out.message == "Q2 fresh"
+    assert out.is_pushback is False
+    # No classify call — last assistant was a pushback.
+    assert client.chat.complete.call_count == 1

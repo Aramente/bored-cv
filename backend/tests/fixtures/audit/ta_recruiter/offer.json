@@ -1,0 +1,15 @@
+{
+  "title": "Senior Technical Recruiter",
+  "company": "Mistral AI",
+  "location": "Paris",
+  "description": "Mistral AI is hiring a Senior Technical Recruiter to scale our research and engineering org from a small founding team to several hundred. You will own end-to-end hiring for ML researchers, infrastructure engineers, and product engineers across France, the UK and the US. You will partner directly with founders and team leads to shape job descriptions, build outbound sourcing pipelines, and close offers. You will operate at the intersection of speed and quality — at our stage we hire for foundation, not for headcount.\n\nWe value low-ego, high-agency operators who can move fast in ambiguous environments. Mistral is committed to building a diverse workforce — we believe diverse teams produce better research.",
+  "requirements": [
+    {"text": "5+ years of technical recruiting in deep-tech, AI/ML, or infra startups", "category": "required"},
+    {"text": "Direct outbound sourcing experience — you can build a pipeline without an inbound funnel", "category": "required"},
+    {"text": "Hands-on with Lever or Greenhouse", "category": "required"},
+    {"text": "Multi-geography hiring (France + UK + US ideally)", "category": "required"},
+    {"text": "Comfortable with ML / infra technical screens", "category": "nice_to_have"},
+    {"text": "Built or scaled an in-house TA function from <10 hires/year to >50", "category": "nice_to_have"}
+  ],
+  "nice_to_have": []
+}

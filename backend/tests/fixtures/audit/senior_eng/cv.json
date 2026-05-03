@@ -1,0 +1,48 @@
+{
+  "name": "Léa Bernard",
+  "title": "Staff Backend Engineer",
+  "location": "Paris",
+  "email": "lea.bernard@example.com",
+  "phone": "",
+  "linkedin": "linkedin.com/in/lea-bernard-eng",
+  "summary": "8 years of backend / platform engineering. Payments and SaaS infra background. Comfortable owning systems end to end and mentoring mid-level engineers.",
+  "experiences": [
+    {
+      "title": "Staff Backend Engineer",
+      "company": "Qonto",
+      "dates": "Jan 2023 - Present",
+      "description": "Lead engineer on the core payments rail. Owned the migration from monolith to event-driven services for the SEPA flow.",
+      "bullets": [
+        "Drove the SEPA flow migration to event-driven architecture (Kafka, Postgres)",
+        "Mentored 3 mid-level engineers",
+        "Improved performance of the reconciliation pipeline"
+      ]
+    },
+    {
+      "title": "Senior Backend Engineer",
+      "company": "Stripe",
+      "dates": "Mar 2020 - Dec 2022",
+      "description": "Backend engineer on the merchant-facing platform team.",
+      "bullets": [
+        "Helped ship the new merchant onboarding API",
+        "On-call rotations for the Connect surface",
+        "Reduced p99 latency on the dashboard read path"
+      ]
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Doctolib",
+      "dates": "Sep 2017 - Feb 2020",
+      "description": "Rails monolith team — patient-facing booking surface.",
+      "bullets": [
+        "Owned the recurring-appointment feature shipped to all FR practitioners",
+        "Wrote integration tests, refactored the calendar module"
+      ]
+    }
+  ],
+  "education": [
+    {"degree": "MSc Computer Science", "school": "Télécom Paris", "year": "2017"}
+  ],
+  "skills": ["Ruby", "Go", "Postgres", "Kafka", "Distributed Systems", "On-call"],
+  "languages": ["French (native)", "English (fluent)"]
+}
