@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../store";
-import { chatNext, generateCV, draftCV, translateCV, saveProject, getKnowledge } from "../services/api";
+import { chatNext, generateCV, draftCV, translateCV, saveProject, getKnowledge, fetchAgentBrief } from "../services/api";
 import ChatMessage from "../components/ChatMessage";
 import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
@@ -14,6 +14,7 @@ export default function Chat() {
   const navigate = useNavigate();
   const {
     profile, offer, gapAnalysis,
+    agentBrief, setAgentBrief,
     messages, addMessage,
     setCvData, setCvDataAlt,
     setTone, setToneChosen, targetMarket,
@@ -29,6 +30,11 @@ export default function Chat() {
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState("");
   const [showTonePicker, setShowTonePicker] = useState(false);
+  // Agent's-read card visibility — dismissed once the user clicks past it OR
+  // after the first chat reply lands. Persisted only in component state since
+  // the brief itself is in the store.
+  const [showAgentRead, setShowAgentRead] = useState(true);
+  const briefInFlight = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
@@ -100,6 +106,26 @@ export default function Chat() {
         ? `${firstName}, j'ai lu l'offre de ${offer.title} chez ${offer.company}. Je vais te poser quelques questions pour enrichir ton CV. On commence ?`
         : `${firstName}, I read the ${offer.title} role at ${offer.company}. I'll ask you a few questions to make your CV stronger. Ready?`;
       addMessage({ role: "assistant", content: firstQ });
+    }
+
+    // Fetch the agent brief in the background — it powers the recruiter+
+    // agent chat (drives every question, controls pushback, surfaces the
+    // pitch/fear card). Failure is non-blocking: the chat falls through to
+    // the legacy theme-ranked path when the brief is absent or empty.
+    if (profile && offer && !useStore.getState().agentBrief && !briefInFlight.current) {
+      briefInFlight.current = true;
+      const lang = i18n.language.startsWith("fr") ? "fr" : "en";
+      const seedGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
+      fetchAgentBrief(profile, offer, seedGap, "", lang)
+        .then((brief) => {
+          // Only persist if the backend returned a non-empty brief; otherwise
+          // leave it null so the chat opts out of brief-driven mode cleanly.
+          if (brief && brief.the3Questions && brief.the3Questions.length > 0) {
+            setAgentBrief(brief);
+          }
+        })
+        .catch(() => { /* non-blocking */ })
+        .finally(() => { briefInFlight.current = false; });
     }
   }, []);
 
@@ -176,7 +202,11 @@ export default function Chat() {
       const lang = i18n.language.startsWith("fr") ? "fr" : "en";
       const currentCv = useStore.getState().cvData;
       const currentGap = useStore.getState().gapAnalysis || { matched_skills: [], gaps: [], questions: [] };
-      const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv, controller.signal);
+      // Pass the brief through so the backend uses brief-driven mode when
+      // available. Falls through to legacy theme-ranking if the brief is
+      // null/empty.
+      const currentBrief = useStore.getState().agentBrief;
+      const response = await chatNext(profile, offer, currentGap, allMessages, captcha, lang, knownFacts, contradictions, currentCv, controller.signal, currentBrief);
 
       addMessage({ role: "assistant", content: response.message });
 
@@ -272,9 +302,11 @@ export default function Chat() {
         }
       }
 
-      // Force completion after 8 user messages if LLM won't stop
+      // Force completion after 6 user messages if LLM won't stop. Brief-
+      // driven mode caps at 3 fresh questions + at most 3 pushbacks = 6
+      // user replies; legacy theme mode also fits within 6 in practice.
       const userMsgCount = allMessages.filter(m => m.role === "user").length;
-      if (userMsgCount >= 8 && !response.is_complete) {
+      if (userMsgCount >= 6 && !response.is_complete) {
         response.is_complete = true;
       }
 
@@ -406,6 +438,53 @@ export default function Chat() {
             {i18n.language.startsWith("fr")
               ? `💡 Nous avons ${knownFacts.length} info${knownFacts.length > 1 ? "s" : ""} de vos précédents CVs`
               : `💡 We remember ${knownFacts.length} fact${knownFacts.length > 1 ? "s" : ""} from your previous CVs`}
+          </div>
+        )}
+
+        {/* Agent's-read card — opens the chat with a point of view (the bet
+            + the unspoken HM fear) instead of a cold-open question. Surfaces
+            once the brief lands; dismisses on click or after the first
+            user reply (so it doesn't hang around the rest of the chat). */}
+        {showAgentRead && agentBrief && agentBrief.theBet && (
+          <div
+            className="agent-read-card"
+            style={{
+              padding: "12px 14px",
+              marginBottom: 12,
+              border: "1px solid var(--border, #e5e7eb)",
+              borderLeft: "3px solid var(--accent, #f97316)",
+              borderRadius: 8,
+              background: "var(--bg-card, #fafaf9)",
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+                {t("chat.agent_read_title")}
+              </strong>
+              <button
+                className="btn-link"
+                onClick={() => setShowAgentRead(false)}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 12, cursor: "pointer", padding: 0 }}
+                aria-label={t("chat.agent_read_dismiss")}
+              >
+                {t("chat.agent_read_dismiss")} ✕
+              </button>
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <strong>{t("chat.agent_read_bet")}:</strong> {agentBrief.theBet}
+            </div>
+            {agentBrief.hiringManagerFear && (
+              <div style={{ marginBottom: 6, color: "var(--text-muted)" }}>
+                <strong>{t("chat.agent_read_fear")}:</strong> {agentBrief.hiringManagerFear}
+              </div>
+            )}
+            {agentBrief.marketRead && (
+              <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
+                <em>{t("chat.agent_read_market")}:</em> {agentBrief.marketRead}
+              </div>
+            )}
           </div>
         )}
 

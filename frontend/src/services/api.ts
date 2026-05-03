@@ -1,4 +1,4 @@
-import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData, CoverLetterData } from "../store";
+import type { Profile, Offer, GapAnalysis, ChatMessage, ChatResponse, CVData, CoverLetterData, AgentBrief } from "../store";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
@@ -99,11 +99,19 @@ export async function analyzeProfile(profile: Profile, offer: Offer, captchaToke
   return post("/api/analyze", { profile, offer, ui_language: lang || "en" }, captchaToken);
 }
 
-export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[], cvDraft?: CVData | null, signal?: AbortSignal): Promise<ChatResponse> {
+// Pre-chat agent brief — fuses recruiter+agent views of (CV, offer). Drives
+// every chat question downstream. Frontend calls this once after analyze and
+// includes the result in every chatNext() call.
+export async function fetchAgentBrief(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, captchaToken: string, lang?: string): Promise<AgentBrief> {
+  return post("/api/brief", { profile, offer, gap_analysis: gapAnalysis, ui_language: lang || "en" }, captchaToken);
+}
+
+export async function chatNext(profile: Profile, offer: Offer, gapAnalysis: GapAnalysis, messages: ChatMessage[], captchaToken: string, lang?: string, knownFacts?: string[], contradictions?: string[], cvDraft?: CVData | null, signal?: AbortSignal, agentBrief?: AgentBrief | null): Promise<ChatResponse> {
   return post("/api/chat", {
     profile, offer, gap_analysis: gapAnalysis, messages, ui_language: lang || "en",
     known_facts: knownFacts || [], contradictions: contradictions || [],
     cv_draft: cvDraft || null,
+    agent_brief: agentBrief || null,
   }, captchaToken, signal);
 }
 

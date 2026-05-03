@@ -69,6 +69,55 @@ export interface ChatResponse {
   progress: number;  // 0-100
 }
 
+// Agent Brief — drives the recruiter+agent chat. Generated once after
+// /api/analyze, persisted on the session, included in every /api/chat call.
+// Replaces theme-ranking as the chat's organizing principle.
+export interface StrongestExistingMatch {
+  experienceIndex: number;
+  why: string;
+  currentlyUndersoldAs: string;
+  shouldBePitchedAs: string;
+}
+
+export interface UndersellingItem {
+  location: string;
+  currentText: string;
+  whyUndersold: string;
+  agentRewriteSeed: string;
+}
+
+export interface WeakestClaim {
+  location: string;
+  text: string;
+  whyWeak: string;
+  needs: string;
+}
+
+export interface UnspokenEvidence {
+  experienceIndex: number;
+  hypothesis: string;
+  questionSeed: string;
+}
+
+export interface BriefQuestion {
+  angle: string;
+  question: string;
+}
+
+export interface AgentBrief {
+  thePitch: string;
+  theBet: string;
+  marketRead: string;
+  hiringManagerFear: string;
+  strongestExistingMatch: StrongestExistingMatch;
+  underselling: UndersellingItem[];
+  weakestClaim: WeakestClaim;
+  unspokenEvidenceToProbe: UnspokenEvidence[];
+  irrelevantExperiences: number[];
+  clichesToKillInAnswers: string[];
+  the3Questions: BriefQuestion[];
+}
+
 export interface CompanyContext {
   sector: string;
   stage: string;
@@ -145,6 +194,7 @@ interface AppState {
   profile: Profile | null;
   offer: Offer | null;
   gapAnalysis: GapAnalysis | null;
+  agentBrief: AgentBrief | null;
   messages: ChatMessage[];
   cvData: CVData | null;
   cvOriginal: CVData | null;  // V0 — raw LinkedIn data
@@ -172,6 +222,7 @@ interface AppState {
   setProfile: (profile: Profile) => void;
   setOffer: (offer: Offer) => void;
   setGapAnalysis: (gap: GapAnalysis) => void;
+  setAgentBrief: (brief: AgentBrief | null) => void;
   addMessage: (msg: ChatMessage) => void;
   setMessages: (msgs: ChatMessage[]) => void;
   setProjectId: (id: number | null) => void;
@@ -209,6 +260,7 @@ const initialState = {
   profile: null,
   offer: null,
   gapAnalysis: null,
+  agentBrief: null as AgentBrief | null,
   messages: [],
   cvData: null,
   cvOriginal: null,
@@ -258,6 +310,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setProfile: (profile) => set({ profile }),
   setOffer: (offer) => set({ offer }),
   setGapAnalysis: (gapAnalysis) => set({ gapAnalysis }),
+  setAgentBrief: (agentBrief) => set({ agentBrief }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setMessages: (messages) => set({ messages }),
   setProjectId: (projectId) => set({ projectId }),

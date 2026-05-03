@@ -91,7 +91,14 @@
     "speaking": "je t'écoute...",
     "start_over": "Recommencer",
     "start_over_confirm": "Recommencer un nouveau CV ? Ta progression sera perdue.",
-    "analyzing": "Je lis ton profil et l'offre..."
+    "analyzing": "Je lis ton profil et l'offre...",
+    "agent_read_title": "L'avis de ton agent",
+    "agent_read_bet": "Le pari",
+    "agent_read_fear": "Ce qui pourrait inquiéter un manager",
+    "agent_read_market": "Lecture du marché",
+    "agent_read_dismiss": "ok",
+    "pushback_chip": "relancé",
+    "narrative_wrap_label": "le pitch"
   },
   "templates": {
     "title": "téléchargement",

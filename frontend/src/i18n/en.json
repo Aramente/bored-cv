@@ -91,7 +91,14 @@
     "speaking": "speaking...",
     "start_over": "Start over",
     "start_over_confirm": "Start a new CV? Your current progress will be lost.",
-    "analyzing": "Reading your profile and the offer..."
+    "analyzing": "Reading your profile and the offer...",
+    "agent_read_title": "Your agent's read",
+    "agent_read_bet": "The bet",
+    "agent_read_fear": "What an HM might worry about",
+    "agent_read_market": "Market read",
+    "agent_read_dismiss": "got it",
+    "pushback_chip": "challenged",
+    "narrative_wrap_label": "the pitch"
   },
   "templates": {
     "title": "download",

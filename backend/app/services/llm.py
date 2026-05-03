@@ -6,8 +6,10 @@ import re
 from mistralai.client import Mistral
 
 from app.models import (
-    CoverLetterData, CVData, ChatMessage, ChatResponse, Education,
-    GapAnalysis, Offer, Profile, RewrittenExperience, ToneSamples,
+    AgentBrief, AnswerVerdict, BriefQuestion, CoverLetterData, CVData,
+    ChatMessage, ChatResponse, Education, GapAnalysis, Offer, Profile,
+    RewrittenExperience, StrongestExistingMatch, ToneSamples,
+    UndersellingItem, UnspokenEvidence, WeakestClaim,
 )
 from app.services.mistral_usage import notify_quota_hit, record_usage
 
@@ -111,6 +113,26 @@ def _drop_ungrounded_gaps(
         if not contaminating:
             kept_questions.append(q)
     return kept_gaps, kept_questions
+
+
+def _hypothesis_grounded(hypothesis: str, cv_text: str, offer_text: str) -> bool:
+    """Same grounding rule as _drop_ungrounded_gaps but for an
+    AgentBrief.unspokenEvidenceToProbe[].hypothesis. The hypothesis
+    must share at least one ≥6-char content word with the CV text or
+    the offer text — otherwise it's a model hallucination ("diversity
+    sourcing" on a tech role with no DEI mention anywhere) and we
+    drop it before the chat opens on the phantom theme.
+    """
+    text_corpus = (cv_text + " " + offer_text).lower()
+    if not text_corpus.strip():
+        return True  # nothing to check against — be permissive
+    words = [
+        w for w in re.findall(r"[a-zA-Zàâäéèêëïîôöùûüÿç]+", (hypothesis or "").lower())
+        if len(w) >= 6 and w not in _GAP_GROUNDING_STOPWORDS
+    ]
+    if not words:
+        return True  # all stopwords / fragments — keep it conservatively
+    return any(w in text_corpus for w in words)
 
 
 def _apply_substitution(cv_dict: dict, path: str, old: str, new: str) -> bool:
@@ -306,13 +328,196 @@ IMPORTANT: Write ALL output in {lang_instruction}. Use REAL company names, NEVER
         )
         return GapAnalysis(**data)
 
-    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None) -> ChatResponse:
+    def agent_brief(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, ui_language: str = "en") -> AgentBrief:
+        """Pre-chat diagnostic that fuses recruiter-as-gatekeeper and agent-
+        as-seller views. Drives every chat question downstream — replaces
+        theme-ranking. Mistral-small, JSON mode. ~1s wallclock.
+
+        Output is filtered through the same grounding pass as analyze()
+        so unspoken-evidence hypotheses can't reintroduce hallucinated
+        themes (the Session 16 three-layer defense extends to the brief).
+        """
+        lang = "French" if ui_language == "fr" else "English"
+        # Number experiences so the model can refer to them by index
+        # (irrelevantExperiences, strongestExistingMatch.experienceIndex,
+        # underselling.location like "experiences[0].bullets[2]").
+        exps = []
+        for i, e in enumerate(profile.experiences):
+            bullets = "\n".join(f"      [{i}.bullets[{j}]] {b}" for j, b in enumerate(e.bullets))
+            exps.append(
+                f"  [{i}] {e.title} at {e.company} ({e.dates})\n"
+                f"      description: {e.description}\n{bullets}"
+            )
+        gaps_block = ", ".join(gap_analysis.gaps) if gap_analysis.gaps else "(none — analyze() returned empty)"
+        prompt = f"""You are this candidate's AGENT and a SENIOR RECRUITER at the same time. Two voices, one job: position them to win this offer.
+
+AGENT mode (you're on their side, like a sports agent):
+- Read the CV and the offer. Where is the candidate UNDERSELLING themselves? Helper-voice ("helped with", "supported", "contributed to") for work they actually OWNED. Vague phrasing for outcomes that were sharp.
+- What's THE PITCH — one sentence, how you'd sell this candidate to the hiring team. Not a summary. The lead.
+- What's THE BET — the single strongest angle that wins this role. Sharper than the pitch.
+- What's the MARKET READ — what wins this specific role at this specific company stage. A Series B growth role needs a 0→$5M operator, not a $50M optimizer. Name the stage-specific edge.
+
+RECRUITER mode (you're the gatekeeper):
+- What's the HIRING-MANAGER FEAR — the unspoken risk they have about this candidate. Too senior, too junior, no startup experience, no enterprise, gap year, 4 jobs in 3 years, agency-only background, etc. Name it concretely.
+- Which experiences are IRRELEVANT to this offer — the recruiter would skim past them. List indices.
+- What's the WEAKEST CLAIM on the CV — the bullet a recruiter would push back on first. Generic, unquantified, or unverifiable.
+- What CLICHÉS would weaken the candidate's ANSWERS in the chat? Concrete phrases the chat must banlist: "led the team", "drove growth", "optimized performance", "helped with", "supported", "contributed to", "responsible for", etc. Pick the ones most likely to come up given this candidate's writing style on their CV.
+
+UNSPOKEN EVIDENCE (this is the high-leverage move):
+- The offer mentions X. The CV doesn't mention X — but a role/company/timeframe on the CV makes it LIKELY the candidate touched X anyway. Probe it.
+- Example: offer asks "merchant onboarding lead", CV shows "Stripe 2021–2023". Hypothesis: they likely shipped something at Stripe that touched merchants. Question seed: "while at Stripe, did anything you ship touch merchant onboarding or payment activation?"
+- 2–4 hypotheses MAX. They must be specific to this candidate × this offer. Generic ones get filtered out.
+
+THE 3 QUESTIONS (this is the chat's question budget):
+- Question 1 — DEEPEN THE BET: dig into the strongest existing match. Push from generic to specific. Force a metric/outcome/scope.
+- Question 2 — ADDRESS THE FEAR: name the hiring manager's unspoken concern and ask how the candidate bridges it. Allowed to feel pointed; politeness here is harmful.
+- Question 3 — SURFACE UNSPOKEN EVIDENCE: ask about the highest-leverage hypothesis from `unspokenEvidenceToProbe`. Direct, references the company/role.
+
+CANDIDATE PROFILE:
+Name: {profile.name}
+Title: {profile.title}
+Summary: {profile.summary}
+Skills: {", ".join(profile.skills) or "(none listed)"}
+Experiences:
+{chr(10).join(exps) if exps else "  (none)"}
+
+JOB OFFER:
+Title: {offer.title}
+Company: {offer.company}
+Description: {offer.description}
+Requirements: {self._format_requirements(offer)}
+
+ALREADY-DETECTED GAPS (use these as priorities):
+{gaps_block}
+
+Output VALID JSON ONLY in this exact shape:
+{{
+  "thePitch": "1-sentence pitch — agent voice",
+  "theBet": "1-sentence — the single strongest angle",
+  "marketRead": "1-sentence — stage/segment-specific edge",
+  "hiringManagerFear": "1-sentence — the unspoken HM risk",
+  "strongestExistingMatch": {{
+    "experienceIndex": 0,
+    "why": "why this is the closest analog",
+    "currentlyUndersoldAs": "what the bullet says today",
+    "shouldBePitchedAs": "the agent rewrite"
+  }},
+  "underselling": [
+    {{"location": "experiences[0].bullets[2]", "currentText": "...", "whyUndersold": "...", "agentRewriteSeed": "..."}}
+  ],
+  "weakestClaim": {{
+    "location": "experiences[1].bullets[0]",
+    "text": "...",
+    "whyWeak": "generic | unquantified | unverifiable",
+    "needs": "metric | scope | outcome | timeframe"
+  }},
+  "unspokenEvidenceToProbe": [
+    {{"experienceIndex": 0, "hypothesis": "they likely touched X — offer asks for X", "questionSeed": "concrete question"}}
+  ],
+  "irrelevantExperiences": [3, 4],
+  "clichesToKillInAnswers": ["led the team", "drove growth", "..."],
+  "the3Questions": [
+    {{"angle": "deepen the bet", "question": "..."}},
+    {{"angle": "address the fear", "question": "..."}},
+    {{"angle": "surface unspoken evidence", "question": "..."}}
+  ]
+}}
+
+CRITICAL RULES:
+- Use REAL company names from the profile. NEVER placeholders.
+- the3Questions: each ≤2 sentences, references a specific company/experience by name.
+- underselling: only flag bullets actually present on the CV. Quote `currentText` verbatim.
+- unspokenEvidenceToProbe: only hypothesize evidence whose hypothesis-words appear SOMEWHERE in either the CV or the offer text. No invented domains.
+- Never repeat the offer's surface requirements as findings — go below them.
+
+Write all string fields in {lang}."""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=2400, temperature=0.4)
+        data = self._parse_json(text)
+        # Filter unspoken-evidence hypotheses through the same grounding pass
+        # we use for gap analysis. Drops invented themes (e.g. "diversity
+        # sourcing" on a pure tech role) that don't anchor anywhere.
+        try:
+            unspoken = data.get("unspokenEvidenceToProbe") or []
+            cv_text = self._cv_text_corpus(profile)
+            offer_text = (offer.description or "") + " " + " ".join(
+                r.text for r in (offer.requirements or [])
+            )
+            kept = []
+            for item in unspoken:
+                hypo = (item or {}).get("hypothesis", "") if isinstance(item, dict) else ""
+                if not hypo:
+                    continue
+                if _hypothesis_grounded(hypo, cv_text, offer_text):
+                    kept.append(item)
+            data["unspokenEvidenceToProbe"] = kept
+        except Exception:
+            logging.exception("agent_brief: grounding filter failed; passing brief through")
+        try:
+            return AgentBrief(**data)
+        except Exception:
+            logging.exception("agent_brief: validation failed, returning empty brief")
+            return AgentBrief()
+
+    def classify_answer(self, question: str, answer: str, cliches: list[str] | None = None, ui_language: str = "en") -> AnswerVerdict:
+        """Classify a user's chat answer for the pushback gate. One of:
+        - specific: accept and move on
+        - generic: clichéd, could be on any CV
+        - underselling: helper-voice for owner-work
+        - evasive: skipped the structural ask
+        Mistral-small, ~300 tokens. Called once per turn before
+        generate_next_question decides whether to push back."""
+        lang = "French" if ui_language == "fr" else "English"
+        cliche_block = ""
+        if cliches:
+            cliche_block = "\n\nKNOWN CLICHÉS TO PENALISE (banned phrases for this candidate):\n" + "\n".join(f"- {c}" for c in cliches[:20])
+        prompt = f"""You are a senior recruiter judging a candidate's answer in a CV-coaching chat. Classify ONE answer.
+
+QUESTION: {question}
+
+ANSWER: {answer}{cliche_block}
+
+VERDICTS:
+- "specific": gives a concrete metric, scope, outcome, timeframe, OR a verifiable detail. Accept it.
+- "generic": every PM/AE/eng would say the same thing. "Led the team and improved performance." "Drove growth." No anchor. Push back.
+- "underselling": helper-voice for owner-work. "Helped with X" / "Supported X" / "Contributed to X" when the role suggests they OWNED it. Push back to reframe.
+- "evasive": the answer dodges the structural part of the question. Question asked for headcount, candidate gave qualitative impression. Push back.
+
+Pick exactly ONE. If the answer is partly specific and partly generic, prefer "generic" only if the generic part is the load-bearing one.
+
+Output JSON in this exact shape:
+{{"verdict": "specific|generic|underselling|evasive", "reason": "1-sentence why — in {lang}"}}"""
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=300, temperature=0.2)
+        data = self._parse_json(text)
+        verdict = (data.get("verdict") or "specific").strip().lower()
+        if verdict not in {"specific", "generic", "underselling", "evasive"}:
+            verdict = "specific"
+        return AnswerVerdict(verdict=verdict, reason=str(data.get("reason") or ""))
+
+    def _cv_text_corpus(self, profile: Profile) -> str:
+        """Flatten the CV to a single string for grounding checks."""
+        parts = [profile.title, profile.summary, " ".join(profile.skills)]
+        for e in profile.experiences:
+            parts.extend([e.title, e.company, e.description] + list(e.bullets))
+        return " ".join(p for p in parts if p)
+
+    def generate_next_question(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", known_facts=None, contradictions=None, cv_draft=None, agent_brief: AgentBrief | None = None) -> ChatResponse:
         # Match the chat to the user's actual writing language, not the UI locale
         detected = self._detect_conversation_lang(messages)
         if detected:
             ui_language = detected
         conversation = self._summarize_conversation(messages)
         lang_instruction = "French" if ui_language == "fr" else "English"
+
+        # Brief-driven mode — replaces theme-ranking with deterministic slot
+        # tracking + LLM-natural pushback. Falls through to legacy path if
+        # the brief is missing or empty (frontend opt-out, /api/brief failed,
+        # etc).
+        if agent_brief and agent_brief.the3Questions:
+            return self._brief_driven_next(
+                profile, offer, agent_brief, messages, ui_language, lang_instruction,
+                cv_draft, known_facts, contradictions,
+            )
 
         knowledge_context = ""
         if known_facts or contradictions:
@@ -452,6 +657,206 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
         text = self._call(prompt, model="mistral-small-latest", max_tokens=1200, temperature=0.6)
         data = self._parse_json(text)
         return ChatResponse(**data)
+
+    def _brief_driven_next(
+        self,
+        profile: Profile,
+        offer: Offer,
+        brief: AgentBrief,
+        messages: list[ChatMessage],
+        ui_language: str,
+        lang_instruction: str,
+        cv_draft,
+        known_facts,
+        contradictions,
+    ) -> ChatResponse:
+        """Brief-driven chat loop. Replaces theme-ranking with:
+          1. Deterministic slot tracking against brief.the3Questions.
+          2. classify_answer-gated pushback (≤1 per slot).
+          3. Narrative wrap when slots exhausted.
+
+        Single LLM call writes the user-visible message + extracts
+        cv_actions from the latest user reply. Slot state is computed
+        from message history, not asked of the model — the model only
+        gets the resolved 'send pushback' or 'send next question' cue.
+        """
+        first_name = profile.name.split()[0] if profile.name else "there"
+        qs = [bq.question for bq in brief.the3Questions if bq.question]
+        if not qs:
+            # No questions in brief — bail to let caller fall through
+            return ChatResponse(message="", is_complete=True, cv_actions=[], progress=100)
+
+        asst = [m.content for m in messages if m.role == "assistant" and not m.content.startswith("⚠️")]
+        user = [m.content for m in messages if m.role == "user"]
+
+        # Find the highest brief-slot whose question text matches an assistant
+        # message (case-insensitive prefix match — the LLM may reformat slightly).
+        def _slot_for_msg(msg: str) -> int:
+            ml = (msg or "").lower()
+            best = -1
+            for i, q in enumerate(qs):
+                key = q.strip()[:50].lower()
+                if key and key in ml:
+                    best = max(best, i)
+            return best
+
+        slot_marks = [_slot_for_msg(a) for a in asst]
+        last_fresh_slot = max(slot_marks) if slot_marks else -1
+        last_msg = asst[-1] if asst else ""
+        last_was_fresh_q = _slot_for_msg(last_msg) >= 0
+        # Did we already push back at the current slot? (i.e. there's an
+        # assistant message AFTER the most recent fresh-Q that doesn't itself
+        # match a brief Q.)
+        already_pushed = False
+        if last_fresh_slot >= 0:
+            for a in asst[asst.index(next(a for a in asst if _slot_for_msg(a) == last_fresh_slot)) + 1:]:
+                if _slot_for_msg(a) < 0:
+                    already_pushed = True
+                    break
+
+        user_just_answered = len(user) >= len(asst) and bool(asst)
+        latest_user_answer = user[-1] if user else ""
+
+        # Classify the latest user answer (only if there is one and last assistant
+        # was a fresh question we want to evaluate the answer against).
+        verdict = AnswerVerdict()
+        if user_just_answered and last_was_fresh_q and not already_pushed:
+            try:
+                verdict = self.classify_answer(
+                    last_msg, latest_user_answer,
+                    cliches=brief.clichesToKillInAnswers,
+                    ui_language=ui_language,
+                )
+            except Exception:
+                logging.exception("classify_answer failed; proceeding without pushback")
+
+        # Decide: pushback, advance, or complete.
+        mode: str
+        target_slot: int
+        if last_fresh_slot < 0:
+            # First call — send Q1.
+            mode = "ask_fresh"
+            target_slot = 0
+        elif user_just_answered and verdict.verdict in {"generic", "underselling", "evasive"} and last_was_fresh_q and not already_pushed:
+            mode = "pushback"
+            target_slot = last_fresh_slot
+        elif last_fresh_slot + 1 < len(qs):
+            mode = "ask_fresh"
+            target_slot = last_fresh_slot + 1
+        else:
+            mode = "wrap"
+            target_slot = last_fresh_slot
+
+        # Format the brief context the LLM needs to write a great line.
+        cliche_block = ""
+        if brief.clichesToKillInAnswers:
+            cliche_block = "\n\nBANNED PHRASES (do NOT echo these in your reply):\n" + "\n".join(f"- {c}" for c in brief.clichesToKillInAnswers[:15])
+
+        cv_draft_context = ""
+        if cv_draft:
+            draft_lines = []
+            for i, exp in enumerate(cv_draft.experiences):
+                bullets = "\n".join(f"      • {b}" for b in exp.bullets)
+                draft_lines.append(f"  [{i}] {exp.title} at {exp.company} ({exp.dates})\n{bullets}")
+            cv_draft_context = f"\n\nCURRENT CV DRAFT:\nName: {cv_draft.name}\nTitle: {cv_draft.title}\nSummary: {cv_draft.summary}\nExperiences:\n{chr(10).join(draft_lines)}"
+
+        knowledge_context = ""
+        if known_facts or contradictions:
+            knowledge_context = "\n\nKNOWLEDGE FROM PREVIOUS PROJECTS:"
+            if known_facts:
+                knowledge_context += "\nKnown facts:\n" + "\n".join(f"- {f}" for f in (known_facts or [])[:10])
+            if contradictions:
+                knowledge_context += "\nContradictions:\n" + "\n".join(f"- {c}" for c in (contradictions or [])[:5])
+
+        if mode == "wrap":
+            # Narrative wrap — agent voice, frames the candidate's story for this offer.
+            prompt = f"""You're {first_name}'s agent (sports-agent voice — on their side). The chat is closing. Write ONE sentence that frames their story for THIS offer, in {lang_instruction}, in the agent's voice.
+
+Lead with the bet, signal what you'll have the CV say.
+
+THE BET: {brief.theBet}
+THE PITCH: {brief.thePitch}
+MARKET READ: {brief.marketRead}
+STRONGEST MATCH: {brief.strongestExistingMatch.shouldBePitchedAs or brief.strongestExistingMatch.why}
+
+CONVERSATION:
+{self._summarize_conversation(messages)}
+
+Output JSON: {{"message": "your closing sentence (≤25 words, agent voice)", "is_complete": true, "cv_actions": [], "progress": 100}}"""
+            text = self._call(prompt, model="mistral-small-latest", max_tokens=400, temperature=0.6)
+            data = self._parse_json(text)
+            data["is_complete"] = True
+            data["progress"] = 100
+            try:
+                return ChatResponse(**data)
+            except Exception:
+                return ChatResponse(message=brief.thePitch, is_complete=True, cv_actions=[], progress=100)
+
+        # Build the prompt for ask_fresh or pushback. Same structure, different cue.
+        if mode == "pushback":
+            cue_label = f"PUSHBACK ({verdict.verdict.upper()})"
+            cue_body = f"""The user just answered: "{latest_user_answer.strip()[:600]}"
+
+The verdict is: {verdict.verdict}. Reason: {verdict.reason or '(none)'}
+
+You are this candidate's AGENT. Write ONE pushback line, in {lang_instruction}. Voice: on-their-side, sharp, conversational. NOT clinical-evaluative. Examples:
+- generic → "that's a line every PM has on their CV. what did *you* do here that I can sell?"
+- underselling → "no — you didn't *help with* growth, you *ran* it. tell me again, but own it."
+- evasive → "you skipped the part I need: {{specific structural ask}}. give me the number."
+
+Stay focused on the question that was just asked. Do NOT advance to a new question. Push back ONCE.
+
+Original question (for context): "{qs[target_slot]}\""""
+        else:
+            angle = brief.the3Questions[target_slot].angle if target_slot < len(brief.the3Questions) else ""
+            angle_hint = ""
+            if "fear" in angle.lower():
+                angle_hint = f"\n\nThis question targets the HIRING-MANAGER FEAR: {brief.hiringManagerFear}\nName the fear directly. Allowed to feel pointed; politeness here is harmful."
+            elif "evidence" in angle.lower():
+                angle_hint = "\n\nThis question surfaces UNSPOKEN EVIDENCE — likely overlap the user didn't write down. Be direct and reference the company by name."
+            elif "bet" in angle.lower():
+                angle_hint = f"\n\nThis question DEEPENS THE BET: {brief.theBet}\nForce a specific metric/outcome/scope."
+            cue_label = f"FRESH QUESTION (slot {target_slot + 1}/{len(qs)})"
+            cue_body = f"""Send brief.the3Questions[{target_slot}] in {lang_instruction}, naturally — you can lightly rephrase to acknowledge the prior answer if any, but the SUBSTANCE must be the brief question.{angle_hint}
+
+Brief question to send: "{qs[target_slot]}\""""
+
+        prompt = f"""You are {first_name}'s AGENT (recruiter+seller fused). Drive the chat from the brief — you do NOT theme-rank, you do NOT pick from a menu. Each turn does ONE of: send a fresh brief question, push back ONCE on a generic answer, or close the chat.
+
+THE BET: {brief.theBet}
+THE PITCH: {brief.thePitch}
+HIRING-MANAGER FEAR: {brief.hiringManagerFear}{cliche_block}
+
+OFFER: {offer.title} at {offer.company}
+
+CANDIDATE EXPERIENCES (numbered for reference):
+{chr(10).join(f"  [{i}] {e.title} at {e.company} ({e.dates})" for i, e in enumerate(profile.experiences))}{cv_draft_context}{knowledge_context}
+
+CONVERSATION SO FAR:
+{self._summarize_conversation(messages)}
+
+YOUR TURN — {cue_label}:
+{cue_body}
+
+CV ACTIONS — extract concrete bullets from the user's latest answer (if any). Same anti-fabrication rule as elsewhere: only state facts the user gave; mark unknowns with {{GAP: ...}} tokens.
+
+CV ACTIONS FORMAT:
+{{"action": "add_bullet", "target": "Company Name", "value": "...", "index": -1}}
+{{"action": "replace_bullet", "target": "Company Name", "value": "...", "index": 0}}
+{{"action": "edit_field", "target": "summary", "value": "..."}}
+
+Respond in JSON: {{"message": "your line — ONE message, agent voice, ≤2 sentences for pushbacks, ≤3 for fresh questions", "is_complete": false, "cv_actions": [], "progress": {int(((target_slot + (0.5 if mode == "pushback" else 1)) / len(qs)) * 100)}}}
+
+Format the message with light markdown (**bold** for the key word). Plain prose preferred. No bullet lists unless genuinely listing 2+ items.
+
+Write in {lang_instruction}. First name only. Be warm but direct."""
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=900, temperature=0.55)
+        data = self._parse_json(text)
+        try:
+            return ChatResponse(**data)
+        except Exception:
+            return ChatResponse(message=qs[target_slot], is_complete=False, cv_actions=[], progress=int(((target_slot + 1) / len(qs)) * 100))
 
     def generate_cv(self, profile: Profile, offer: Offer, gap_analysis: GapAnalysis, messages: list[ChatMessage], ui_language: str = "en", tone: str = "startup", target_market: str = "france") -> CVData:
         # Override the frontend-supplied locale with what the user actually wrote
