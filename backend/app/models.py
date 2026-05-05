@@ -125,6 +125,15 @@ class UnspokenEvidence(BaseModel):
     questionSeed: str = ""
 
 
+class ValueExtraction(BaseModel):
+    """Analysis of value extraction opportunities in the candidate's CV."""
+    metricOpportunities: list[str] = []  # e.g., ["Growth → % increase", "Team → size"]
+    uniqueContexts: list[str] = []  # e.g., ["Seed→Series A transition", "Industry crisis timing"]
+    impactStories: list[str] = []  # e.g., ["Improved X → specific outcome Y"]
+    valueArchetypes: list[str] = []  # e.g., ["BUILDER for experience[0]", "SCALER for experience[1]"]
+    achievementPatterns: list[str] = []  # e.g., ["Always fixes broken processes", "Launches new markets"]
+
+
 class BriefQuestion(BaseModel):
     """One of the 3 brief-driven chat questions, with its angle so the
     chat can render context (which lens this question comes from)."""
@@ -149,6 +158,7 @@ class AgentBrief(BaseModel):
     unspokenEvidenceToProbe: list[UnspokenEvidence] = []
     irrelevantExperiences: list[int] = []
     clichesToKillInAnswers: list[str] = []
+    valueExtraction: ValueExtraction = Field(default_factory=ValueExtraction)
     the3Questions: list[BriefQuestion] = []
 
 
@@ -200,6 +210,7 @@ class ChatResponse(BaseModel):
     is_complete: bool = False
     cv_actions: list[CvAction] = []
     progress: int = 0  # 0-100, percentage of key points covered
+    value_density: int = 0  # 0-100, percentage of value extraction opportunities captured
     # True when this turn is a pushback (verdict-routed challenge on a
     # generic/underselling/evasive answer). Frontend persists the flag on
     # the assistant message and renders a "challenged" chip — so the user

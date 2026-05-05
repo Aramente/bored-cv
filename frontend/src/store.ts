@@ -72,6 +72,7 @@ export interface ChatResponse {
   is_complete: boolean;
   cv_actions: CvAction[];
   progress: number;  // 0-100
+  value_density?: number;  // 0-100 value extraction captured
   is_pushback?: boolean;
 }
 
@@ -110,6 +111,14 @@ export interface BriefQuestion {
   question: string;
 }
 
+export interface ValueExtraction {
+  metricOpportunities: string[];
+  uniqueContexts: string[];
+  impactStories: string[];
+  valueArchetypes: string[];
+  achievementPatterns: string[];
+}
+
 export interface AgentBrief {
   thePitch: string;
   theBet: string;
@@ -121,6 +130,7 @@ export interface AgentBrief {
   unspokenEvidenceToProbe: UnspokenEvidence[];
   irrelevantExperiences: number[];
   clichesToKillInAnswers: string[];
+  valueExtraction: ValueExtraction;
   the3Questions: BriefQuestion[];
 }
 

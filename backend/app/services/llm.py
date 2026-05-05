@@ -363,6 +363,13 @@ RECRUITER mode (you're the gatekeeper):
 - What's the WEAKEST CLAIM on the CV — the bullet a recruiter would push back on first. Generic, unquantified, or unverifiable.
 - What CLICHÉS would weaken the candidate's ANSWERS in the chat? Concrete phrases the chat must banlist: "led the team", "drove growth", "optimized performance", "helped with", "supported", "contributed to", "responsible for", etc. Pick the ones most likely to come up given this candidate's writing style on their CV.
 
+VALUE EXTRACTION ANALYSIS:
+- METRIC OPPORTUNITIES: Where does the candidate have numbers but didn't quantify? (e.g., mentions "growth" but no %, "team" but no size, "budget" but no amount)
+- UNIQUE CONTEXT: What specific context makes their experience more valuable? (Startup stage transitions, industry timing, team composition, crisis situations)
+- IMPACT STORIES: What generic descriptions could hide specific impact stories? Look for "improved", "streamlined", "managed" - what's the actual outcome?
+- VALUE ARCHETYPES: Which archetype best fits each key experience? Options: BUILDER (0→1 creation), SCALER (growth/expansion), OPTIMIZER (efficiency/improvement), TRANSFORMER (change management), PROBLEM-SOLVER (crisis resolution)
+- ACHIEVEMENT PATTERNS: What recurring patterns of achievement appear across multiple roles? (e.g., always fixing broken processes, launching new markets, building teams)
+
 UNSPOKEN EVIDENCE (this is the high-leverage move):
 - The offer mentions X. The CV doesn't mention X — but a role/company/timeframe on the CV makes it LIKELY the candidate touched X anyway. Probe it.
 - Example: offer asks "merchant onboarding lead", CV shows "Stripe 2021–2023". Hypothesis: they likely shipped something at Stripe that touched merchants. Question seed: "while at Stripe, did anything you ship touch merchant onboarding or payment activation?"
@@ -416,6 +423,13 @@ Output VALID JSON ONLY in this exact shape:
   ],
   "irrelevantExperiences": [3, 4],
   "clichesToKillInAnswers": ["led the team", "drove growth", "..."],
+  "valueExtraction": {{
+    "metricOpportunities": ["Growth → % increase", "Team → size", "Budget → amount"],
+    "uniqueContexts": ["Seed→Series A transition", "Industry crisis timing"],
+    "impactStories": ["Improved X → specific outcome Y"],
+    "valueArchetypes": ["BUILDER for experience[0]", "SCALER for experience[1]"],
+    "achievementPatterns": ["Always fixes broken processes", "Launches new markets"]
+  }},
   "the3Questions": [
     {{"angle": "deepen the bet", "question": "..."}},
     {{"angle": "address the fear", "question": "..."}},
@@ -459,29 +473,55 @@ Write all string fields in {lang}."""
             logging.exception("agent_brief: validation failed, returning empty brief")
             return AgentBrief()
 
-    def classify_answer(self, question: str, answer: str, cliches: list[str] | None = None, ui_language: str = "en") -> AnswerVerdict:
+    def classify_answer(self, question: str, answer: str, cliches: list[str] | None = None, ui_language: str = "en", value_extraction: dict | None = None) -> AnswerVerdict:
         """Classify a user's chat answer for the pushback gate. One of:
         - specific: accept and move on
         - generic: clichéd, could be on any CV
         - underselling: helper-voice for owner-work
         - evasive: skipped the structural ask
+        
+        Enhanced with value extraction insights: checks for metric opportunities,
+        value archetype framing, and specific achievement patterns.
         Mistral-small, ~300 tokens. Called once per turn before
         generate_next_question decides whether to push back."""
         lang = "French" if ui_language == "fr" else "English"
         cliche_block = ""
         if cliches:
             cliche_block = "\n\nKNOWN CLICHÉS TO PENALISE (banned phrases for this candidate):\n" + "\n".join(f"- {c}" for c in cliches[:20])
+        
+        # Add value extraction context if available
+        value_extraction_block = ""
+        if value_extraction:
+            metric_hints = ", ".join(value_extraction.get("metricOpportunities", [])[:3])
+            archetype_hints = ", ".join(value_extraction.get("valueArchetypes", [])[:3])
+            pattern_hints = ", ".join(value_extraction.get("achievementPatterns", [])[:2])
+            
+            if metric_hints or archetype_hints or pattern_hints:
+                value_extraction_block = "\n\nVALUE EXTRACTION CONTEXT (use to judge specificity):"
+                if metric_hints:
+                    value_extraction_block += f"\n- Candidate likely has missing metrics for: {metric_hints}"
+                if archetype_hints:
+                    value_extraction_block += f"\n- Candidate's value archetypes: {archetype_hints}"
+                if pattern_hints:
+                    value_extraction_block += f"\n- Candidate's achievement patterns: {pattern_hints}"
+                value_extraction_block += "\n\nIf the answer provides ANY of these missing details, lean toward 'specific'."
+        
         prompt = f"""You are a senior recruiter judging a candidate's answer in a CV-coaching chat. Classify ONE answer.
 
 QUESTION: {question}
 
-ANSWER: {answer}{cliche_block}
+ANSWER: {answer}{cliche_block}{value_extraction_block}
 
 VERDICTS:
 - "specific": gives a concrete metric, scope, outcome, timeframe, OR a verifiable detail. Accept it.
 - "generic": every PM/AE/eng would say the same thing. "Led the team and improved performance." "Drove growth." No anchor. Push back.
 - "underselling": helper-voice for owner-work. "Helped with X" / "Supported X" / "Contributed to X" when the role suggests they OWNED it. Push back to reframe.
 - "evasive": the answer dodges the structural part of the question. Question asked for headcount, candidate gave qualitative impression. Push back.
+
+SPECIAL RULES WITH VALUE CONTEXT:
+1. If answer provides a metric for something the candidate previously undersold (like team size, budget, % increase), accept as "specific".
+2. If answer frames work in a clear value archetype (Builder, Scaler, Optimizer, etc.), accept as "specific".
+3. If answer follows the candidate's known achievement patterns, accept as "specific".
 
 Pick exactly ONE. If the answer is partly specific and partly generic, prefer "generic" only if the generic part is the load-bearing one.
 
@@ -614,13 +654,20 @@ YOUR GOAL: The CV already has their LinkedIn info. Your job is to FILL THE GAPS 
 
 DO NOT ASK about headcount, company stage, team size, or "effectifs" — that data is collected AFTER the chat via dedicated editor fields. Asking about it here is redundant and wastes questions.
 
-HOW TO HAVE THE CONVERSATION — RUTHLESS PRIORITY + BUNDLING:
+HOW TO HAVE THE CONVERSATION — RUTHLESS PRIORITY + BUNDLING + VALUE EXTRACTION:
 - Before you ask anything, mentally rank the themes in the offer by leverage: which 3-4 gaps, if filled with real data, would most transform this CV for THIS offer?
 - Ask about the HIGHEST-leverage theme first. Not the "most relevant experience" — the HIGHEST-LEVERAGE THEME. An offer-critical theme may touch multiple experiences.
 - **BUNDLE across experiences when the theme applies to 2+ roles.** If employer branding is critical and they did it at BOTH Mindflow AND Germinal, ask ONE question covering both — they recall the same mental pattern once and give you two datapoints.
    ✅ "L'offre insiste sur l'employer branding — tu l'as fait chez Mindflow et chez Germinal. Dans chacune, qu'est-ce que t'as mis en place qui a vraiment bougé l'aiguille ?"
    ✅ "Sur le quota attainment — chez Salesforce ET chez HubSpot, t'as fait combien de % de ton target chaque année ?"
    ❌ Two separate questions for the same theme across two companies. That's two slots burned on one thinking pattern.
+- **VALUE ARCHETYPE FRAMING:** When you ask, suggest a value archetype to guide their thinking:
+   • BUILDER (0→1 creation): "What did you build from scratch?"
+   • SCALER (growth/expansion): "How did you scale this from X to Y?"
+   • OPTIMIZER (efficiency/improvement): "What processes did you optimize?"
+   • TRANSFORMER (change management): "What transformation did you lead?"
+   • PROBLEM-SOLVER (crisis resolution): "What critical problem did you solve?"
+- **METRIC EXTRACTION:** Listen for vague words ("growth", "improved", "team") and immediately ask for numbers: "Can you put a number on that growth? % increase? Team size? Timeline?"
 - Questions stay SHORT — 1-3 sentences. Bundling adds datapoints, not length.
 - If the user already answered something in a previous message, DON'T re-ask — use the info and move forward.
 - When the user gives you info, IMMEDIATELY write strong CV bullets via cv_actions (add_bullet or replace_bullet) for EACH company they mentioned — a bundled answer produces multiple cv_actions.
@@ -744,6 +791,7 @@ Write in {lang_instruction}. Use first name only. Be warm and direct."""
                     last_msg, latest_user_answer,
                     cliches=brief.clichesToKillInAnswers,
                     ui_language=ui_language,
+                    value_extraction=brief.valueExtraction.dict() if brief.valueExtraction else None,
                 )
             except Exception:
                 logging.exception("classify_answer failed; proceeding without pushback")
@@ -810,7 +858,21 @@ Output JSON: {{"message": "your closing sentence (≤25 words, agent voice)", "i
             except Exception:
                 return ChatResponse(message=brief.thePitch, is_complete=True, cv_actions=[], progress=100)
 
-        # Build the prompt for ask_fresh or pushback. Same structure, different cue.
+        # Calculate value density based on conversation progress and value extraction analysis
+        value_density = 0
+        if brief.valueExtraction and brief.valueExtraction.metricOpportunities:
+            # Simple heuristic: value density grows with slot progress, plus extra for specificity
+            base_density = int(((target_slot + (0.5 if mode == "pushback" else 1)) / len(qs)) * 100)
+            # Boost if latest answer was specific (according to verdict)
+            if mode == "pushback" and verdict.verdict == "specific":
+                value_density = min(base_density + 20, 100)
+            elif mode == "ask_fresh" and user_just_answered and verdict.verdict == "specific":
+                value_density = min(base_density + 10, 100)
+            else:
+                value_density = base_density
+        else:
+            # No value extraction analysis available
+            value_density = 0
         if mode == "pushback":
             cue_label = f"PUSHBACK ({verdict.verdict.upper()})"
             cue_body = f"""The user just answered: "{latest_user_answer.strip()[:600]}"
@@ -863,7 +925,7 @@ CV ACTIONS FORMAT:
 {{"action": "replace_bullet", "target": "Company Name", "value": "...", "index": 0}}
 {{"action": "edit_field", "target": "summary", "value": "..."}}
 
-Respond in JSON: {{"message": "your line — ONE message, agent voice, ≤2 sentences for pushbacks, ≤3 for fresh questions", "is_complete": false, "cv_actions": [], "progress": {int(((target_slot + (0.5 if mode == "pushback" else 1)) / len(qs)) * 100)}}}
+Respond in JSON: {{"message": "your line — ONE message, agent voice, ≤2 sentences for pushbacks, ≤3 for fresh questions", "is_complete": false, "cv_actions": [], "progress": {int(((target_slot + (0.5 if mode == "pushback" else 1)) / len(qs)) * 100)}, "value_density": {value_density}}}
 
 Format the message with light markdown (**bold** for the key word). Plain prose preferred. No bullet lists unless genuinely listing 2+ items.
 
@@ -883,6 +945,7 @@ Write in {lang_instruction}. First name only. Be warm but direct."""
                 is_complete=False,
                 cv_actions=[],
                 progress=int(((target_slot + 1) / len(qs)) * 100),
+                value_density=value_density,
                 is_pushback=(mode == "pushback"),
             )
 

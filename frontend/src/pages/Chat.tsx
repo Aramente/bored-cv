@@ -8,6 +8,7 @@ import TopNav from "../components/TopNav";
 import StepIndicator from "../components/StepIndicator";
 import VoiceInput from "../components/VoiceInput";
 import TonePicker from "../components/TonePicker";
+import ValueArchetypeCard from "../components/ValueArchetypeCard";
 
 export default function Chat() {
   const { t, i18n } = useTranslation();
@@ -26,6 +27,7 @@ export default function Chat() {
   const [knownFacts, setKnownFacts] = useState<string[]>([]);
   const [contradictions, setContradictions] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const [valueDensity, setValueDensity] = useState(0); // 0-100% value extraction captured
   const [showSkip, setShowSkip] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState("");
@@ -34,12 +36,14 @@ export default function Chat() {
   // after the first chat reply lands. Persisted only in component state since
   // the brief itself is in the store.
   const [showAgentRead, setShowAgentRead] = useState(true);
+  const [showArchetypeCards, setShowArchetypeCards] = useState(false);
   const briefInFlight = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sendingRef = useRef(false);
   const draftInFlight = useRef(false);
   const progressRef = useRef(0);
+  const valueDensityRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
   // Auto-grow textarea on content change (including live voice transcript)
@@ -219,6 +223,13 @@ export default function Chat() {
         const clamped = Math.max(progressRef.current, response.progress);
         progressRef.current = clamped;
         setProgress(clamped);
+      }
+      
+      // Update value density if provided in response
+      if (response.value_density !== undefined) {
+        const clampedValue = Math.max(valueDensityRef.current, response.value_density);
+        valueDensityRef.current = clampedValue;
+        setValueDensity(clampedValue);
       }
 
       // Process CV actions from the chat
@@ -424,13 +435,29 @@ export default function Chat() {
       />
 
       <div className="chat-container-centered">
-        {/* Progress bar */}
+        {/* Progress bars */}
         <div className="chat-progress">
           <div className="chat-progress-bar">
             <div className="chat-progress-fill" style={{ width: `${progress}%` }} />
           </div>
           <span className="chat-progress-text">{progress}%</span>
         </div>
+        
+        {/* Value Density Meter - shows how much value extraction has been captured */}
+        {agentBrief?.valueExtraction && (
+          <div className="chat-progress" style={{ marginTop: 4, opacity: 0.9 }}>
+            <div className="chat-progress-bar" style={{ background: 'var(--border-light)' }}>
+              <div className="chat-progress-fill" style={{ 
+                width: `${valueDensity}%`, 
+                background: 'var(--green, #2d9d3f)',
+                transition: 'width 0.8s ease' 
+              }} />
+            </div>
+            <span className="chat-progress-text" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
+              Value: {valueDensity}%
+            </span>
+          </div>
+        )}
 
         <div className="chat-header">
           <h1>{t("chat.title")}</h1>
@@ -489,6 +516,40 @@ export default function Chat() {
                 <em>{t("chat.agent_read_market")}:</em> {agentBrief.marketRead}
               </div>
             )}
+            
+            {/* Value Extraction Insights - only show if we have valueExtraction data */}
+            {agentBrief.valueExtraction && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed var(--border, #e5e7eb)" }}>
+                <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent, #f97316)", marginBottom: 6 }}>
+                  💎 Value Extraction Opportunities
+                </div>
+                
+                {agentBrief.valueExtraction.metricOpportunities && agentBrief.valueExtraction.metricOpportunities.length > 0 && (
+                  <div style={{ marginBottom: 4 }}>
+                    <span style={{ fontWeight: 500 }}>Missing metrics:</span> {agentBrief.valueExtraction.metricOpportunities.slice(0, 2).join(", ")}
+                    {agentBrief.valueExtraction.metricOpportunities.length > 2 && ` +${agentBrief.valueExtraction.metricOpportunities.length - 2} more`}
+                  </div>
+                )}
+                
+                {agentBrief.valueExtraction.valueArchetypes && agentBrief.valueExtraction.valueArchetypes.length > 0 && (
+                  <div style={{ marginBottom: 4 }}>
+                    <span style={{ fontWeight: 500 }}>Your value archetypes:</span> {agentBrief.valueExtraction.valueArchetypes.slice(0, 3).join(", ")}
+                    <button
+                      onClick={() => setShowArchetypeCards(true)}
+                      style={{ marginLeft: 6, background: "none", border: "none", color: "var(--accent, #f97316)", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}
+                    >
+                      (learn more)
+                    </button>
+                  </div>
+                )}
+                
+                {agentBrief.valueExtraction.achievementPatterns && agentBrief.valueExtraction.achievementPatterns.length > 0 && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+                    Pattern: {agentBrief.valueExtraction.achievementPatterns[0]}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -527,6 +588,14 @@ export default function Chat() {
           )}
           <div ref={bottomRef} />
         </div>
+
+        {/* Value Archetype Explanation Cards */}
+        {showArchetypeCards && agentBrief?.valueExtraction?.valueArchetypes && (
+          <ValueArchetypeCard
+            archetypeNames={agentBrief.valueExtraction.valueArchetypes}
+            onClose={() => setShowArchetypeCards(false)}
+          />
+        )}
 
         {voiceError && !showTonePicker && (
           <div className="error" style={{ marginBottom: 8, fontSize: 12 }}>{voiceError}</div>
