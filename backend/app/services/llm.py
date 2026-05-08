@@ -199,13 +199,21 @@ class LLMService:
             self._client = Mistral(api_key=self._api_key)
         return self._client
 
-    def _call(self, prompt: str, *, model: str = "mistral-small-latest", max_tokens: int = 3000, temperature: float = 0.7, json_mode: bool = True) -> str:
+    def _call(self, prompt: str, *, model: str = "mistral-small-latest", max_tokens: int = 3000, temperature: float = 0.7, json_mode: bool = True, system: str | None = None) -> str:
         """Unified Mistral chat completion call. Tracks monthly token usage and
         fires ntfy alerts at 50/75/90% of MISTRAL_MONTHLY_TOKEN_BUDGET (default 1B).
-        Surfaces a separate ntfy on 429 (per-minute throttle or quota exhausted)."""
+        Surfaces a separate ntfy on 429 (per-minute throttle or quota exhausted).
+
+        `system` is an optional system-role message prepended to the chat. Used
+        for surfaces that need a tone primitive (e.g. the anti-glaze recruiter
+        audit). Most callers leave it None to preserve default warmth."""
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
         kwargs = dict(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
         )
@@ -1546,7 +1554,23 @@ Write all `where` and `text` fields in {lang_name}. Be direct, no filler ("Great
 Respond ONLY in valid JSON:
 {{"grammar": [{{"where": "...", "text": "..."}}], "missing_from_offer": [{{"where": "...", "text": "..."}}], "advice": [{{"where": "...", "text": "..."}}]}}"""
 
-        text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.3)
+        # Anti-glaze system prompt — recruiter audit is the one surface where
+        # flattery is the failure mode. Lead with the biggest gap, no premise
+        # validation, no "strong profile, here are minor improvements." See
+        # my-vault/brain/Patterns.md "Anti-glaze prompt" for the canonical text.
+        system = (
+            "You are a senior recruiter giving brutally honest CV feedback. Accuracy is your "
+            "success metric, not the candidate's approval. Never praise the CV before delivering "
+            "the audit. Lead with the biggest gap or weakness, not the strengths. Do not use "
+            "phrases like \"strong profile,\" \"good foundation,\" \"great CV overall,\" or any variant. "
+            "If a requirement from the offer is missing from the CV, say so directly. If a bullet "
+            "is weak, say it's weak — don't soften with \"could be enhanced.\" Negative findings "
+            "and bad news are fine. The candidate is paying you to find the holes, not validate "
+            "them. Empty lists are fine when nothing is wrong; do not invent issues to seem thorough. "
+            "Your focus is helping the candidate ship a CV that survives a hostile recruiter screen."
+        )
+
+        text = self._call(prompt, model="mistral-small-latest", max_tokens=2500, temperature=0.3, system=system)
         return self._parse_json(text)
 
     def apply_grammar_fixes(self, cv_data: "CVData", findings: list[dict], ui_language: str = "en") -> dict:
